@@ -1,0 +1,66 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+' --- AGGREGATE: AIRCRAFT ---
+package "Aircraft Aggregate" <<Rectangle>> {
+
+    class Aircraft <<Entity>> <<Root>> {
+        - manufacturingDate: Date
+    }
+
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+
+    class AircraftStatus <<Value Object>> {
+        - status: String
+        ' active, inactive, under maintenance
+    }
+
+    class AircraftModel <<Entity>> {
+        - manufacturer: String
+        - seatingCapacity: Integer
+        - fuelCapacity: Double
+        - maximumRange: Double
+        - cruisingSpeed: Double
+    }
+
+    class ModelName <<Value Object>> {
+        - name: String
+    }
+
+    Aircraft "1" *-- "1" RegistrationNumber : identified by >
+    Aircraft "1" *-- "1" AircraftStatus : has >
+    Aircraft "*" --> "1" AircraftModel : is of type >
+    AircraftModel "1" *-- "1" ModelName : identified by >
+}
+
+' --- AGGREGATE: AIRPORT ---
+package "Airport Aggregate" <<Rectangle>> {
+
+    class Airport <<Entity>> <<Root>> {
+        - name: String
+        - city: String
+        - country: String
+        - timezone: String
+    }
+
+    class IATACode <<Value Object>> {
+        - code: String
+        ' 3-letter format
+    }
+
+    class Coordinates <<Value Object>> {
+        - latitude: Double
+        - longitude: Double
+    }
+
+    Airport "1" *-- "1" IATACode : identified by >
+    Airport "1" *-- "1" Coordinates : located at >
+}
+
+' --- RELAÇÕES ENTRE AGGREGATES ---
+' Nota: O Aggregate de Route e de Certificação de Aeroporto vai ligar estes dois mundos.
+
+@enduml
