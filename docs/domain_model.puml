@@ -1,66 +1,181 @@
 @startuml
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 hide empty members
 
-' --- AGGREGATE: AIRCRAFT ---
-package "Aircraft Aggregate" <<Rectangle>> {
-
-    class Aircraft <<Entity>> <<Root>> {
-        - manufacturingDate: Date
-    }
-
-    class RegistrationNumber <<Value Object>> {
-        - number: String
-    }
-
-    class AircraftStatus <<Value Object>> {
-        - status: String
-        ' active, inactive, under maintenance
-    }
-
-    class AircraftModel <<Entity>> {
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
         - manufacturer: String
-        - seatingCapacity: Integer
+        - defaultSeatingCapacity: Integer
         - fuelCapacity: Double
         - maximumRange: Double
         - cruisingSpeed: Double
+        - imageOrDiagram: String
     }
-
     class ModelName <<Value Object>> {
         - name: String
+    }
+    AircraftModel "1" *-- "1" ModelName : identified by >
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - manufacturingDate: Date
+        - actualSeatingCapacity: Integer
+        - totalFlightHours: Double
+    }
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+    class AircraftStatus <<Value Object>> {
+        - status: String
+    }
+    class AircraftFeature <<Value Object>> {
+        - description: String
+        ' e.g., WiFi-enabled, specific engine type
     }
 
     Aircraft "1" *-- "1" RegistrationNumber : identified by >
     Aircraft "1" *-- "1" AircraftStatus : has >
+    Aircraft "1" *-- "*" AircraftFeature : has >
     Aircraft "*" --> "1" AircraftModel : is of type >
-    AircraftModel "1" *-- "1" ModelName : identified by >
 }
 
-' --- AGGREGATE: AIRPORT ---
-package "Airport Aggregate" <<Rectangle>> {
-
+package "Airport Aggregate" {
     class Airport <<Entity>> <<Root>> {
         - name: String
         - city: String
         - country: String
+        - region: String
         - timezone: String
+        - operationalHours: String
     }
-
     class IATACode <<Value Object>> {
         - code: String
-        ' 3-letter format
     }
-
+    class AirportStatus <<Value Object>> {
+        - status: String
+    }
     class Coordinates <<Value Object>> {
         - latitude: Double
         - longitude: Double
     }
+    class Runway <<Value Object>> {
+        - name: String
+        - length: Double
+        - orientation: String
+    }
+    class Contact <<Value Object>> {
+        - type: String
+        - value: String
+        - description: String
+    }
+    class Facility <<Value Object>> {
+        - type: String
+        - description: String
+    }
+
+    class AirplaneCertification <<Entity>> {
+    }
 
     Airport "1" *-- "1" IATACode : identified by >
     Airport "1" *-- "1" Coordinates : located at >
+    Airport "1" *-- "1" AirportStatus : has >
+    Airport "1" *-- "*" Runway : contains >
+    Airport "1" *-- "*" Contact : has >
+    Airport "1" *-- "*" Facility : has >
+    Airport "1" *-- "*" AirplaneCertification : issues >
+    AirplaneCertification "*" --> "1" AircraftModel : authorizes >
 }
 
-' --- RELAÇÕES ENTRE AGGREGATES ---
-' Nota: O Aggregate de Route e de Certificação de Aeroporto vai ligar estes dois mundos.
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - estimatedFlightTime: Integer
+        - minimumRange: Double
+        - minimumCapacity: Integer
+        - distance: Double
+
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+
+    }
+    class RouteStatus <<Value Object>> {
+        - status: String
+
+    }
+
+    Route "1" *-- "1" RouteId : identified by >
+    Route "1" *-- "1" RouteStatus : has >
+    Route "*" --> "1" Airport : departs from (Origin) >
+    Route "*" --> "1" Airport : arrives at (Destination) >
+}
+
+
+package "Flight Operations Aggregate" {
+    class ScheduledFlight <<Entity>> <<Root>> {
+        - scheduledDateTime: DateTime
+    }
+    class FlightStatus <<Value Object>> {
+        - status: String
+    }
+
+    ScheduledFlight "1" *-- "1" FlightStatus : has >
+    ScheduledFlight "*" --> "1" Route : operates on >
+    ScheduledFlight "*" --> "1" Aircraft : assigned to >
+}
+
+
+package "Maintenance Template Aggregate" {
+    class MaintenanceTemplate <<Entity>> <<Root>> {
+        - templateName: String
+        - templateType: String
+
+    }
+    class ChecklistItem <<Value Object>> {
+        - description: String
+    }
+
+    MaintenanceTemplate "1" *-- "*" ChecklistItem : contains >
+    MaintenanceTemplate "*" --> "*" AircraftModel : applies to >
+}
+
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - description: String
+        - startDate: Date
+        - expectedDuration: Integer
+        - completionNotes: String
+        - componentCategory: String
+
+        - cost: Double
+    }
+    class MaintenanceRecordStatus <<Value Object>> {
+        - status: String
+
+    }
+
+    MaintenanceRecord "1" *-- "1" MaintenanceRecordStatus : has >
+    MaintenanceRecord "*" --> "1" Aircraft : performed on >
+    MaintenanceRecord "*" --> "1" MaintenanceTemplate : follows >
+}
+
+
+package "Inventory Aggregate" {
+    class MaintenancePart <<Entity>> <<Root>> {
+        - name: String
+        - description: String
+        - stockQuantity: Integer
+        - minimumThreshold: Integer
+
+    }
+    class PartNumber <<Value Object>> {
+        - number: String
+    }
+
+    MaintenancePart "1" *-- "1" PartNumber : identified by >
+
+}
 
 @enduml
