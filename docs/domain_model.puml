@@ -1,6 +1,7 @@
 @startuml
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
+title AISafe Domain Model
 hide empty members
 
 package "Aircraft Model Aggregate" {
@@ -28,7 +29,10 @@ package "Aircraft Aggregate" {
         - number: String
     }
     class AircraftStatus <<Value Object>> {
-        - status: String
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+         'US102
     }
     class AircraftFeature <<Value Object>> {
         - description: String
@@ -54,13 +58,16 @@ package "Airport Aggregate" {
         - code: String
     }
     class AirportStatus <<Value Object>> {
-        - status: String
+        OPERATIONAL
+        CLOSED
+        UNDER_MAINTENANCE
+        'US109
     }
     class Coordinates <<Value Object>> {
         - latitude: Double
         - longitude: Double
     }
-    class Runway <<Value Object>> {
+    class Runway <<Entity>> {
         - name: String
         - length: Double
         - orientation: String
@@ -101,8 +108,9 @@ package "Route Aggregate" {
 
     }
     class RouteStatus <<Value Object>> {
-        - status: String
-
+      ACTIVE
+      INACTIVE
+        'US112
     }
 
     Route "1" *-- "1" RouteId : identified by >
@@ -117,7 +125,12 @@ package "Flight Operations Aggregate" {
         - scheduledDateTime: DateTime
     }
     class FlightStatus <<Value Object>> {
-        - status: String
+       SCHEDULED
+       DELAYED
+       IN_FLIGHT
+       COMPLETED
+       CANCELED
+       'forum-pergunta sobre US212
     }
 
     ScheduledFlight "1" *-- "1" FlightStatus : has >
@@ -152,7 +165,10 @@ package "Maintenance Record Aggregate" {
         - cost: Double
     }
     class MaintenanceRecordStatus <<Value Object>> {
-        - status: String
+    SCHEDULED
+    IN_PROGRESS
+     COMPLETED
+     'US115 e US119
 
     }
 
