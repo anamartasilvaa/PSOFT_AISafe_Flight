@@ -143,6 +143,8 @@ package "Maintenance Template Aggregate" {
     class MaintenanceTemplate <<Entity>> <<Root>> {
         - templateName: String
         - templateType: String
+        - flightHoursInterval: Double
+        - calendarDaysInterval: Integer
 
     }
     class ChecklistItem <<Value Object>> {
