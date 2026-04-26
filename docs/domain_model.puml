@@ -12,6 +12,8 @@ package "Aircraft Model Aggregate" {
         - maximumRange: Double
         - cruisingSpeed: Double
         - imageOrDiagram: String
+        - operatingHoursRange: String
+        - seatingConfiguration: String
     }
     class ModelName <<Value Object>> {
         - name: String
@@ -24,6 +26,8 @@ package "Aircraft Aggregate" {
         - manufacturingDate: Date
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double
+        - operatingHoursRange: String
+        - seatingConfiguration: String
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -54,6 +58,13 @@ package "Airport Aggregate" {
         - timezone: String
         - operationalHours: String
     }
+
+    class AirportType <<Value Object>> {
+            INTERNATIONAL
+            REGIONAL
+            DOMESTIC
+        }
+
     class IATACode <<Value Object>> {
         - code: String
     }
@@ -83,7 +94,10 @@ package "Airport Aggregate" {
     }
 
     class AirplaneCertification <<Entity>> {
-    }
+            - issueDate: Date
+            - expiryDate: Date
+            - certificationNumber: String
+        }
 
     Airport "1" *-- "1" IATACode : identified by >
     Airport "1" *-- "1" Coordinates : located at >
@@ -93,6 +107,7 @@ package "Airport Aggregate" {
     Airport "1" *-- "*" Facility : has >
     Airport "1" *-- "*" AirplaneCertification : issues >
     AirplaneCertification "*" --> "1" AircraftModel : authorizes >
+    Airport "1" *-- "1" AirportType : is of type >
 }
 
 package "Route Aggregate" {
@@ -103,6 +118,12 @@ package "Route Aggregate" {
         - distance: Double
 
     }
+
+    class RouteHistory <<Value Object>> {
+            - startDate: Date
+            - endDate: Date
+        }
+
     class RouteId <<Value Object>> {
         - id: String
 
@@ -117,12 +138,16 @@ package "Route Aggregate" {
     Route "1" *-- "1" RouteStatus : has >
     Route "*" --> "1" Airport : departs from (Origin) >
     Route "*" --> "1" Airport : arrives at (Destination) >
+    Route "1" *-- "1" RouteHistory : has >
 }
 
 
 package "Flight Operations Aggregate" {
     class ScheduledFlight <<Entity>> <<Root>> {
         - scheduledDateTime: DateTime
+        - scheduledArrivalDateTime: DateTime
+        - actualDepartureDateTime: DateTime
+        - actualArrivalDateTime: DateTime
     }
     class FlightStatus <<Value Object>> {
        SCHEDULED
