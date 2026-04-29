@@ -10,4 +10,5 @@ public class AisafeApplication {
 		SpringApplication.run(AisafeApplication.class, args);
 	}
 
+
 }
