@@ -6,19 +6,29 @@ hide empty members
 
 package "Aircraft Model Aggregate" {
     class AircraftModel <<Entity>> <<Root>> {
-        - manufacturer: String
         - defaultSeatingCapacity: Integer
         - fuelCapacity: Double
         - maximumRange: Double
         - cruisingSpeed: Double
-        - imageOrDiagram: String
+        - image: String
         - operatingHoursRange: String
         - seatingConfiguration: String
     }
     class ModelName <<Value Object>> {
         - name: String
     }
+
+    class Manufacturer <<Value Object>> {
+        BOEING
+        AIRBUS
+        EMBRAER
+        BOMBARDIER
+        ATR
+        ' (Lista fixa configurada no sistema)
+    }
+
     AircraftModel "1" *-- "1" ModelName : identified by >
+    AircraftModel "1" *-- "1" Manufacturer : built by >
 }
 
 package "Aircraft Aggregate" {
@@ -28,6 +38,7 @@ package "Aircraft Aggregate" {
         - totalFlightHours: Double
         - operatingHoursRange: String
         - seatingConfiguration: String
+        - AircraftImage: String
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -36,11 +47,9 @@ package "Aircraft Aggregate" {
         ACTIVE
         INACTIVE
         UNDER_MAINTENANCE
-         'US102
     }
     class AircraftFeature <<Value Object>> {
         - description: String
-        ' e.g., WiFi-enabled, specific engine type
     }
 
     Aircraft "1" *-- "1" RegistrationNumber : identified by >
@@ -60,10 +69,10 @@ package "Airport Aggregate" {
     }
 
     class AirportType <<Value Object>> {
-            INTERNATIONAL
-            REGIONAL
-            DOMESTIC
-        }
+        INTERNATIONAL
+        REGIONAL
+        DOMESTIC
+    }
 
     class IATACode <<Value Object>> {
         - code: String
@@ -72,7 +81,6 @@ package "Airport Aggregate" {
         OPERATIONAL
         CLOSED
         UNDER_MAINTENANCE
-        'US109
     }
     class Coordinates <<Value Object>> {
         - latitude: Double
@@ -94,10 +102,10 @@ package "Airport Aggregate" {
     }
 
     class AirplaneCertification <<Entity>> {
-            - issueDate: Date
-            - expiryDate: Date
-            - certificationNumber: String
-        }
+        - issueDate: Date
+        - expiryDate: Date
+        - certificationNumber: String
+    }
 
     Airport "1" *-- "1" IATACode : identified by >
     Airport "1" *-- "1" Coordinates : located at >
@@ -116,22 +124,19 @@ package "Route Aggregate" {
         - minimumRange: Double
         - minimumCapacity: Integer
         - distance: Double
-
     }
 
     class RouteHistory <<Value Object>> {
-            - startDate: Date
-            - endDate: Date
-        }
+        - startDate: Date
+        - endDate: Date
+    }
 
     class RouteId <<Value Object>> {
         - id: String
-
     }
     class RouteStatus <<Value Object>> {
-      ACTIVE
-      INACTIVE
-        'US112
+        ACTIVE
+        INACTIVE
     }
 
     Route "1" *-- "1" RouteId : identified by >
@@ -140,7 +145,6 @@ package "Route Aggregate" {
     Route "*" --> "1" Airport : arrives at (Destination) >
     Route "1" *-- "1" RouteHistory : has >
 }
-
 
 package "Flight Operations Aggregate" {
     class ScheduledFlight <<Entity>> <<Root>> {
@@ -155,7 +159,6 @@ package "Flight Operations Aggregate" {
        IN_FLIGHT
        COMPLETED
        CANCELED
-       'forum-pergunta sobre US212
     }
 
     ScheduledFlight "1" *-- "1" FlightStatus : has >
@@ -163,23 +166,28 @@ package "Flight Operations Aggregate" {
     ScheduledFlight "*" --> "1" Aircraft : assigned to >
 }
 
-
 package "Maintenance Template Aggregate" {
     class MaintenanceTemplate <<Entity>> <<Root>> {
         - templateName: String
         - templateType: String
         - flightHoursInterval: Double
         - calendarDaysInterval: Integer
-
     }
+
+    class Checklist <<Entity>> {
+        - title: String
+        - version: String
+    }
+
     class ChecklistItem <<Value Object>> {
-        - description: String
+        - taskDescription: String
+        - isMandatory: Boolean
     }
 
-    MaintenanceTemplate "1" *-- "*" ChecklistItem : contains >
+    MaintenanceTemplate "1" *-- "1" Checklist : defines >
+    Checklist "1" *-- "*" ChecklistItem : contains >
     MaintenanceTemplate "*" --> "*" AircraftModel : applies to >
 }
-
 
 package "Maintenance Record Aggregate" {
     class MaintenanceRecord <<Entity>> <<Root>> {
@@ -187,23 +195,28 @@ package "Maintenance Record Aggregate" {
         - startDate: Date
         - expectedDuration: Integer
         - completionNotes: String
-        - componentCategory: String
-
         - cost: Double
     }
-    class MaintenanceRecordStatus <<Value Object>> {
-    SCHEDULED
-    IN_PROGRESS
-     COMPLETED
-     'US115 e US119
 
+    class MaintenanceRecordStatus <<Value Object>> {
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    class ComponentCategory <<Value Object>> {
+        ENGINE
+        AIRFRAME
+        AVIONICS
+        INTERIOR
+        EXTERIOR
     }
 
     MaintenanceRecord "1" *-- "1" MaintenanceRecordStatus : has >
+    MaintenanceRecord "1" *-- "1" ComponentCategory : categorized by >
     MaintenanceRecord "*" --> "1" Aircraft : performed on >
     MaintenanceRecord "*" --> "1" MaintenanceTemplate : follows >
 }
-
 
 package "Inventory Aggregate" {
     class MaintenancePart <<Entity>> <<Root>> {
@@ -211,14 +224,13 @@ package "Inventory Aggregate" {
         - description: String
         - stockQuantity: Integer
         - minimumThreshold: Integer
-
     }
     class PartNumber <<Value Object>> {
         - number: String
     }
 
     MaintenancePart "1" *-- "1" PartNumber : identified by >
-
+    MaintenancePart "*" --> "1" ComponentCategory : belongs to category >
 }
 
 @enduml
