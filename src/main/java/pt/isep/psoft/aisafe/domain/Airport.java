@@ -2,6 +2,9 @@ package pt.isep.psoft.aisafe.domain;
 
 import jakarta.persistence.*;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -25,6 +28,17 @@ public class Airport {
     @Column(nullable = false)
     private AirportType type;
 
+    @Embedded
+    private Coordinates coordinates;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "airport_pk")
+    private List<Runway> runways = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "airport_pk")
+    private List<AirplaneCertification> certifications = new ArrayList<>();
+
     // 3. Construtor exigido pelo JPA (Protegido)
     protected Airport() {}
 
@@ -33,10 +47,22 @@ public class Airport {
         Assert.notNull(iataCode, "The IATA code is mandatory.");
         Assert.hasText(name, "The airport name is required..");
         Assert.notNull(type, "The type of airport is mandatory.");
+        Assert.notNull(coordinates, "Coordinates are required.");
 
         this.iataCode = iataCode;
         this.name = name;
         this.type = type;
+        this.coordinates = coordinates;
+    }
+
+    public void addRunway(Runway runway) {
+        Assert.notNull(runway, "Runway must not be null.");
+        this.runways.add(runway);
+    }
+
+    public void addAirplaneCertification(AirplaneCertification certification) {
+        Assert.notNull(certification, "Certification must not be null.");
+        this.certifications.add(certification);
     }
 
     // 5. equals e hashCode baseados apenas no IATACode (Regra DDD)
