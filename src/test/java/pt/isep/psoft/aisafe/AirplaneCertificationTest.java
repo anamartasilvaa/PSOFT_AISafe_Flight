@@ -1,0 +1,38 @@
+package pt.isep.psoft.aisafe;
+
+import org.junit.jupiter.api.Test;
+import pt.isep.psoft.aisafe.domain.AircraftModel;
+import pt.isep.psoft.aisafe.domain.AirplaneCertification;
+import pt.isep.psoft.aisafe.domain.Manufacturer;
+import pt.isep.psoft.aisafe.domain.ModelName;
+
+import java.time.LocalDate;
+import static org.junit.jupiter.api.Assertions.*;
+
+class AirplaneCertificationTest {
+
+    private AircraftModel createDummyModel() {
+        return new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0);
+    }
+
+    @Test
+    void ensureValidCertificationIsCreated() {
+        AircraftModel model = createDummyModel();
+        LocalDate issue = LocalDate.of(2023, 1, 1);
+        LocalDate expiry = LocalDate.of(2028, 1, 1);
+
+        AirplaneCertification cert = new AirplaneCertification("CERT-123", model, issue, expiry);
+        assertNotNull(cert);
+    }
+
+    @Test
+    void ensureExpiryDateMustBeAfterIssueDate() {
+        AircraftModel model = createDummyModel();
+        LocalDate issue = LocalDate.of(2023, 1, 1);
+        LocalDate expiry = LocalDate.of(2022, 1, 1); // Expiry before issue
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new AirplaneCertification("CERT-123", model, issue, expiry);
+        });
+    }
+}
