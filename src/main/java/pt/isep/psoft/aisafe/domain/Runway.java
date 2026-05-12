@@ -31,4 +31,17 @@ public class Runway {
         this.length = length;
         this.orientation = orientation;
     }
+
+    // --- AQUI ESTÃO OS GETTERS QUE FALTAVAM! ---
+    public String getName() {
+        return name;
+    }
+
+    public Double getLength() {
+        return length;
+    }
+
+    public String getOrientation() {
+        return orientation;
+    }
 }

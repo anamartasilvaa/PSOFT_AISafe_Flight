@@ -2,7 +2,6 @@ package pt.isep.psoft.aisafe.domain;
 
 import jakarta.persistence.*;
 import org.springframework.util.Assert;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,12 +9,15 @@ import java.util.Objects;
 @Entity
 public class Airport {
 
-    // 1. Identidade técnica (Base de Dados)
+    // 1. Identidade técnica e Versão (Optimistic Locking)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
 
-    // 2. Identidade de Domínio (Value Object embebido)
+    @Version
+    private Long version;
+
+    // 2. Atributos de Domínio
     @Embedded
     @AttributeOverride(name = "code", column = @Column(name = "iata_code", unique = true, nullable = false))
     private IATACode iataCode;
@@ -23,7 +25,15 @@ public class Airport {
     @Column(nullable = false)
     private String name;
 
-    // CORREÇÃO AQUI: Como é um Enum, usamos @Enumerated
+    @Column(nullable = false)
+    private String city;
+
+    @Column(nullable = false)
+    private String country;
+
+    @Column(nullable = false)
+    private String timezone;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AirportType type;
@@ -31,6 +41,7 @@ public class Airport {
     @Embedded
     private Coordinates coordinates;
 
+    // 3. Relações (One-to-Many)
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "airport_pk")
     private List<Runway> runways = new ArrayList<>();
@@ -39,23 +50,28 @@ public class Airport {
     @JoinColumn(name = "airport_pk")
     private List<AirplaneCertification> certifications = new ArrayList<>();
 
-    // 3. Construtor exigido pelo JPA (Protegido)
+    // 4. Construtores
     protected Airport() {}
 
-    // 4. Construtor de Domínio (O único que usamos no nosso código)
-    // 4. Domain Constructor (Updated to include Coordinates)
-    public Airport(IATACode iataCode, String name, AirportType type, Coordinates coordinates) {
+    public Airport(IATACode iataCode, String name, String city, String country, String timezone, AirportType type, Coordinates coordinates) {
         Assert.notNull(iataCode, "The IATA code is mandatory.");
         Assert.hasText(name, "The airport name is required.");
+        Assert.hasText(city, "The city is required.");
+        Assert.hasText(country, "The country is required.");
+        Assert.hasText(timezone, "The timezone is required.");
         Assert.notNull(type, "The type of airport is mandatory.");
         Assert.notNull(coordinates, "Coordinates are required.");
 
         this.iataCode = iataCode;
         this.name = name;
+        this.city = city;
+        this.country = country;
+        this.timezone = timezone;
         this.type = type;
         this.coordinates = coordinates;
     }
 
+    // 5. Métodos de Negócio
     public void addRunway(Runway runway) {
         Assert.notNull(runway, "Runway must not be null.");
         this.runways.add(runway);
@@ -66,7 +82,16 @@ public class Airport {
         this.certifications.add(certification);
     }
 
-    // 5. equals e hashCode baseados apenas no IATACode (Regra DDD)
+    // 6. Getters (Essenciais para a camada de Application/Service)
+    public IATACode getIataCode() { return iataCode; }
+    public String getName() { return name; }
+    public String getCity() { return city; }
+    public String getCountry() { return country; }
+    public String getTimezone() { return timezone; }
+    public AirportType getType() { return type; }
+    public List<Runway> getRunways() { return runways; }
+    public List<AirplaneCertification> getCertifications() { return certifications; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

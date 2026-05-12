@@ -12,6 +12,9 @@ public class Aircraft {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
 
+    @Version
+    private Long version;
+
     @Embedded
     @AttributeOverride(name = "number", column = @Column(name = "registration_number", unique = true, nullable = false))
     private RegistrationNumber registrationNumber;
