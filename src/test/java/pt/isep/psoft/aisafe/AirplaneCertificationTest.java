@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class AirplaneCertificationTest {
 
     private AircraftModel createDummyModel() {
-        return new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0);
+        // Adicionado o 7º argumento
+        return new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg");
     }
 
     @Test

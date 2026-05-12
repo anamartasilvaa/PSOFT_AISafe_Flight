@@ -39,7 +39,8 @@ class AirportTest {
     @Test
     void ensureCanAddCertificationToAirport() {
         Airport airport = new Airport(new IATACode("OPO"), "Sá Carneiro", AirportType.INTERNATIONAL, createValidCoordinates());
-        AircraftModel model = new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0);
+        // Adicionado o 7º argumento
+        AircraftModel model = new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg");
         AirplaneCertification cert = new AirplaneCertification("CERT-123", model, LocalDate.now(), LocalDate.now().plusYears(5));
 
         assertDoesNotThrow(() -> airport.addAirplaneCertification(cert));
