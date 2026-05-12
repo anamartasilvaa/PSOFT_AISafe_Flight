@@ -12,4 +12,9 @@ public record RegistrationNumber(String number) {
         Assert.isTrue(number.matches("^[A-Z0-9]{1,5}-[A-Z0-9]{1,5}$"),
                 "Registration number must follow a valid format (e.g., CS-TPA).");
     }
+
+    @Override
+    public String toString() {
+        return this.number; // Usa o nome da variável que tens aí dentro, deve ser 'number' ou parecida
+    }
 }
