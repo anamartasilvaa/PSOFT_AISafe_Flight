@@ -14,8 +14,8 @@ class AircraftModelTest {
         // Arrange
         ModelName name = new ModelName("737 MAX");
 
-        // Act
-        AircraftModel model = new AircraftModel(name, Manufacturer.BOEING, 180, 25900.0, 6500.0, 839.0);
+        // Act - Adicionado o 7º argumento
+        AircraftModel model = new AircraftModel(name, Manufacturer.BOEING, 180, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg");
 
         // Assert
         assertNotNull(model);
@@ -26,11 +26,11 @@ class AircraftModelTest {
         ModelName name = new ModelName("737 MAX");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new AircraftModel(name, Manufacturer.BOEING, 0, 25900.0, 6500.0, 839.0);
+            new AircraftModel(name, Manufacturer.BOEING, 0, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg");
         });
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new AircraftModel(name, Manufacturer.BOEING, -50, 25900.0, 6500.0, 839.0);
+            new AircraftModel(name, Manufacturer.BOEING, -50, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg");
         });
     }
 
@@ -39,7 +39,7 @@ class AircraftModelTest {
         ModelName name = new ModelName("737 MAX");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new AircraftModel(name, Manufacturer.BOEING, 180, 0.0, 6500.0, 839.0);
+            new AircraftModel(name, Manufacturer.BOEING, 180, 0.0, 6500.0, 839.0, "http://example.com/photo.jpg");
         });
     }
 
@@ -48,7 +48,7 @@ class AircraftModelTest {
         ModelName name = new ModelName("737 MAX");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new AircraftModel(name, null, 180, 25900.0, 6500.0, 839.0);
+            new AircraftModel(name, null, 180, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg");
         });
     }
 }

@@ -33,13 +33,15 @@ public class AircraftModel {
     @Column(nullable = false)
     private Double cruisingSpeed;
 
+    @Column(nullable = true) // Pode ser opcional
+    private String modelPhotoUrl;
+
     // 3. Construtor JPA (Protegido)
     protected AircraftModel() {}
 
     // 4. Construtor de Negócio
-    public AircraftModel(ModelName modelName, Manufacturer manufacturer,
-                         Integer defaultSeatingCapacity, Double fuelCapacity,
-                         Double maximumRange, Double cruisingSpeed) {
+    public AircraftModel(ModelName modelName, Manufacturer manufacturer, Integer defaultSeatingCapacity,
+                         Double fuelCapacity, Double maximumRange, Double cruisingSpeed, String modelPhotoUrl) {
 
         Assert.notNull(modelName, "The model name is required.");
         Assert.notNull(manufacturer, "The manufacturer is required.");
@@ -49,6 +51,7 @@ public class AircraftModel {
         Assert.isTrue(fuelCapacity != null && fuelCapacity > 0, "The fuel capacity must be greater than 0.");
         Assert.isTrue(maximumRange != null && maximumRange > 0, "The maximum range must be greater than 0.");
         Assert.isTrue(cruisingSpeed != null && cruisingSpeed > 0, "The cruising speed must be greater than 0.");
+        this.modelPhotoUrl = modelPhotoUrl;
 
         this.modelName = modelName;
         this.manufacturer = manufacturer;
@@ -70,5 +73,9 @@ public class AircraftModel {
     @Override
     public int hashCode() {
         return Objects.hash(modelName);
+    }
+
+    public ModelName getModelName() {
+        return this.modelName;
     }
 }
