@@ -5,18 +5,18 @@ import pt.isep.psoft.aisafe.domain.Aircraft;
 import pt.isep.psoft.aisafe.domain.AircraftStatus;
 import pt.isep.psoft.aisafe.domain.ModelName;
 import pt.isep.psoft.aisafe.domain.RegistrationNumber;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
 
-    // O Spring faz a query SQL automaticamente só por leres este nome!
     Optional<Aircraft> findByRegistrationNumber(RegistrationNumber registrationNumber);
 
-    // Pesquisa por Estado
-    List<Aircraft> findByStatus(AircraftStatus status);
+    // O Spring Boot vai usar o Pageable para meter os LIMITS no SQL automaticamente!
+    Page<Aircraft> findByStatus(AircraftStatus status, Pageable pageable);
 
-    // Pesquisa por Modelo
-    List<Aircraft> findByModel_ModelName(ModelName modelName);
+    Page<Aircraft> findByModel_ModelName(ModelName modelName, Pageable pageable);
 }

@@ -8,9 +8,8 @@ import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftModelDTO;
 import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
-import org.springframework.web.bind.annotation.PatchMapping;
 import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -33,12 +32,10 @@ public class AircraftController {
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
-    // --- NOVO ENDPOINT PARA A US102 ---
     @PostMapping("/instances")
     public ResponseEntity<EntityModel<RegisterAircraftDTO>> createAircraft(@RequestBody RegisterAircraftDTO dto) {
         service.registerAircraft(dto);
 
-        // HATEOAS incluído para a nota máxima
         EntityModel<RegisterAircraftDTO> resource = EntityModel.of(dto);
         resource.add(linkTo(methodOn(AircraftController.class).createAircraft(dto)).withSelfRel());
 
@@ -55,13 +52,16 @@ public class AircraftController {
         return ResponseEntity.ok(resource);
     }
 
+    // --- AQUI ESTÁ O GET ATUALIZADO (JÁ COM A CHAVETA FECHADA!) ---
     @GetMapping("/instances")
-    public ResponseEntity<List<AircraftViewDTO>> searchAircrafts(
+    public ResponseEntity<Page<AircraftViewDTO>> searchAircrafts(
             @RequestParam(required = false) String model,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<AircraftViewDTO> list = service.searchAircrafts(model, status);
-        return ResponseEntity.ok(list);
+        Page<AircraftViewDTO> pagedList = service.searchAircrafts(model, status, page, size);
+        return ResponseEntity.ok(pagedList);
     }
 
     @PatchMapping("/instances/{registrationNumber}/status")
@@ -69,10 +69,8 @@ public class AircraftController {
             @PathVariable String registrationNumber,
             @RequestBody UpdateAircraftStatusDTO dto) {
 
-        // Chama o serviço
         AircraftViewDTO updatedAircraft = service.updateAircraftStatus(registrationNumber, dto);
 
-        // HATEOAS
         EntityModel<AircraftViewDTO> resource = EntityModel.of(updatedAircraft);
         resource.add(linkTo(methodOn(AircraftController.class).getAircraft(registrationNumber)).withSelfRel());
 
