@@ -43,9 +43,10 @@ public class Airport {
     protected Airport() {}
 
     // 4. Construtor de Domínio (O único que usamos no nosso código)
-    public Airport(IATACode iataCode, String name, AirportType type) {
+    // 4. Domain Constructor (Updated to include Coordinates)
+    public Airport(IATACode iataCode, String name, AirportType type, Coordinates coordinates) {
         Assert.notNull(iataCode, "The IATA code is mandatory.");
-        Assert.hasText(name, "The airport name is required..");
+        Assert.hasText(name, "The airport name is required.");
         Assert.notNull(type, "The type of airport is mandatory.");
         Assert.notNull(coordinates, "Coordinates are required.");
 

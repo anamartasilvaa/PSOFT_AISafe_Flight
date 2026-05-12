@@ -1,42 +1,48 @@
 package pt.isep.psoft.aisafe;
 
 import org.junit.jupiter.api.Test;
-import pt.isep.psoft.aisafe.domain.Airport;
-import pt.isep.psoft.aisafe.domain.AirportType;
-import pt.isep.psoft.aisafe.domain.IATACode;
+import pt.isep.psoft.aisafe.domain.*;
 
+import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AirportTest {
 
+    private Coordinates createValidCoordinates() {
+        return new Coordinates(41.2356, -8.6781);
+    }
+
     @Test
     void ensureValidAirportIsCreated() {
-        // Arrange
-        IATACode iata = new IATACode("LIS");
-        String name = "Humberto Delgado";
-        AirportType type = AirportType.INTERNATIONAL;
-
-        // Act
-        Airport airport = new Airport(iata, name, type);
-
-        // Assert
+        IATACode iata = new IATACode("OPO");
+        Airport airport = new Airport(iata, "Francisco Sá Carneiro", AirportType.INTERNATIONAL, createValidCoordinates());
         assertNotNull(airport);
     }
 
     @Test
-    void ensureAirportCannotBeCreatedWithoutIATACode() {
-        // Assert
+    void ensureAirportCannotBeCreatedWithoutCoordinates() {
+        IATACode iata = new IATACode("OPO");
         assertThrows(IllegalArgumentException.class, () -> {
-            new Airport(null, "Humberto Delgado", AirportType.INTERNATIONAL);
+            new Airport(iata, "Francisco Sá Carneiro", AirportType.INTERNATIONAL, null);
         });
     }
 
     @Test
-    void ensureAirportCannotBeCreatedWithoutName() {
-        IATACode iata = new IATACode("LIS");
+    void ensureCanAddRunwayToAirport() {
+        Airport airport = new Airport(new IATACode("OPO"), "Sá Carneiro", AirportType.INTERNATIONAL, createValidCoordinates());
+        Runway runway = new Runway("17/35", 3480.0, "North-South");
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Airport(iata, "", AirportType.INTERNATIONAL);
-        });
+        assertDoesNotThrow(() -> airport.addRunway(runway));
+        assertThrows(IllegalArgumentException.class, () -> airport.addRunway(null));
+    }
+
+    @Test
+    void ensureCanAddCertificationToAirport() {
+        Airport airport = new Airport(new IATACode("OPO"), "Sá Carneiro", AirportType.INTERNATIONAL, createValidCoordinates());
+        AircraftModel model = new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0);
+        AirplaneCertification cert = new AirplaneCertification("CERT-123", model, LocalDate.now(), LocalDate.now().plusYears(5));
+
+        assertDoesNotThrow(() -> airport.addAirplaneCertification(cert));
+        assertThrows(IllegalArgumentException.class, () -> airport.addAirplaneCertification(null));
     }
 }
