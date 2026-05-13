@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "Administrator" as Admin
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant "airport:Airport" as Airport
+participant "runway:Runway" as Runway
+participant ":AirportRepository" as Repository
+
+Admin -> Controller : POST /api/airports (RegisterAirportDTO)
+activate Controller
+
+Controller -> Service : registerAirport(dto)
+activate Service
+
+Service -> Airport** : create(iataCode, name, city, country, timezone, type, coordinates)
+
+loop for each runway in dto.runways
+    Service -> Runway** : create(name, length, orientation)
+    Service -> Airport : addRunway(runway)
+    activate Airport
+    deactivate Airport
+end
+
+Service -> Repository : save(airport)
+activate Repository
+Repository --> Service : savedAirport
+deactivate Repository
+
+
+Service --> Controller : airportViewDTO
+deactivate Service
+
+Controller --> Admin : 201 Created (AirportViewDTO + HATEOAS Links)
+deactivate Controller
+@enduml

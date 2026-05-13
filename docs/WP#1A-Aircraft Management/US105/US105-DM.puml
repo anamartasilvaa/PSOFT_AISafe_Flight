@@ -1,0 +1,25 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package "Aircraft Aggregate" {
+
+    class Aircraft <<Entity>> <<Root>> {
+        + updateStatus(newStatus: AircraftStatus)
+    }
+
+    class RegistrationNumber <<Value Object>> {
+        - number : String
+    }
+
+    enum AircraftStatus <<Enum>> {
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+    }
+
+    Aircraft *-- "1" RegistrationNumber : lookup by >
+    Aircraft *-- "1" AircraftStatus : mutates >
+}
+
+@enduml

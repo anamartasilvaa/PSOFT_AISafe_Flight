@@ -1,0 +1,48 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+' Camada de API / Controllers
+class AirportController <<RestController>> {
+    + createAirport(dto: RegisterAirportDTO): ResponseEntity
+}
+
+' Camada Application / Services & DTOs
+class AirportService <<Service>> {
+    + registerAirport(dto: RegisterAirportDTO): AirportViewDTO
+}
+
+class RegisterAirportDTO <<Record>>
+class AirportViewDTO <<Record>>
+
+' Camada de Domínio
+class Airport <<Entity>> <<Root>>
+class Runway <<Entity>>
+class IATACode <<Value Object>>
+class Coordinates <<Value Object>>
+enum AirportType <<Enum>>
+
+' Camada de Repositório
+interface AirportRepository <<Interface>> {
+    + findByIataCode(iataCode: IATACode): Optional<Airport>
+}
+
+' --- Relações Arquiteturais ---
+
+AirportController ..> AirportService : uses >
+AirportController ..> RegisterAirportDTO : receives >
+AirportController ..> AirportViewDTO : returns >
+
+AirportService ..> AirportRepository : uses >
+AirportService ..> Airport : instantiates >
+AirportService ..> Runway : instantiates >
+
+AirportRepository ..> Airport : persists >
+
+' Relações de Domínio
+Airport *-- "1" IATACode
+Airport *-- "1" Coordinates
+Airport *-- "1" AirportType
+Airport *-- "0..*" Runway
+
+@enduml

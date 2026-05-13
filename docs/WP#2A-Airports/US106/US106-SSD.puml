@@ -1,0 +1,10 @@
+@startuml
+skinparam style strictuml
+actor "Administrator" as Admin
+participant ":System" as System
+
+Admin -> System : 1. Requests to register a new airport \n(iataCode, name, city, country, timezone, \nlatitude, longitude, type, runways[])
+activate System
+System --> Admin : 1.1. Validates rules, saves the airport and \nreturns the created airport details (HTTP 201)
+deactivate System
+@enduml

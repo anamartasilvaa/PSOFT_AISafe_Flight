@@ -1,0 +1,36 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package "Aircraft Aggregate" {
+
+    class Aircraft <<Entity>> <<Root>> {
+        - manufacturingDate : LocalDate
+        - actualSeatingCapacity : Integer
+    }
+
+    class RegistrationNumber <<Value Object>> {
+        - number : String
+    }
+
+    enum AircraftStatus <<Enum>> {
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+    }
+
+    class AircraftModel <<Entity>> {
+        - modelPhotoUrl : String
+    }
+
+    class ModelName <<Value Object>> {
+        - name : String
+    }
+
+    Aircraft *-- "1" RegistrationNumber : identified by >
+    Aircraft *-- "1" AircraftStatus : filter param >
+    Aircraft "1" --> "1" AircraftModel : is instance of >
+    AircraftModel *-- "1" ModelName : filter param <
+}
+
+@enduml
