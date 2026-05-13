@@ -1,0 +1,61 @@
+@startuml
+skinparam style strictuml
+
+package "API Layer" {
+    class AircraftController {
+        + createModel(dto: RegisterAircraftModelDTO): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class AircraftService {
+        + registerModel(dto: RegisterAircraftModelDTO): void
+    }
+    class RegisterAircraftModelDTO <<DTO>> {
+        + modelName: String
+        + manufacturer: String
+        + seatingCapacity: Integer
+        + ...
+    }
+}
+
+package "Domain Layer" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - pk: Long
+        - defaultSeatingCapacity: Integer
+        - fuelCapacity: Double
+        - maximumRange: Double
+        - cruisingSpeed: Double
+        - modelPhotoUrl: String
+        + AircraftModel(...)
+    }
+    class ModelName <<Value Object>> {
+        - name: String
+    }
+    enum Manufacturer <<Enum>> {
+        AIRBUS
+        BOEING
+        EMBRAER
+        ...
+    }
+}
+
+package "Infrastructure Layer" {
+    interface AircraftModelRepository <<Repository>> {
+        + save(model: AircraftModel): AircraftModel
+    }
+}
+
+' Relacionamentos do fluxo da US101
+AircraftController .down.> RegisterAircraftModelDTO : uses
+AircraftController .down.> AircraftService : calls
+AircraftService .down.> RegisterAircraftModelDTO : reads
+AircraftService .down.> AircraftModel : creates
+AircraftService .down.> ModelName : creates
+AircraftService .down.> AircraftModelRepository : uses
+AircraftModelRepository .up.> AircraftModel : persists
+
+AircraftModel *-- ModelName
+AircraftModel *-- Manufacturer
+
+@enduml

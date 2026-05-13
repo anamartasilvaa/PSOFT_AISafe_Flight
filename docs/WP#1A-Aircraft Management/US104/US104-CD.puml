@@ -1,0 +1,53 @@
+@startuml
+skinparam style strictuml
+
+package "API Layer" {
+    class AircraftController {
+        + searchAircrafts(model: String, status: String, page: int, size: int): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class AircraftService {
+        + searchAircrafts(model: String, status: String, page: int, size: int): Page<AircraftViewDTO>
+    }
+    class AircraftViewDTO <<DTO>> {
+        + registrationNumber: String
+        + modelName: String
+        + manufacturingDate: LocalDate
+        + seatingCapacity: Integer
+        + status: String
+    }
+}
+
+package "Domain Layer" {
+    class Aircraft <<Entity>> <<Root>> {
+        - pk: Long
+        - manufacturingDate: LocalDate
+        - actualSeatingCapacity: Integer
+        - totalFlightHours: Double
+    }
+    enum AircraftStatus <<Enum>> {
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+    }
+}
+
+package "Infrastructure Layer" {
+    interface AircraftRepository <<Repository>> {
+        + findByStatus(status: AircraftStatus, pageable: Pageable): Page<Aircraft>
+        + findByModel_ModelName(model: ModelName, pageable: Pageable): Page<Aircraft>
+        + findAll(pageable: Pageable): Page<Aircraft>
+    }
+}
+
+' Relacionamentos
+AircraftController .down.> AircraftService : calls
+AircraftController .down.> AircraftViewDTO : uses
+AircraftService .down.> AircraftViewDTO : creates
+AircraftService .down.> AircraftRepository : uses
+AircraftService .down.> AircraftStatus : uses
+AircraftService .down.> Aircraft : reads
+
+@enduml

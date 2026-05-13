@@ -1,0 +1,52 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant "AircraftController" as CTRL
+participant "AircraftService" as SVC
+participant "PageRequest" as PR
+participant "AircraftRepository" as AREPO
+participant "AircraftViewDTO" as DTO <<DTO>>
+
+ATCC -> CTRL : GET /api/aircraft-models/instances?model={m}&status={s}&page={p}&size={sz}
+activate CTRL
+
+CTRL -> SVC : searchAircrafts(model, status, page, size)
+activate SVC
+
+' 1. Criar o objeto de paginação
+SVC -> PR ** : of(page, size)
+
+' 2. Lógica de pesquisa baseada nos filtros (if/else)
+alt status != null
+    SVC -> AREPO : findByStatus(status, pageable)
+    activate AREPO
+    AREPO --> SVC : pageOfAircrafts
+    deactivate AREPO
+
+else model != null
+    SVC -> AREPO : findByModel_ModelName(modelName, pageable)
+    activate AREPO
+    AREPO --> SVC : pageOfAircrafts
+    deactivate AREPO
+
+else no filters provided
+    SVC -> AREPO : findAll(pageable)
+    activate AREPO
+    AREPO --> SVC : pageOfAircrafts
+    deactivate AREPO
+end
+
+' 3. Mapear os resultados para DTOs
+loop for each aircraft in pageOfAircrafts
+    SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+end
+
+SVC --> CTRL : pageOfDTOs
+deactivate SVC
+
+CTRL --> ATCC : 200 OK (Page<AircraftViewDTO>)
+deactivate CTRL
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant "AircraftController" as CTRL
+participant "AircraftService" as SVC
+participant "RegistrationNumber" as RN <<Value Object>>
+participant "AircraftRepository" as AREPO
+participant "AircraftViewDTO" as DTO <<DTO>>
+
+ATCC -> CTRL : GET /api/aircraft-models/instances/{registrationNumber}
+activate CTRL
+
+CTRL -> SVC : getAircraftByRegistrationNumber(registrationNumber)
+activate SVC
+
+' 1. Criar Value Object para pesquisar
+SVC -> RN ** : create(registrationNumber)
+
+' 2. Pesquisar na BD
+SVC -> AREPO : findByRegistrationNumber(rn)
+activate AREPO
+AREPO --> SVC : aircraft (Optional)
+deactivate AREPO
+
+' 3. Converter para DTO
+SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+
+SVC --> CTRL : aircraftViewDTO
+deactivate SVC
+
+' 4. Adicionar HATEOAS e devolver
+CTRL -> CTRL : add(linkTo(self).withSelfRel())
+
+CTRL --> ATCC : 200 OK (EntityModel<AircraftViewDTO>)
+deactivate CTRL
+
+@enduml

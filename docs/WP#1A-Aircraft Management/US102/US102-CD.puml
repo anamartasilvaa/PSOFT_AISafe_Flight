@@ -1,0 +1,69 @@
+@startuml
+skinparam style strictuml
+
+package "API Layer" {
+    class AircraftController {
+        + createAircraft(dto: RegisterAircraftDTO): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class AircraftService {
+        + registerAircraft(dto: RegisterAircraftDTO): void
+    }
+    class RegisterAircraftDTO <<DTO>> {
+        + registrationNumber: String
+        + modelName: String
+        + manufacturingDate: LocalDate
+        + seatingCapacity: Integer
+    }
+}
+
+package "Domain Layer" {
+    class Aircraft <<Entity>> <<Root>> {
+        - pk: Long
+        - manufacturingDate: LocalDate
+        - actualSeatingCapacity: Integer
+        - totalFlightHours: Double
+        + Aircraft(...)
+    }
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+    enum AircraftStatus <<Enum>> {
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+    }
+    class AircraftModel <<Entity>> {
+        ' Representa o link para o agregado do modelo
+    }
+}
+
+package "Infrastructure Layer" {
+    interface AircraftRepository <<Repository>> {
+        + save(aircraft: Aircraft): Aircraft
+    }
+    interface AircraftModelRepository <<Repository>> {
+        + findByModelName(name: ModelName): Optional<AircraftModel>
+    }
+}
+
+' Relacionamentos da Camada API e App
+AircraftController .down.> RegisterAircraftDTO : uses
+AircraftController .down.> AircraftService : calls
+AircraftService .down.> RegisterAircraftDTO : reads
+
+' Relacionamentos da Camada de Domínio
+AircraftService .down.> RegistrationNumber : creates
+AircraftService .down.> Aircraft : creates
+AircraftService .down.> AircraftStatus : uses
+AircraftService .down.> AircraftRepository : uses
+AircraftService .down.> AircraftModelRepository : uses
+
+' Estrutura do Agregado Aircraft
+Aircraft *-- RegistrationNumber : identified by >
+Aircraft *-- AircraftStatus : is in >
+Aircraft --> AircraftModel : is instance of >
+
+@enduml

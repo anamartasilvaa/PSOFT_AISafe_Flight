@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant "AircraftController" as CTRL
+participant "AircraftService" as SVC
+participant "ModelName" as MN <<Value Object>>
+participant "AircraftModel" as ENT <<Entity>>
+participant "AircraftModelRepository" as REPO
+
+ATCC -> CTRL : POST /api/aircraft-models (RegisterAircraftModelDTO)
+activate CTRL
+
+CTRL -> SVC : registerModel(dto)
+activate SVC
+
+SVC -> MN ** : create(dto.modelName())
+
+SVC -> ENT ** : create(modelName, manufacturer, \ndefaultSeatingCapacity, fuelCapacity, \nmaximumRange, cruisingSpeed, modelPhotoUrl)
+activate ENT
+ENT --> SVC : model
+deactivate ENT
+
+SVC -> REPO : save(model)
+activate REPO
+REPO --> SVC : savedModel
+deactivate REPO
+
+SVC --> CTRL : void
+deactivate SVC
+
+CTRL -> CTRL : add(linkTo(self).withSelfRel())
+
+CTRL --> ATCC : 201 Created (EntityModel<DTO> with HATEOAS)
+deactivate CTRL
+
+@enduml

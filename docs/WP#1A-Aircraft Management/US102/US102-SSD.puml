@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant ":System" as SYS
+
+ATCC -> SYS : registerAircraft(registrationNumber, modelName,\n manufacturingDate, seatingCapacity)
+activate SYS
+
+SYS --> ATCC : informs operation success (201 Created)
+deactivate SYS
+
+@enduml

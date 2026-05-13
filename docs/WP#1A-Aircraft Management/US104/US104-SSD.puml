@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant ":System" as SYS
+
+ATCC -> SYS : searchAircrafts(model, status, page, size)
+activate SYS
+
+SYS --> ATCC : returns paginated list of aircrafts (200 OK)
+deactivate SYS
+
+@enduml

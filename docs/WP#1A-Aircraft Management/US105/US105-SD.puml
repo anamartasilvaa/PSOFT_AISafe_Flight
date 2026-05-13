@@ -1,0 +1,49 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC" as ATCC
+participant "AircraftController" as CTRL
+participant "AircraftService" as SVC
+participant "RegistrationNumber" as RN <<Value Object>>
+participant "AircraftRepository" as AREPO
+participant "Aircraft" as ENT <<Entity>>
+participant "AircraftViewDTO" as DTO <<DTO>>
+
+ATCC -> CTRL : PATCH /api/aircraft-models/instances/{regNum}/status (UpdateAircraftStatusDTO)
+activate CTRL
+
+CTRL -> SVC : updateAircraftStatus(registrationNumber, dto)
+activate SVC
+
+' 1. Pesquisar o avião existente
+SVC -> RN ** : create(registrationNumber)
+SVC -> AREPO : findByRegistrationNumber(rn)
+activate AREPO
+AREPO --> SVC : aircraft
+deactivate AREPO
+
+' 2. Atualizar o estado (Regra de Negócio na Entidade)
+SVC -> ENT : updateStatus(AircraftStatus.valueOf(dto.status()))
+activate ENT
+ENT --> SVC
+deactivate ENT
+
+' 3. Persistir as alterações
+SVC -> AREPO : save(aircraft)
+activate AREPO
+AREPO --> SVC : savedAircraft
+deactivate AREPO
+
+' 4. Mapear para DTO
+SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+
+SVC --> CTRL : updatedAircraftDTO
+deactivate SVC
+
+CTRL -> CTRL : add(linkTo(self).withSelfRel())
+
+CTRL --> ATCC : 200 OK (EntityModel<AircraftViewDTO>)
+deactivate CTRL
+
+@enduml
