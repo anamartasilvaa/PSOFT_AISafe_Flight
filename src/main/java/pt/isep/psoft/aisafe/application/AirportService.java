@@ -78,6 +78,25 @@ public class AirportService {
         return mapToDTO(saved);
     }
 
+    @Transactional(readOnly = true)
+    public List<AirportViewDTO> searchAirports(String name, String city, String country) {
+        List<Airport> airports;
+
+        if (name != null && !name.isBlank()) {
+            airports = airportRepository.findByNameContainingIgnoreCase(name);
+        } else if (city != null && !city.isBlank()) {
+            airports = airportRepository.findByCityIgnoreCase(city);
+        } else if (country != null && !country.isBlank()) {
+            airports = airportRepository.findByCountryIgnoreCase(country);
+        } else {
+            airports = airportRepository.findAll();
+        }
+
+        return airports.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
     private AirportViewDTO mapToDTO(Airport airport) {
         return new AirportViewDTO(
                 airport.getIataCode().code(),
