@@ -9,5 +9,6 @@ public record AirportViewDTO(
         String country,
         String timezone,
         String type,
-        List<RunwayDTO> runways
+        List<RunwayDTO> runways,
+        List<CertificationViewDTO> certifications // O Java vai buscar este tipo ao outro ficheiro automaticamente
 ) {}

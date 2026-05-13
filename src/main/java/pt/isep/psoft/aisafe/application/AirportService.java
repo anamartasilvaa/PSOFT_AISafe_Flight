@@ -88,6 +88,12 @@ public class AirportService {
                 airport.getType().toString(),
                 airport.getRunways().stream()
                         .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
+                        .collect(Collectors.toList()),
+                airport.getCertifications().stream() // MUDANÇA AQUI: Mapear certificações
+                        .map(c -> new CertificationViewDTO(
+                                c.getCertificationNumber(),
+                                c.getAircraftModel().getModelName().name(), // Vai buscar o nome ao VO do Model
+                                c.getExpiryDate()))
                         .collect(Collectors.toList())
         );
     }

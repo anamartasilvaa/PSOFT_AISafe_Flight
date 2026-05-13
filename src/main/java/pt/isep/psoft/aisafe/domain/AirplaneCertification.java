@@ -39,4 +39,8 @@ public class AirplaneCertification {
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
     }
+
+    public String getCertificationNumber() { return certificationNumber; }
+    public AircraftModel getAircraftModel() { return aircraftModel; }
+    public LocalDate getExpiryDate() { return expiryDate; }
 }
