@@ -78,4 +78,8 @@ public class AircraftModel {
     public ModelName getModelName() {
         return this.modelName;
     }
+
+    public String getModelPhotoUrl() {
+        return this.modelPhotoUrl;
+    }
 }

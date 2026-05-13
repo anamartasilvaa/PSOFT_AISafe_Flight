@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.isep.psoft.aisafe.application.AirportService;
+import pt.isep.psoft.aisafe.application.DTO.AddCertificationDTO;
 import pt.isep.psoft.aisafe.application.DTO.AirportViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAirportDTO;
 
@@ -23,15 +24,38 @@ public class AirportController {
 
     @PostMapping
     public ResponseEntity<EntityModel<AirportViewDTO>> createAirport(@RequestBody RegisterAirportDTO dto) {
-        // 1. Chama o serviço para criar o aeroporto e as pistas
         AirportViewDTO created = service.registerAirport(dto);
 
-        // 2. Cria o modelo HATEOAS para a resposta
         EntityModel<AirportViewDTO> resource = EntityModel.of(created);
-
-        // 3. Adiciona o link "self" (obrigatório para nota máxima na Fase 1)
-        resource.add(linkTo(methodOn(AirportController.class).createAirport(dto)).withSelfRel());
+        resource.add(linkTo(methodOn(AirportController.class).getAirport(created.iataCode())).withSelfRel());
 
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{iataCode}")
+    public ResponseEntity<EntityModel<AirportViewDTO>> getAirport(@PathVariable String iataCode) {
+        AirportViewDTO airport = service.getAirportByIataCode(iataCode.toUpperCase());
+
+        EntityModel<AirportViewDTO> resource = EntityModel.of(airport);
+        resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withSelfRel());
+
+        return ResponseEntity.ok(resource);
+    }
+
+    // US106a - Adicionar Certificação
+    @PostMapping("/{iataCode}/certifications")
+    public ResponseEntity<EntityModel<AirportViewDTO>> addCertification(
+            @PathVariable String iataCode,
+            @RequestBody AddCertificationDTO dto) {
+
+        // 1. Executa a lógica de negócio
+        AirportViewDTO updatedAirport = service.addCertification(iataCode, dto);
+
+        // 2. Prepara a resposta com HATEOAS (Segue o padrão dos outros métodos)
+        EntityModel<AirportViewDTO> resource = EntityModel.of(updatedAirport);
+        resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withRel("airport-details"));
+        resource.add(linkTo(methodOn(AirportController.class).addCertification(iataCode, dto)).withSelfRel());
+
+        return ResponseEntity.ok(resource);
     }
 }

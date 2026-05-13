@@ -6,5 +6,6 @@ public record AircraftViewDTO(
         String modelName,
         LocalDate manufacturingDate,
         Integer seatingCapacity,
-        String status
+        String status,
+        String modelPhotoUrl
 ) {}

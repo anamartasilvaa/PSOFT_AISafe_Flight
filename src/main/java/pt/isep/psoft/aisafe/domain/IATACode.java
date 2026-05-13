@@ -1,10 +1,10 @@
 package pt.isep.psoft.aisafe.domain;
 
+import jakarta.persistence.Embeddable;
 import org.springframework.util.Assert;
 
+@Embeddable
 public record IATACode(String code) {
-
-    // Este é o construtor "compacto" do record (ensinado nos acetatos)
     public IATACode {
         // Regra 1: Não pode ser nulo nem vazio
         Assert.hasText(code, "IATA code must not be blank.");

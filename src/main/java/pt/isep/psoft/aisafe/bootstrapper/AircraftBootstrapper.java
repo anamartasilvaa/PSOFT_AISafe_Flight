@@ -28,8 +28,7 @@ public class AircraftBootstrapper implements CommandLineRunner {
                     26730.0,
                     6300.0,
                     833.0,
-                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Airbus_A320neo_House_Colors.jpg/800px-Airbus_A320neo_House_Colors.jpg"
-            ));
+                    "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80"));
 
             // 2. Criar o avião "CS-TPA" associado a esse molde
             aircraftService.registerAircraft(new RegisterAircraftDTO(

@@ -62,7 +62,8 @@ public class AircraftService {
                 aircraft.getAircraftModel().getModelName().toString(),
                 aircraft.getManufacturingDate(),
                 aircraft.getActualSeatingCapacity(),
-                aircraft.getStatus().toString()
+                aircraft.getStatus().toString(),
+                aircraft.getAircraftModel().getModelPhotoUrl()
         );
     }
 
@@ -84,7 +85,8 @@ public class AircraftService {
                 aircraft.getAircraftModel().getModelName().toString(),
                 aircraft.getManufacturingDate(),
                 aircraft.getActualSeatingCapacity(),
-                aircraft.getStatus().toString()
+                aircraft.getStatus().toString(),
+                aircraft.getAircraftModel().getModelPhotoUrl() // <-- Adicionar isto aqui
         ));
     }
 
@@ -101,7 +103,8 @@ public class AircraftService {
                 aircraft.getAircraftModel().getModelName().toString(),
                 aircraft.getManufacturingDate(),
                 aircraft.getActualSeatingCapacity(),
-                aircraft.getStatus().toString()
+                aircraft.getStatus().toString(),
+                aircraft.getAircraftModel().getModelPhotoUrl() // <-- Adicionar isto aqui
         );
     }
 }
