@@ -83,4 +83,18 @@ public class AirportController {
         return ResponseEntity.ok(CollectionModel.of(airportResources,
                 linkTo(methodOn(AirportController.class).searchAirports(name, city, country)).withSelfRel()));
     }
+    @PatchMapping("/{iataCode}/status")
+    public ResponseEntity<EntityModel<AirportViewDTO>> updateStatus(
+            @PathVariable String iataCode,
+            @RequestBody String newStatus) {
+
+        // O status pode vir no body como uma string simples ou JSON.
+        // Se vier como JSON: {"status": "CLOSED"}, terás de criar um DTO pequeno.
+        AirportViewDTO updated = service.updateAirportStatus(iataCode, newStatus.replace("\"", ""));
+
+        EntityModel<AirportViewDTO> resource = EntityModel.of(updated);
+        resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withRel("airport-details"));
+
+        return ResponseEntity.ok(resource);
+    }
 }

@@ -2,6 +2,7 @@ package pt.isep.psoft.aisafe.domain;
 
 import jakarta.persistence.*;
 import org.springframework.util.Assert;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -104,4 +105,15 @@ public class Airport {
     public int hashCode() {
         return Objects.hash(iataCode);
     }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AirportStatus status = AirportStatus.OPERATIONAL;
+
+    public void updateStatus(AirportStatus newStatus) {
+        Assert.notNull(newStatus, "Status cannot be null.");
+        this.status = newStatus;
+    }
+
+    public AirportStatus getStatus() { return status; }
 }

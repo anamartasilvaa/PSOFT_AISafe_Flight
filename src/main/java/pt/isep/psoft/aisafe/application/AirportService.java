@@ -52,18 +52,14 @@ public class AirportService {
 
     @Transactional
     public AirportViewDTO addCertification(String iataCode, AddCertificationDTO dto) {
-        // 1. Procurar o aeroporto
         Airport airport = airportRepository.findByIataCodeString(iataCode.toUpperCase())
                 .orElseThrow(() -> new IllegalArgumentException("Airport not found"));
 
-        // 2. RESPEITO AO MD: Criar o Value Object ModelName para a pesquisa
         ModelName modelNameVO = new ModelName(dto.modelName());
 
-        // 3. Procurar o modelo usando o Value Object no repositório original
         AircraftModel model = aircraftModelRepository.findByModelName(modelNameVO)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft model not found: " + dto.modelName()));
 
-        // 4. Criar a certificação
         AirplaneCertification cert = new AirplaneCertification(
                 dto.certificationNumber(),
                 model,
@@ -71,7 +67,6 @@ public class AirportService {
                 dto.expiryDate()
         );
 
-        // 5. Adicionar ao aeroporto e guardar
         airport.addAirplaneCertification(cert);
         Airport saved = airportRepository.save(airport);
 
@@ -97,6 +92,22 @@ public class AirportService {
                 .collect(Collectors.toList());
     }
 
+    // US109 - Update Status
+    @Transactional
+    public AirportViewDTO updateAirportStatus(String iataCode, String status) {
+        Airport airport = airportRepository.findByIataCodeString(iataCode.toUpperCase())
+                .orElseThrow(() -> new IllegalArgumentException("Airport not found"));
+
+        try {
+            AirportStatus newStatus = AirportStatus.valueOf(status.trim().toUpperCase());
+            airport.updateStatus(newStatus);
+            Airport saved = airportRepository.save(airport);
+            return mapToDTO(saved);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status. Use: OPERATIONAL, CLOSED, or UNDER_MAINTENANCE");
+        }
+    }
+
     private AirportViewDTO mapToDTO(Airport airport) {
         return new AirportViewDTO(
                 airport.getIataCode().code(),
@@ -105,13 +116,14 @@ public class AirportService {
                 airport.getCountry(),
                 airport.getTimezone(),
                 airport.getType().toString(),
+                airport.getStatus().toString(), // Mapeamento do status para o DTO
                 airport.getRunways().stream()
                         .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
                         .collect(Collectors.toList()),
-                airport.getCertifications().stream() // MUDANÇA AQUI: Mapear certificações
+                airport.getCertifications().stream()
                         .map(c -> new CertificationViewDTO(
                                 c.getCertificationNumber(),
-                                c.getAircraftModel().getModelName().name(), // Vai buscar o nome ao VO do Model
+                                c.getAircraftModel().getModelName().name(),
                                 c.getExpiryDate()))
                         .collect(Collectors.toList())
         );
