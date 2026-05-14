@@ -33,8 +33,14 @@ public class AircraftModel {
     @Column(nullable = false)
     private Double cruisingSpeed;
 
-    @Column(nullable = true) // Pode ser opcional
+    @Column(nullable = true)
     private String modelPhotoUrl;
+
+    @Column(nullable = true)
+    private String operatingHoursRange;
+
+    @Column(nullable = true)
+    private String seatingConfiguration;
 
     // 3. Construtor JPA (Protegido)
     protected AircraftModel() {}

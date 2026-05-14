@@ -10,7 +10,7 @@ package "Aircraft Model Aggregate" {
         - fuelCapacity: Double
         - maximumRange: Double
         - cruisingSpeed: Double
-        - image: String
+        - modelPhotoUrl: String
         - operatingHoursRange: String
         - seatingConfiguration: String
     }

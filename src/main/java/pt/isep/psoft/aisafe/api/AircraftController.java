@@ -11,6 +11,8 @@ import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -24,6 +26,9 @@ public class AircraftController {
         this.service = service;
     }
 
+    /**
+     * US101 - Register an aircraft model
+     */
     @PostMapping
     public ResponseEntity<EntityModel<RegisterAircraftModelDTO>> createModel(@RequestBody RegisterAircraftModelDTO dto) {
         service.registerModel(dto);
@@ -32,48 +37,49 @@ public class AircraftController {
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
+    /**
+     * US102 - Register a specific aircraft instance
+     */
     @PostMapping("/instances")
     public ResponseEntity<EntityModel<RegisterAircraftDTO>> createAircraft(@RequestBody RegisterAircraftDTO dto) {
         service.registerAircraft(dto);
-
         EntityModel<RegisterAircraftDTO> resource = EntityModel.of(dto);
         resource.add(linkTo(methodOn(AircraftController.class).createAircraft(dto)).withSelfRel());
-
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
+    /**
+     * US103 - View aircraft details by registration number
+     */
     @GetMapping("/instances/{registrationNumber}")
     public ResponseEntity<EntityModel<AircraftViewDTO>> getAircraft(@PathVariable String registrationNumber) {
         AircraftViewDTO dto = service.getAircraftByRegistrationNumber(registrationNumber);
-
         EntityModel<AircraftViewDTO> resource = EntityModel.of(dto);
         resource.add(linkTo(methodOn(AircraftController.class).getAircraft(registrationNumber)).withSelfRel());
-
         return ResponseEntity.ok(resource);
     }
 
-    // --- AQUI ESTÁ O GET ATUALIZADO (JÁ COM A CHAVETA FECHADA!) ---
     @GetMapping("/instances")
-    public ResponseEntity<Page<AircraftViewDTO>> searchAircrafts(
+    public ResponseEntity<List<AircraftViewDTO>> searchAircrafts(
             @RequestParam(required = false) String model,
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(required = false) Integer year) {
 
-        Page<AircraftViewDTO> pagedList = service.searchAircrafts(model, status, page, size);
-        return ResponseEntity.ok(pagedList);
+        List<AircraftViewDTO> list = service.searchAircrafts(model, status, year);
+        return ResponseEntity.ok(list);
     }
 
+    /**
+     * US105 - Update an aircraft operational status
+     */
     @PatchMapping("/instances/{registrationNumber}/status")
     public ResponseEntity<EntityModel<AircraftViewDTO>> updateStatus(
             @PathVariable String registrationNumber,
             @RequestBody UpdateAircraftStatusDTO dto) {
 
         AircraftViewDTO updatedAircraft = service.updateAircraftStatus(registrationNumber, dto);
-
         EntityModel<AircraftViewDTO> resource = EntityModel.of(updatedAircraft);
         resource.add(linkTo(methodOn(AircraftController.class).getAircraft(registrationNumber)).withSelfRel());
-
         return ResponseEntity.ok(resource);
     }
 }

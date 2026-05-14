@@ -14,6 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class AircraftService {
 
@@ -68,26 +71,23 @@ public class AircraftService {
     }
 
     // --- AQUI ESTÁ O MÉTODO ATUALIZADO COM A PAGINAÇÃO ---
-    public Page<AircraftViewDTO> searchAircrafts(String model, String status, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Aircraft> results;
+    // Onde tinhas 4 argumentos, agora passas a ter 5
+    public List<AircraftViewDTO> searchAircrafts(String model, String status, Integer year) {
+        List<Aircraft> results;
 
-        if (status != null) {
-            results = aircraftRepository.findByStatus(AircraftStatus.valueOf(status.toUpperCase()), pageable);
-        } else if (model != null) {
-            results = aircraftRepository.findByModel_ModelName(new ModelName(model), pageable);
+        if (year != null) {
+            results = aircraftRepository.findByManufacturingYear(year);
+        } else if (status != null && !status.isBlank()) {
+            results = aircraftRepository.findByStatus(AircraftStatus.valueOf(status.toUpperCase()));
+        } else if (model != null && !model.isBlank()) {
+            results = aircraftRepository.findByModel_ModelName(new ModelName(model));
         } else {
-            results = aircraftRepository.findAll(pageable);
+            results = aircraftRepository.findAll();
         }
 
-        return results.map(aircraft -> new AircraftViewDTO(
-                aircraft.getRegistrationNumber().toString(),
-                aircraft.getAircraftModel().getModelName().toString(),
-                aircraft.getManufacturingDate(),
-                aircraft.getActualSeatingCapacity(),
-                aircraft.getStatus().toString(),
-                aircraft.getAircraftModel().getModelPhotoUrl() // <-- Adicionar isto aqui
-        ));
+        return results.stream()
+                .map(this::mapToViewDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -105,6 +105,16 @@ public class AircraftService {
                 aircraft.getActualSeatingCapacity(),
                 aircraft.getStatus().toString(),
                 aircraft.getAircraftModel().getModelPhotoUrl() // <-- Adicionar isto aqui
+        );
+    }
+    private AircraftViewDTO mapToViewDTO(Aircraft aircraft) {
+        return new AircraftViewDTO(
+                aircraft.getRegistrationNumber().toString(),
+                aircraft.getAircraftModel().getModelName().name(),
+                aircraft.getManufacturingDate(),
+                aircraft.getActualSeatingCapacity(),
+                aircraft.getStatus().toString(),
+                aircraft.getAircraftModel().getModelPhotoUrl()
         );
     }
 }
