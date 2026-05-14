@@ -1,5 +1,6 @@
 @startuml
 skinparam style strictuml
+skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
@@ -10,6 +11,7 @@ package "API Layer" {
 package "Application Layer" {
     class AircraftService {
         + updateAircraftStatus(regNum: String, dto: UpdateAircraftStatusDTO): AircraftViewDTO
+        - mapToViewDTO(aircraft: Aircraft): AircraftViewDTO
     }
     class UpdateAircraftStatusDTO <<DTO>> {
         + status: String
@@ -20,12 +22,14 @@ package "Application Layer" {
         + manufacturingDate: LocalDate
         + seatingCapacity: Integer
         + status: String
+        + modelPhotoUrl: String
     }
 }
 
 package "Domain Layer" {
     class Aircraft <<Entity>> <<Root>> {
         - pk: Long
+        - version: Long
         - manufacturingDate: LocalDate
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double

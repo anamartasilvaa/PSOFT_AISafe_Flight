@@ -1,15 +1,17 @@
 @startuml
 skinparam style strictuml
+skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + searchAircrafts(model: String, status: String, page: int, size: int): ResponseEntity
+        + searchAircrafts(model: String, status: String, year: Integer): ResponseEntity
     }
 }
 
 package "Application Layer" {
     class AircraftService {
-        + searchAircrafts(model: String, status: String, page: int, size: int): Page<AircraftViewDTO>
+        + searchAircrafts(model: String, status: String, year: Integer): List<AircraftViewDTO>
+        - mapToViewDTO(aircraft: Aircraft): AircraftViewDTO
     }
     class AircraftViewDTO <<DTO>> {
         + registrationNumber: String
@@ -17,6 +19,7 @@ package "Application Layer" {
         + manufacturingDate: LocalDate
         + seatingCapacity: Integer
         + status: String
+        + modelPhotoUrl: String
     }
 }
 
@@ -36,9 +39,10 @@ package "Domain Layer" {
 
 package "Infrastructure Layer" {
     interface AircraftRepository <<Repository>> {
-        + findByStatus(status: AircraftStatus, pageable: Pageable): Page<Aircraft>
-        + findByModel_ModelName(model: ModelName, pageable: Pageable): Page<Aircraft>
-        + findAll(pageable: Pageable): Page<Aircraft>
+        + findByManufacturingYear(year: int): List<Aircraft>
+        + findByStatus(status: AircraftStatus): List<Aircraft>
+        + findByModel_ModelName(model: ModelName): List<Aircraft>
+        + findAll(): List<Aircraft>
     }
 }
 

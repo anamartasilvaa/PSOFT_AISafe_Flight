@@ -1,5 +1,6 @@
 @startuml
 skinparam style strictuml
+skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
@@ -15,28 +16,37 @@ package "Application Layer" {
         + modelName: String
         + manufacturer: String
         + seatingCapacity: Integer
-        + ...
+        + fuelCapacity: Double
+        + range: Double
+        + speed: Double
+        + modelPhotoUrl: String
     }
 }
 
 package "Domain Layer" {
     class AircraftModel <<Entity>> <<Root>> {
         - pk: Long
+        - modelName: ModelName
+        - manufacturer: Manufacturer
         - defaultSeatingCapacity: Integer
         - fuelCapacity: Double
         - maximumRange: Double
         - cruisingSpeed: Double
         - modelPhotoUrl: String
+        - operatingHoursRange: String
+        - seatingConfiguration: String
         + AircraftModel(...)
     }
+
     class ModelName <<Value Object>> {
         - name: String
     }
+
     enum Manufacturer <<Enum>> {
         AIRBUS
         BOEING
         EMBRAER
-        ...
+        ATR
     }
 }
 
@@ -46,16 +56,10 @@ package "Infrastructure Layer" {
     }
 }
 
-' Relacionamentos do fluxo da US101
-AircraftController .down.> RegisterAircraftModelDTO : uses
 AircraftController .down.> AircraftService : calls
-AircraftService .down.> RegisterAircraftModelDTO : reads
-AircraftService .down.> AircraftModel : creates
-AircraftService .down.> ModelName : creates
 AircraftService .down.> AircraftModelRepository : uses
-AircraftModelRepository .up.> AircraftModel : persists
-
-AircraftModel *-- ModelName
-AircraftModel *-- Manufacturer
+AircraftService .down.> AircraftModel : creates
+AircraftModel *-- "1" ModelName
+AircraftModel *-- "1" Manufacturer
 
 @enduml

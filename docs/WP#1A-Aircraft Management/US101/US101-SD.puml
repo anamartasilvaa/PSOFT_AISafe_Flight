@@ -2,14 +2,14 @@
 skinparam style strictuml
 autonumber
 
-actor "ATCC" as ATCC
+actor "Backoffice Operator" as OP
 participant "AircraftController" as CTRL
 participant "AircraftService" as SVC
 participant "ModelName" as MN <<Value Object>>
 participant "AircraftModel" as ENT <<Entity>>
 participant "AircraftModelRepository" as REPO
 
-ATCC -> CTRL : POST /api/aircraft-models (RegisterAircraftModelDTO)
+OP -> CTRL : POST /api/aircraft-models (dto)
 activate CTRL
 
 CTRL -> SVC : registerModel(dto)
@@ -17,8 +17,10 @@ activate SVC
 
 SVC -> MN ** : create(dto.modelName())
 
-SVC -> ENT ** : create(modelName, manufacturer, \ndefaultSeatingCapacity, fuelCapacity, \nmaximumRange, cruisingSpeed, modelPhotoUrl)
+SVC -> ENT ** : create(modelName, manufacturer, capacity, \nfuel, range, speed, url)
 activate ENT
+ENT -> ENT : validateDomainInvariants()
+note right: Validates that capacities/speed > 0
 ENT --> SVC : model
 deactivate ENT
 
@@ -30,9 +32,10 @@ deactivate REPO
 SVC --> CTRL : void
 deactivate SVC
 
-CTRL -> CTRL : add(linkTo(self).withSelfRel())
+CTRL -> CTRL : resource = EntityModel.of(dto)
+CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
 
-CTRL --> ATCC : 201 Created (EntityModel<DTO> with HATEOAS)
+CTRL --> OP : 201 Created (resource)
 deactivate CTRL
 
 @enduml

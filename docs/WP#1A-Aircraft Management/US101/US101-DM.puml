@@ -1,9 +1,7 @@
 @startuml
 skinparam style strictuml
-hide empty members
 
 package "Aircraft Model Aggregate" {
-
     class AircraftModel <<Entity>> <<Root>> {
         - defaultSeatingCapacity : Integer
         - fuelCapacity : Double
@@ -22,12 +20,10 @@ package "Aircraft Model Aggregate" {
         AIRBUS
         BOEING
         EMBRAER
-        BOMBARDIER
         ATR
     }
 
-    AircraftModel *-- "1" ModelName : identifies <
-    AircraftModel *-- "1" Manufacturer : produced by >
+    AircraftModel *-- "1" ModelName
+    AircraftModel *-- "1" Manufacturer
 }
-
 @enduml

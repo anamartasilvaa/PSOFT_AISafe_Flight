@@ -5,48 +5,53 @@ autonumber
 actor "ATCC" as ATCC
 participant "AircraftController" as CTRL
 participant "AircraftService" as SVC
-participant "PageRequest" as PR
 participant "AircraftRepository" as AREPO
 participant "AircraftViewDTO" as DTO <<DTO>>
 
-ATCC -> CTRL : GET /api/aircraft-models/instances?model={m}&status={s}&page={p}&size={sz}
+ATCC -> CTRL : GET /api/aircraft-models/instances?model={m}&status={s}&year={y}
 activate CTRL
 
-CTRL -> SVC : searchAircrafts(model, status, page, size)
+CTRL -> SVC : searchAircrafts(model, status, year)
 activate SVC
 
-' 1. Criar o objeto de paginação
-SVC -> PR ** : of(page, size)
-
-' 2. Lógica de pesquisa baseada nos filtros (if/else)
-alt status != null
-    SVC -> AREPO : findByStatus(status, pageable)
+' Lógica de pesquisa baseada nos filtros de prioridade (if/else do código)
+alt year != null
+    SVC -> AREPO : findByManufacturingYear(year)
     activate AREPO
-    AREPO --> SVC : pageOfAircrafts
+    AREPO --> SVC : listOfAircrafts
+    deactivate AREPO
+
+else status != null
+    SVC -> AREPO : findByStatus(status)
+    activate AREPO
+    AREPO --> SVC : listOfAircrafts
     deactivate AREPO
 
 else model != null
-    SVC -> AREPO : findByModel_ModelName(modelName, pageable)
+    SVC -> AREPO : findByModel_ModelName(modelName)
     activate AREPO
-    AREPO --> SVC : pageOfAircrafts
+    AREPO --> SVC : listOfAircrafts
     deactivate AREPO
 
 else no filters provided
-    SVC -> AREPO : findAll(pageable)
+    SVC -> AREPO : findAll()
     activate AREPO
-    AREPO --> SVC : pageOfAircrafts
+    AREPO --> SVC : listOfAircrafts
     deactivate AREPO
 end
 
-' 3. Mapear os resultados para DTOs
-loop for each aircraft in pageOfAircrafts
-    SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+' Mapear os resultados para DTOs usando o método privado
+loop for each aircraft in listOfAircrafts
+    SVC -> SVC : mapToViewDTO(aircraft)
+    activate SVC
+    SVC -> DTO ** : create(...)
+    deactivate SVC
 end
 
-SVC --> CTRL : pageOfDTOs
+SVC --> CTRL : listOfDTOs
 deactivate SVC
 
-CTRL --> ATCC : 200 OK (Page<AircraftViewDTO>)
+CTRL --> ATCC : 200 OK (List<AircraftViewDTO>)
 deactivate CTRL
 
 @enduml

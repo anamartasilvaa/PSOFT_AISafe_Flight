@@ -24,16 +24,20 @@ activate AREPO
 AREPO --> SVC : aircraft (Optional)
 deactivate AREPO
 
-' 3. Converter para DTO
-SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+' 3. Converter para DTO usando o novo método privado
+SVC -> SVC : mapToViewDTO(aircraft)
+activate SVC
+SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, \nstatus, modelPhotoUrl)
+deactivate SVC
 
 SVC --> CTRL : aircraftViewDTO
 deactivate SVC
 
 ' 4. Adicionar HATEOAS e devolver
-CTRL -> CTRL : add(linkTo(self).withSelfRel())
+CTRL -> CTRL : resource = EntityModel.of(aircraftViewDTO)
+CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
 
-CTRL --> ATCC : 200 OK (EntityModel<AircraftViewDTO>)
+CTRL --> ATCC : 200 OK (resource)
 deactivate CTRL
 
 @enduml

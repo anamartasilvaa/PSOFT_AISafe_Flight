@@ -10,7 +10,7 @@ participant "AircraftRepository" as AREPO
 participant "Aircraft" as ENT <<Entity>>
 participant "AircraftViewDTO" as DTO <<DTO>>
 
-ATCC -> CTRL : PATCH /api/aircraft-models/instances/{regNum}/status (UpdateAircraftStatusDTO)
+ATCC -> CTRL : PATCH /api/aircraft-models/instances/{regNum}/status\n(UpdateAircraftStatusDTO)
 activate CTRL
 
 CTRL -> SVC : updateAircraftStatus(registrationNumber, dto)
@@ -24,7 +24,7 @@ AREPO --> SVC : aircraft
 deactivate AREPO
 
 ' 2. Atualizar o estado (Regra de Negócio na Entidade)
-SVC -> ENT : updateStatus(AircraftStatus.valueOf(dto.status()))
+SVC -> ENT : updateStatus(AircraftStatus.valueOf(dto.status().toUpperCase()))
 activate ENT
 ENT --> SVC
 deactivate ENT
@@ -32,18 +32,28 @@ deactivate ENT
 ' 3. Persistir as alterações
 SVC -> AREPO : save(aircraft)
 activate AREPO
+note right of AREPO
+  Optimistic Locking kicks in here.
+  If version mismatch occurs, throws
+  ObjectOptimisticLockingFailureException
+end note
 AREPO --> SVC : savedAircraft
 deactivate AREPO
 
-' 4. Mapear para DTO
-SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, status)
+' 4. Mapear para DTO usando o novo método privado
+SVC -> SVC : mapToViewDTO(savedAircraft)
+activate SVC
+SVC -> DTO ** : create(...)
+deactivate SVC
 
 SVC --> CTRL : updatedAircraftDTO
 deactivate SVC
 
-CTRL -> CTRL : add(linkTo(self).withSelfRel())
+' 5. Adicionar os Links HATEOAS
+CTRL -> CTRL : resource = EntityModel.of(updatedAircraftDTO)
+CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
 
-CTRL --> ATCC : 200 OK (EntityModel<AircraftViewDTO>)
+CTRL --> ATCC : 200 OK (resource)
 deactivate CTRL
 
 @enduml
