@@ -9,7 +9,7 @@ public class Route {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pk; // O ID técnico para a BD (igual ao da tua colega)
+    private Long pk; // O ID técnico para a BD
 
     @Version
     private Long version;
@@ -50,6 +50,9 @@ public class Route {
         this.minimumCapacity = minimumCapacity;
     }
 
+    // ==========================================
+    // GETTERS
+    // ==========================================
     public RouteId getRouteId() { return routeId; }
     public Airport getOrigin() { return origin; }
     public Airport getDestination() { return destination; }
@@ -57,4 +60,23 @@ public class Route {
     public Double getMinimumRange() { return minimumRange; }
     public Integer getMinimumCapacity() { return minimumCapacity; }
     public RouteStatus getStatus() { return status; }
+
+    // ==========================================
+    // MÉTODOS DE NEGÓCIO (US112)
+    // ==========================================
+
+    // US112 - Desativar a rota
+    public void deactivate() {
+        if (this.status == RouteStatus.INACTIVE) {
+            throw new IllegalStateException("Esta rota já se encontra inativa!");
+        }
+        this.status = RouteStatus.INACTIVE;
+    }
+
+    // US112 - Atualizar os dados da rota
+    public void updateParameters(Integer estimatedFlightTime, Double minimumRange, Integer minimumCapacity) {
+        if (estimatedFlightTime != null) this.estimatedFlightTime = estimatedFlightTime;
+        if (minimumRange != null) this.minimumRange = minimumRange;
+        if (minimumCapacity != null) this.minimumCapacity = minimumCapacity;
+    }
 }
