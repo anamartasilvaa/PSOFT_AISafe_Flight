@@ -47,20 +47,36 @@ public class SecurityConfig {
                     if (h2ConsoleEnabled) {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
+                    // 2. WP1 - AIRCRAFT MANAGEMENT (Roles: BACKOFFICE, ATCC, ADMIN)
+                    // US101: Register Model -> Backoffice + Admin
+                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
 
-                    // Regras do Domínio (Ajusta as rotas conforme a tua API)
-                    // Exemplo: GET aviões é público, POST precisa de ser ADMIN ou BACKOFFICE
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").permitAll();
-                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models/**").hasAnyRole(Role.ADMIN.name(), Role.BACKOFFICE.name());
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/**").hasAnyRole(Role.ADMIN.name(), Role.BACKOFFICE.name());
+                    // US102 & US105: Register Instance & Update Status -> ATCC + Admin
+                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models/instances").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/instances/*/status").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
 
-                    auth.requestMatchers(HttpMethod.GET, "/api/airports/**").permitAll();
-                    auth.requestMatchers(HttpMethod.POST, "/api/airports/**").hasAnyRole(Role.ADMIN.name()); // Só admin cria aeroportos? Ajusta se necessário!
+                    // US103 & US104: View/Search Aircraft -> All roles
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
-                    // Qualquer outro pedido tem de estar pelo menos autenticado
+                    // 3. WP2 - AIRPORT MANAGEMENT (Roles: BACKOFFICE, ATCC, ADMIN)
+                    // US106 & US109: Register Airport & Update Status -> Backoffice + Admin
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/status").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+                    // US106a: Add Certification -> Backoffice, ATCC + Admin
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports/*/certifications").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
+
+                    // US107 & US108: View/Search Airports -> All roles
+                    auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
                     auth.anyRequest().authenticated();
                 })
-
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(403); // SC_FORBIDDEN
+                            response.getWriter().write("{\"error\": \"Access denied: you don't have enough permissions.\"}");
+                        })
+                )
                 // 4. Injetar o teu Filtro ANTES do filtro normal do Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

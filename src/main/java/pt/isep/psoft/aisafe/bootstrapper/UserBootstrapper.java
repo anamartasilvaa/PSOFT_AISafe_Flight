@@ -43,6 +43,16 @@ public class UserBootstrapper implements CommandLineRunner {
                 System.out.println("BOOTSTRAP: Backoffice Operator created!");
             }
 
+            // 3. Criar o Colaborador da Empresa de Transportes (ATCC)
+            if (!userService.existsByUsername("atcc@aisafe.pt")) {
+                userService.registerUser(
+                        "atcc@aisafe.pt",
+                        "AtccPass123!",
+                        Set.of(Role.ATCC) // Atribuir a nova Role
+                );
+                System.out.println("BOOTSTRAP: ATCC created!");
+            }
+
         } catch (Exception e) {
             System.out.println("Error bootstrapping users: " + e.getMessage());
         }
