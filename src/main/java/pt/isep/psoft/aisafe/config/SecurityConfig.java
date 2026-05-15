@@ -41,6 +41,8 @@ public class SecurityConfig {
                     // Endpoints Públicos
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
 
+                    auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+
                     // Permitir H2 Console se ativada
                     if (h2ConsoleEnabled) {
                         auth.requestMatchers("/h2-console/**").permitAll();

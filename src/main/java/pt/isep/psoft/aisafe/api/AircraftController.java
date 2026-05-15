@@ -1,5 +1,6 @@
 package pt.isep.psoft.aisafe.api;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,13 +61,18 @@ public class AircraftController {
     }
 
     @GetMapping("/instances")
-    public ResponseEntity<List<AircraftViewDTO>> searchAircrafts(
+    public ResponseEntity<CollectionModel<EntityModel<AircraftViewDTO>>> searchAircrafts(
             @RequestParam(required = false) String model,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer year) {
 
         List<AircraftViewDTO> list = service.searchAircrafts(model, status, year);
-        return ResponseEntity.ok(list);
+        List<EntityModel<AircraftViewDTO>> resources = list.stream()
+                .map(dto -> EntityModel.of(dto,
+                        linkTo(methodOn(AircraftController.class).getAircraft(dto.registrationNumber())).withSelfRel()))
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(resources,
+                linkTo(methodOn(AircraftController.class).searchAircrafts(model, status, year)).withSelfRel()));
     }
 
     /**
