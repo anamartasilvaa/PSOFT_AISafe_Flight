@@ -1,0 +1,49 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC / Backoffice" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Svc
+participant "RouteRepository" as Repo
+participant "Route" as Route
+
+title SD - US112
+
+User -> Ctrl : PATCH /api/routes/{id} (UpdateRouteDTO)
+activate Ctrl
+
+Ctrl -> Svc : updateRouteStatus(id, dto.status)
+activate Svc
+
+
+Svc -> Repo : findByRouteId(id)
+activate Repo
+Repo --> Svc : route
+deactivate Repo
+
+
+alt status == "INACTIVE"
+    Svc -> Route : deactivate()
+    activate Route
+    Route --> Svc
+    deactivate Route
+else status == "ACTIVE"
+    Svc -> Route : activate()
+    activate Route
+    Route --> Svc
+    deactivate Route
+end
+
+
+Svc -> Repo : save(route)
+activate Repo
+Repo --> Svc : updatedRoute
+deactivate Repo
+
+Svc --> Ctrl : RouteViewDTO
+deactivate Svc
+
+Ctrl --> User : 200 OK (RouteViewDTO)
+deactivate Ctrl
+
+@enduml

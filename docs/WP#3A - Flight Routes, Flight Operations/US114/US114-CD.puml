@@ -1,0 +1,43 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US114 (Search Routes)
+
+package "API Layer" {
+    class RouteController {
+        + searchRoutes(origin: String, dest: String): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class RouteService {
+        + searchRoutes(origin: String, dest: String): List<RouteViewDTO>
+    }
+    class RouteViewDTO <<DTO>> {
+        + routeId: String
+        + originIata: String
+        + destinationIata: String
+        + estimatedFlightTime: Integer
+        + status: String
+    }
+}
+
+package "Infrastructure Layer" {
+    interface RouteRepository <<Repository>> {
+        + findByOrigin_IataCode(origin: String): List<Route>
+        + findByDestination_IataCode(dest: String): List<Route>
+        + findByOrigin_IataCodeAndDestination_IataCode(origin: String, dest: String): List<Route>
+    }
+}
+
+package "Domain Layer" {
+    class Route <<Entity>> <<Root>>
+}
+
+RouteController .down.> RouteService : calls
+RouteController .down.> RouteViewDTO : returns
+
+RouteService .down.> RouteRepository : uses
+RouteService .down.> Route : reads
+
+@enduml

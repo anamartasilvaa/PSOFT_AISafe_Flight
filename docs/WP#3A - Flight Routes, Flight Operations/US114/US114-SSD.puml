@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "AI-Safe System" as Sys
+
+title System Sequence Diagram - US114
+
+User -> Sys : searchRoutes(originIata, destinationIata)
+activate Sys
+Sys --> User : 200 OK (List of Filtered Routes)
+deactivate Sys
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+title Domain Model - US113
+hide empty members
+
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - estimatedFlightTime: Integer
+        - minimumRange: Double
+        - minimumCapacity: Integer
+        - distance: Double
+    }
+
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+
+    class RouteStatus <<Value Object>> {
+        ACTIVE
+        INACTIVE
+    }
+
+    class RouteHistory <<Value Object>> {
+        - startDate: Date
+        - endDate: Date
+    }
+
+    Route "1" *-- "1" RouteId : identified by >
+    Route "1" *-- "1" RouteStatus : has >
+    Route "1" *-- "1" RouteHistory : has >
+}
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>>
+}
+
+Route "*" --> "1" Airport : departs from (Origin) >
+Route "*" --> "1" Airport : arrives at (Destination) >
+
+
+@enduml

@@ -1,0 +1,55 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Svc
+participant "RouteRepository" as Repo
+
+title Sequence Diagram - US113
+
+== Flow 1: View all routes from a specific airport ==
+
+User -> Ctrl : GET /api/routes/airport/{iataCode}
+activate Ctrl
+
+Ctrl -> Svc : getRoutesByAirport(iataCode)
+activate Svc
+
+Svc -> Repo : findByOrigin_IataCode(iataCode)
+activate Repo
+Repo --> Svc : routesList: List<Route>
+deactivate Repo
+
+
+
+Svc --> Ctrl : List<RouteViewDTO>
+deactivate Svc
+
+Ctrl --> User : 200 OK (List<RouteViewDTO>)
+deactivate Ctrl
+
+|||
+
+== Flow 2: View the details of a route given its ID ==
+
+User -> Ctrl : GET /api/routes/{id}
+activate Ctrl
+
+Ctrl -> Svc : getRouteById(id)
+activate Svc
+
+Svc -> Repo : findByRouteId(id)
+activate Repo
+Repo --> Svc : route: Optional<Route>
+deactivate Repo
+
+
+
+Svc --> Ctrl : RouteViewDTO
+deactivate Svc
+
+Ctrl --> User : 200 OK (RouteViewDTO)
+deactivate Ctrl
+
+@enduml

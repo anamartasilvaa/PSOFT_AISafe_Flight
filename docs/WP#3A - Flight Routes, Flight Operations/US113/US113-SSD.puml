@@ -1,0 +1,21 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "AI-Safe System" as Sys
+
+title System Sequence Diagram - US113
+
+== Alternative A: List Routes by Airport ==
+User -> Sys : getRoutesByAirport(iataCode)
+activate Sys
+Sys --> User : 200 OK (List of Routes from Airport)
+deactivate Sys
+
+== Alternative B: View Details by ID ==
+User -> Sys : getRouteById(id)
+activate Sys
+Sys --> User : 200 OK (Route Details)
+deactivate Sys
+
+@enduml

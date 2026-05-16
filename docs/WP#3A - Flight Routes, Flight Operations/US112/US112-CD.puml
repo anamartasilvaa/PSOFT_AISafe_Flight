@@ -1,0 +1,54 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US112
+
+package "API Layer" {
+    class RouteController {
+        + updateRouteStatus(id: String, dto: UpdateRouteDTO): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class RouteService {
+        + updateRouteStatus(id: String, status: String): void
+    }
+    class UpdateRouteDTO <<DTO>> {
+        + status: String
+    }
+    class RouteViewDTO <<DTO>> {
+        + routeId: String
+        + status: String
+    }
+}
+
+package "Infrastructure Layer" {
+    interface RouteRepository <<Repository>> {
+        + findByRouteId(id: RouteId): Optional<Route>
+        + save(route: Route): Route
+    }
+}
+
+package "Domain Layer" {
+    class Route <<Entity>> <<Root>> {
+        + activate(): void
+        + deactivate(): void
+    }
+    class RouteStatus <<Value Object>> {
+        ACTIVE
+        INACTIVE
+    }
+}
+
+' Ligações Arquiteturais
+RouteController .down.> RouteService : calls
+RouteController .down.> UpdateRouteDTO : receives
+RouteController .down.> RouteViewDTO : returns
+
+RouteService .down.> RouteRepository : uses
+RouteService .down.> Route : updates
+
+' Ligações de Domínio
+Route *-- "1" RouteStatus
+
+@enduml

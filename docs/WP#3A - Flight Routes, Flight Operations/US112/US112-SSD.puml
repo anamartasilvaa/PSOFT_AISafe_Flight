@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC / Backoffice" as User
+participant "AI-Safe System" as Sys
+
+title SSD - US112
+
+User -> Sys : updateRouteStatus(routeId, newStatus)
+activate Sys
+Sys --> User : 200 OK (Updated Route Details)
+deactivate Sys
+
+@enduml
