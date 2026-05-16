@@ -1,0 +1,51 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Svc
+participant "RouteRepository" as Repo
+participant "Route" as Route
+participant "RouteHistory" as Hist
+
+title SD - US111 (Track History during Route Deactivation)
+
+User -> Ctrl : PATCH /api/routes/{id} (UpdateRouteDTO)
+activate Ctrl
+
+Ctrl -> Svc : updateRouteStatus(id, dto.status)
+activate Svc
+
+
+Svc -> Repo : findByRouteId(id)
+activate Repo
+Repo --> Svc : route
+deactivate Repo
+
+
+Svc -> Route : deactivate()
+activate Route
+
+
+Route -> Hist : closeHistory(currentDate)
+activate Hist
+
+Hist --> Route
+deactivate Hist
+
+Route --> Svc
+deactivate Route
+
+
+Svc -> Repo : save(route)
+activate Repo
+Repo --> Svc : savedRoute
+deactivate Repo
+
+Svc --> Ctrl : RouteViewDTO
+deactivate Svc
+
+Ctrl --> User : 200 OK (RouteViewDTO)
+deactivate Ctrl
+
+@enduml

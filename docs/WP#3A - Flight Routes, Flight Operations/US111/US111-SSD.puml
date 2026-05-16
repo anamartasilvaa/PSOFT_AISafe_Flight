@@ -1,0 +1,15 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "AI-Safe System" as Sys
+
+title SSD - US111 (Triggered via Status Update)
+
+User -> Sys : updateRouteStatus(routeId, "INACTIVE")
+activate Sys
+
+
+Sys --> User : 200 OK (Route details with closed history)
+deactivate Sys
+@enduml
