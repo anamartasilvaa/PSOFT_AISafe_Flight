@@ -1,0 +1,44 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Svc
+participant "AirportRepository" as AirportRepo
+participant "newRoute:Route" as Route
+participant "RouteRepository" as RouteRepo
+
+title SD - US110 (Create Route)
+
+User -> Ctrl : POST /api/routes (CreateRouteDTO)
+activate Ctrl
+
+Ctrl -> Svc : createRoute(dto)
+activate Svc
+
+Svc -> AirportRepo : findByIataCode(dto.originIata)
+activate AirportRepo
+AirportRepo --> Svc : originAirport
+deactivate AirportRepo
+
+Svc -> AirportRepo : findByIataCode(dto.destinationIata)
+activate AirportRepo
+AirportRepo --> Svc : destinationAirport
+deactivate AirportRepo
+
+Svc -> Route ** : create(originAirport, destinationAirport, dto.estimatedFlightTime, dto.minimumRange, dto.minimumCapacity, dto.distance)
+activate Route
+Route --> Svc : newRoute
+deactivate Route
+
+Svc -> RouteRepo : save(newRoute)
+activate RouteRepo
+RouteRepo --> Svc : savedRoute
+deactivate RouteRepo
+
+Svc --> Ctrl : RouteViewDTO
+deactivate Svc
+
+Ctrl --> User : 201 Created (RouteViewDTO)
+deactivate Ctrl
+@enduml

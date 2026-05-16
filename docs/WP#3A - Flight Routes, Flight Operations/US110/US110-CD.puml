@@ -1,0 +1,72 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+
+title Class Diagram - US110
+
+package "API Layer" {
+    class RouteController {
+        + createRoute(dto: CreateRouteDTO): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class RouteService {
+        + createRoute(dto: CreateRouteDTO): void
+    }
+    class CreateRouteDTO <<DTO>> {
+        + originIata: String
+        + destinationIata: String
+        + estimatedFlightTime: Integer
+        + minimumRange: Double
+        + minimumCapacity: Integer
+        + distance: Double
+    }
+}
+
+package "Infrastructure Layer" {
+    interface RouteRepository <<Repository>> {
+        + save(route: Route): Route
+    }
+    interface AirportRepository <<Repository>> {
+        + findByIataCode(code: String): Optional<Airport>
+    }
+}
+
+package "Domain Layer" {
+    class Route <<Entity>> <<Root>> {
+        - estimatedFlightTime: Integer
+        - minimumRange: Double
+        - minimumCapacity: Integer
+        - distance: Double
+        + Route(...)
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+    class RouteStatus <<Value Object>> {
+        ACTIVE
+        INACTIVE
+    }
+    class RouteHistory <<Value Object>> {
+        - startDate: Date
+        - endDate: Date
+    }
+    class Airport <<Entity>> <<Root>>
+}
+
+' Ligações Arquiteturais exatas
+RouteController .down.> RouteService : calls
+RouteController .down.> CreateRouteDTO : receives
+RouteService .down.> RouteRepository : uses
+RouteService .down.> AirportRepository : uses
+RouteService .down.> Route : creates
+
+' Ligações de Domínio exatas
+Route *-- "1" RouteId
+Route *-- "1" RouteStatus
+Route *-- "1" RouteHistory
+Route "*" --> "1" Airport : departs from >
+Route "*" --> "1" Airport : arrives at >
+
+@enduml

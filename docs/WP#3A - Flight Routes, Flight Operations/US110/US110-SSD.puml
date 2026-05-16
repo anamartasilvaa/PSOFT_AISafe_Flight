@@ -1,0 +1,13 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as User
+participant "AI-Safe System" as Sys
+
+title SSD - US110 (Create Route)
+
+User -> Sys : createRoute(originIata, destinationIata, estimatedFlightTime, minimumRange, minimumCapacity, distance)
+activate Sys
+Sys --> User : 201 Created (Route Details)
+deactivate Sys
+@enduml
