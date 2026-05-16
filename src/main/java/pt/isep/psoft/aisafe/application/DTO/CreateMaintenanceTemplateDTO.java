@@ -1,9 +1,14 @@
 package pt.isep.psoft.aisafe.application.DTO;
 
-import pt.isep.psoft.aisafe.domain.MaintenanceType;
+import java.util.List;
 
 public record CreateMaintenanceTemplateDTO(
-        String name,
-        MaintenanceType type,
-        String checklist
+        String templateName,
+        String templateType,
+        Double flightHoursInterval,
+        Integer calendarDaysInterval,
+        String checklistTitle,
+        String checklistVersion,
+        List<ChecklistItemDTO> checklistItems,
+        List<Long> applicableModelIds
 ) {}
