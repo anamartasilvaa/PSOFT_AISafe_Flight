@@ -6,9 +6,14 @@ import pt.isep.psoft.aisafe.domain.Route;
 import pt.isep.psoft.aisafe.domain.RouteId;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface RouteRepository extends JpaRepository<Route, RouteId> {
+
+public interface RouteRepository extends JpaRepository<Route, Long> {
+
+
+    Optional<Route> findByRouteId(RouteId routeId);
 
     // US113 - Procurar rotas por origem
     List<Route> findByOrigin_IataCode_Code(String originIata);

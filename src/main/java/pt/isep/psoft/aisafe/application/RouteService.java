@@ -16,9 +16,8 @@ public class RouteService {
 
     private final RouteRepository routeRepository;
     private final AirportRepository airportRepository;
-    private final RouteHistoryRepository routeHistoryRepository; // 1. O novo caderno de registos!
+    private final RouteHistoryRepository routeHistoryRepository;
 
-    // 2. Construtor atualizado
     public RouteService(RouteRepository routeRepository,
                         AirportRepository airportRepository,
                         RouteHistoryRepository routeHistoryRepository) {
@@ -40,7 +39,6 @@ public class RouteService {
 
         Route savedRoute = routeRepository.save(newRoute);
 
-        // US111 - 3. Escrever no histórico que a rota foi CRIADA!
         routeHistoryRepository.save(new RouteHistory(savedRoute.getRouteId().id(), "CREATED"));
 
         return convertToDTO(savedRoute);
@@ -49,13 +47,13 @@ public class RouteService {
     // --- US112: Desativar uma rota ---
     public RouteViewDTO deactivateRoute(String id) {
         RouteId routeId = new RouteId(id);
-        Route route = routeRepository.findById(routeId)
+
+        Route route = routeRepository.findByRouteId(routeId)
                 .orElseThrow(() -> new IllegalArgumentException("Route not found: " + id));
 
         route.deactivate();
         Route saved = routeRepository.save(route);
 
-        // US111 - 4. Escrever no histórico que a rota foi DESATIVADA!
         routeHistoryRepository.save(new RouteHistory(saved.getRouteId().id(), "DEACTIVATED"));
 
         return convertToDTO(saved);
@@ -64,17 +62,26 @@ public class RouteService {
     // --- US112: Atualizar uma rota ---
     public RouteViewDTO updateRoute(String id, UpdateRouteDTO dto) {
         RouteId routeId = new RouteId(id);
-        Route route = routeRepository.findById(routeId)
+
+        Route route = routeRepository.findByRouteId(routeId)
                 .orElseThrow(() -> new IllegalArgumentException("Route not found: " + id));
 
         route.updateParameters(dto.estimatedFlightTime(), dto.minimumRange(), dto.minimumCapacity());
 
         Route saved = routeRepository.save(route);
 
-        // US111 - 5. Escrever no histórico que a rota foi ATUALIZADA!
         routeHistoryRepository.save(new RouteHistory(saved.getRouteId().id(), "UPDATED"));
 
         return convertToDTO(saved);
+    }
+
+    // --- US113: Ver Detalhes de uma Rota Específica (NOVO MÉTODO) ---
+    public RouteViewDTO getRoute(String id) {
+        RouteId routeId = new RouteId(id);
+        Route route = routeRepository.findByRouteId(routeId)
+                .orElseThrow(() -> new IllegalArgumentException("Route not found: " + id));
+
+        return convertToDTO(route);
     }
 
     // --- US113 e US114: Pesquisar Rotas ---
@@ -94,7 +101,6 @@ public class RouteService {
         return results.stream().map(this::convertToDTO).toList();
     }
 
-    // Método auxiliar (para não andarmos a repetir código de formatação)
     private RouteViewDTO convertToDTO(Route route) {
         return new RouteViewDTO(
                 route.getRouteId().id(),
