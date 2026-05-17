@@ -1,7 +1,8 @@
 package pt.isep.psoft.aisafe.domain;
 
+import jakarta.persistence.Embeddable;
 import org.springframework.util.Assert;
-
+@Embeddable
 public record RegistrationNumber(String number) {
 
     public RegistrationNumber {
