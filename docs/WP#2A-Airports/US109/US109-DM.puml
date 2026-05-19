@@ -1,0 +1,21 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - iataCode : IATACode
+        - version : Long
+        + updateStatus(newStatus: AirportStatus)
+    }
+
+    enum AirportStatus <<Enum>> {
+        OPERATIONAL
+        CLOSED
+        UNDER_MAINTENANCE
+    }
+
+    Airport "1" *-- "1" AirportStatus : mutates >
+}
+@enduml
