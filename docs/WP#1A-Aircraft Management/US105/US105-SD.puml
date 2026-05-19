@@ -3,57 +3,56 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant "AircraftController" as CTRL
-participant "AircraftService" as SVC
-participant "RegistrationNumber" as RN <<Value Object>>
-participant "AircraftRepository" as AREPO
-participant "Aircraft" as ENT <<Entity>>
-participant "AircraftViewDTO" as DTO <<DTO>>
+participant ":AircraftController" as Controller
+participant ":AircraftService" as Service
+participant "RegistrationNumber" as RN
+participant ":AircraftRepository" as Repo
+participant "AircraftStatus" as Enum
+participant "aircraft:Aircraft" as Aircraft
+participant "dto:AircraftViewDTO" as DTO
 
-ATCC -> CTRL : PATCH /api/aircraft-models/instances/{regNum}/status\n(UpdateAircraftStatusDTO)
-activate CTRL
+ATCC -> Controller : PATCH /api/aircraft-models/instances/{regNum}/status (UpdateAircraftStatusDTO)
+activate Controller
 
-CTRL -> SVC : updateAircraftStatus(registrationNumber, dto)
-activate SVC
+Controller -> Service : updateAircraftStatus(regNum, dto)
+activate Service
 
 ' 1. Pesquisar o avião existente
-SVC -> RN ** : create(registrationNumber)
-SVC -> AREPO : findByRegistrationNumber(rn)
-activate AREPO
-AREPO --> SVC : aircraft
-deactivate AREPO
+Service -> RN ** : create(regNum)
+Service -> Repo : findByRegistrationNumber(registrationNumber)
+activate Repo
+Repo --> Service : Optional<Aircraft>
+deactivate Repo
 
-' 2. Atualizar o estado (Regra de Negócio na Entidade)
-SVC -> ENT : updateStatus(AircraftStatus.valueOf(dto.status().toUpperCase()))
-activate ENT
-ENT --> SVC
-deactivate ENT
+' 2. Atualizar o estado
+Service -> Enum : valueOf(dto.status.toUpperCase())
+activate Enum
+Enum --> Service : aircraftStatus
+deactivate Enum
+
+Service -> Aircraft : updateStatus(aircraftStatus)
+activate Aircraft
+Aircraft --> Service
+deactivate Aircraft
 
 ' 3. Persistir as alterações
-SVC -> AREPO : save(aircraft)
-activate AREPO
-note right of AREPO
-  Optimistic Locking kicks in here.
-  If version mismatch occurs, throws
-  ObjectOptimisticLockingFailureException
-end note
-AREPO --> SVC : savedAircraft
-deactivate AREPO
+Service -> Repo : save(aircraft)
+activate Repo
 
-' 4. Mapear para DTO usando o novo método privado
-SVC -> SVC : mapToViewDTO(savedAircraft)
-activate SVC
-SVC -> DTO ** : create(...)
-deactivate SVC
+Repo --> Service : savedAircraft
+deactivate Repo
 
-SVC --> CTRL : updatedAircraftDTO
-deactivate SVC
+' 4. Mapear para DTO diretamente (criação instanciada, não usa mapToViewDTO)
+Service -> DTO ** : create(regNum, modelName, mfgDate, capacity, status, photoUrl)
 
-' 5. Adicionar os Links HATEOAS
-CTRL -> CTRL : resource = EntityModel.of(updatedAircraftDTO)
-CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
+Service --> Controller : aircraftViewDTO
+deactivate Service
 
-CTRL --> ATCC : 200 OK (resource)
-deactivate CTRL
+' 5. Adicionar os Links HATEOAS (aponta para o endpoint GET)
+Controller -> Controller : resource = EntityModel.of(aircraftViewDTO)
+Controller -> Controller : resource.add(linkTo(methodOn(getAircraft(regNum))).withSelfRel())
+
+Controller --> ATCC : 200 OK (EntityModel<AircraftViewDTO> + Links)
+deactivate Controller
 
 @enduml

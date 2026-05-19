@@ -3,12 +3,12 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant ":System" as SYS
+participant "AISafe System" as SYS
 
-ATCC -> SYS : updateAircraftStatus(registrationNumber, newStatus)
+ATCC -> SYS : PATCH /api/aircraft-models/instances/{regNum}/status (UpdateAircraftStatusDTO)
 activate SYS
 
-SYS --> ATCC : informs operation success and returns updated details (200 OK)
+SYS --> ATCC : 200 OK (Updated Aircraft Details + HATEOAS Links)
 deactivate SYS
 
 @enduml
