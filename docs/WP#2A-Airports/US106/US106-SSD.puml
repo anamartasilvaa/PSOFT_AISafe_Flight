@@ -1,10 +1,13 @@
 @startuml
 skinparam style strictuml
-actor "Administrator" as Admin
-participant ":System" as System
+autonumber
 
-Admin -> System : 1. Requests to register a new airport \n(iataCode, name, city, country, timezone, \nlatitude, longitude, type, runways[])
+actor "Backoffice / Admin" as Admin
+participant "AISafe System" as System
+
+Admin -> System : POST /api/airports \n(iataCode, name, city, country, timezone, type, latitude, longitude, runways)
 activate System
-System --> Admin : 1.1. Validates rules, saves the airport and \nreturns the created airport details (HTTP 201)
+
+System --> Admin : 201 Created (Airport Details + HATEOAS Links)
 deactivate System
 @enduml

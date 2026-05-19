@@ -2,47 +2,57 @@
 skinparam style strictuml
 hide empty members
 
-' Camada de API / Controllers
-class AirportController <<RestController>> {
-    + createAirport(dto: RegisterAirportDTO): ResponseEntity
+package "API Layer" {
+    class AirportController <<RestController>> {
+        + createAirport(dto: RegisterAirportDTO): ResponseEntity<EntityModel<AirportViewDTO>>
+    }
 }
 
-' Camada Application / Services & DTOs
-class AirportService <<Service>> {
-    + registerAirport(dto: RegisterAirportDTO): AirportViewDTO
+package "Application Layer" {
+    class AirportService <<Service>> {
+        + registerAirport(dto: RegisterAirportDTO): AirportViewDTO
+        - mapToDTO(airport: Airport): AirportViewDTO
+    }
+    class RegisterAirportDTO <<Record>>
+    class AirportViewDTO <<Record>>
 }
 
-class RegisterAirportDTO <<Record>>
-class AirportViewDTO <<Record>>
-
-' Camada de Domínio
-class Airport <<Entity>> <<Root>>
-class Runway <<Entity>>
-class IATACode <<Value Object>>
-class Coordinates <<Value Object>>
-enum AirportType <<Enum>>
-
-' Camada de Repositório
-interface AirportRepository <<Interface>> {
-    + findByIataCode(iataCode: IATACode): Optional<Airport>
+package "Domain Layer" {
+    class Airport <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - name: String
+        - city: String
+        - country: String
+        - timezone: String
+    }
+    class Runway <<Entity>>
+    class IATACode <<Value Object>>
+    class Coordinates <<Value Object>>
+    enum AirportType <<Enum>>
+    enum AirportStatus <<Enum>>
 }
 
-' --- Relações Arquiteturais ---
+package "Infrastructure Layer" {
+    interface AirportRepository <<Interface>> {
+        + save(airport: Airport): Airport
+    }
+}
 
-AirportController ..> AirportService : uses >
-AirportController ..> RegisterAirportDTO : receives >
-AirportController ..> AirportViewDTO : returns >
+AirportController .down.> AirportService : uses >
+AirportController .down.> RegisterAirportDTO : receives >
+AirportController .down.> AirportViewDTO : returns >
 
-AirportService ..> AirportRepository : uses >
-AirportService ..> Airport : instantiates >
-AirportService ..> Runway : instantiates >
+AirportService .down.> AirportRepository : uses >
+AirportService .down.> Airport : instantiates >
+AirportService .down.> Runway : instantiates >
+AirportService .down.> IATACode : creates >
+AirportService .down.> Coordinates : creates >
 
-AirportRepository ..> Airport : persists >
-
-' Relações de Domínio
 Airport *-- "1" IATACode
 Airport *-- "1" Coordinates
 Airport *-- "1" AirportType
+Airport *-- "1" AirportStatus
 Airport *-- "0..*" Runway
 
 @enduml

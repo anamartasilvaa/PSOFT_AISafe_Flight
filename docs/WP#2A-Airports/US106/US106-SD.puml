@@ -2,12 +2,16 @@
 skinparam style strictuml
 autonumber
 
-actor "Administrator" as Admin
+actor "Backoffice / Admin" as Admin
 participant ":AirportController" as Controller
 participant ":AirportService" as Service
+participant "IATACode" as IATA
+participant "AirportType" as EnumType
+participant "Coordinates" as Coords
 participant "airport:Airport" as Airport
 participant "runway:Runway" as Runway
 participant ":AirportRepository" as Repository
+participant "dto:AirportViewDTO" as DTO
 
 Admin -> Controller : POST /api/airports (RegisterAirportDTO)
 activate Controller
@@ -15,13 +19,27 @@ activate Controller
 Controller -> Service : registerAirport(dto)
 activate Service
 
-Service -> Airport** : create(iataCode, name, city, country, timezone, type, coordinates)
+' Instanciação dos VOs exigidos pelo construtor do Airport
+Service -> IATA ** : create(dto.iataCode)
+Service -> EnumType : valueOf(dto.type.toUpperCase())
+activate EnumType
+EnumType --> Service : type
+deactivate EnumType
+Service -> Coords ** : create(dto.latitude, dto.longitude)
 
-loop for each runway in dto.runways
-    Service -> Runway** : create(name, length, orientation)
-    Service -> Airport : addRunway(runway)
-    activate Airport
-    deactivate Airport
+Service -> Airport ** : create(iataCode, dto.name, dto.city, dto.country, dto.timezone, type, coordinates)
+activate Airport
+
+Airport --> Service : airport
+deactivate Airport
+
+alt dto.runways() != null
+    loop for each runway in dto.runways
+        Service -> Runway ** : create(runway.name, runway.length, runway.orientation)
+        Service -> Airport : addRunway(runway)
+        activate Airport
+        deactivate Airport
+    end
 end
 
 Service -> Repository : save(airport)
@@ -29,10 +47,17 @@ activate Repository
 Repository --> Service : savedAirport
 deactivate Repository
 
+Service -> Service : mapToDTO(savedAirport)
+activate Service
+Service -> DTO ** : create(...)
+deactivate Service
 
 Service --> Controller : airportViewDTO
 deactivate Service
 
-Controller --> Admin : 201 Created (AirportViewDTO + HATEOAS Links)
+Controller -> Controller : resource = EntityModel.of(airportViewDTO)
+Controller -> Controller : resource.add(linkTo(getAirport(iataCode)).withSelfRel())
+
+Controller --> Admin : 201 Created (EntityModel<AirportViewDTO> + Links)
 deactivate Controller
 @enduml
