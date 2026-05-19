@@ -1,0 +1,48 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package controller {
+    class AirportController {
+        + addCertification(iataCode: String, dto: AddCertificationDTO): ResponseEntity<EntityModel<AirportViewDTO>>
+    }
+}
+
+package service {
+    class AirportService {
+        + addCertification(iataCode: String, dto: AddCertificationDTO): AirportViewDTO
+        - mapToDTO(airport: Airport): AirportViewDTO
+    }
+}
+
+package domain {
+    class Airport <<Entity>> <<Root>> {
+        + addAirplaneCertification(certification: AirplaneCertification): void
+    }
+    class AirplaneCertification <<Entity>> {
+        + AirplaneCertification(certificationNumber: String, aircraftModel: AircraftModel, issueDate: LocalDate, expiryDate: LocalDate)
+    }
+    class AircraftModel <<Entity>> <<Root>>
+    class ModelName <<Value Object>>
+}
+
+package repository {
+    interface AirportRepository {
+        + findByIataCodeString(iataCode: String): Optional<Airport>
+        + save(airport: Airport): Airport
+    }
+    interface AircraftModelRepository {
+        + findByModelName(modelName: ModelName): Optional<AircraftModel>
+    }
+}
+
+AirportController ..> AirportService : calls >
+AirportService ..> AirportRepository : uses >
+AirportService ..> AircraftModelRepository : uses >
+AirportService ..> Airport : manipulates >
+AirportService ..> AirplaneCertification : creates >
+AirportService ..> ModelName : creates >
+
+Airport "1" *-- "0..*" AirplaneCertification
+AirplaneCertification "*" --> "1" AircraftModel : authorizes
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC / Backoffice" as Actor
+participant "AISafe System" as System
+
+Actor -> System : POST /api/airports/{iataCode}/certifications (certificationNumber, modelName, issueDate, expiryDate)
+activate System
+
+System --> Actor : 200 OK (Updated Airport Details + HATEOAS Links)
+deactivate System
+@enduml
