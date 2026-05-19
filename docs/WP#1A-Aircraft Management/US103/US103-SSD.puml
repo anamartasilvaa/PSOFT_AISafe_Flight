@@ -3,12 +3,12 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant ":System" as SYS
+participant "AISafe System" as SYS
 
-ATCC -> SYS : getAircraftDetails(registrationNumber)
+ATCC -> SYS : GET /api/aircraft-models/instances/{registrationNumber}
 activate SYS
 
-SYS --> ATCC : returns aircraft details (200 OK)
+SYS --> ATCC : 200 OK (Aircraft Details + HATEOAS Links)
 deactivate SYS
 
 @enduml

@@ -1,9 +1,10 @@
 @startuml
 skinparam style strictuml
+skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + getAircraft(registrationNumber: String): ResponseEntity
+        + getAircraft(registrationNumber: String): ResponseEntity<EntityModel<AircraftViewDTO>>
     }
 }
 
@@ -17,19 +18,22 @@ package "Application Layer" {
         + manufacturingDate: LocalDate
         + seatingCapacity: Integer
         + status: String
+        + modelPhotoUrl: String
     }
 }
 
 package "Domain Layer" {
     class Aircraft <<Entity>> <<Root>> {
         - pk: Long
+        - version: Long
         - manufacturingDate: LocalDate
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double
-        + getRegistrationNumber()
-        + getAircraftModel()
-        + getStatus()
-        + getManufacturingDate()
+        + getRegistrationNumber(): RegistrationNumber
+        + getAircraftModel(): AircraftModel
+        + getStatus(): AircraftStatus
+        + getManufacturingDate(): LocalDate
+        + getActualSeatingCapacity(): Integer
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -38,11 +42,10 @@ package "Domain Layer" {
 
 package "Infrastructure Layer" {
     interface AircraftRepository <<Repository>> {
-        + findByRegistrationNumber(regNum: RegistrationNumber): Optional<Aircraft>
+        + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
     }
 }
 
-' Relacionamentos
 AircraftController .down.> AircraftViewDTO : uses
 AircraftController .down.> AircraftService : calls
 AircraftService .down.> AircraftViewDTO : creates
@@ -50,6 +53,5 @@ AircraftService .down.> RegistrationNumber : creates
 AircraftService .down.> AircraftRepository : uses
 AircraftService .down.> Aircraft : reads
 
-Aircraft *-- RegistrationNumber : identified by >
-
+Aircraft *-- "1" RegistrationNumber
 @enduml

@@ -3,41 +3,34 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant "AircraftController" as CTRL
-participant "AircraftService" as SVC
-participant "RegistrationNumber" as RN <<Value Object>>
-participant "AircraftRepository" as AREPO
-participant "AircraftViewDTO" as DTO <<DTO>>
+participant ":AircraftController" as Controller
+participant ":AircraftService" as Service
+participant "RegistrationNumber" as RN
+participant ":AircraftRepository" as Repo
+participant "aircraftViewDTO:AircraftViewDTO" as DTO
 
-ATCC -> CTRL : GET /api/aircraft-models/instances/{registrationNumber}
-activate CTRL
+ATCC -> Controller : GET /api/aircraft-models/instances/{registrationNumber}
+activate Controller
 
-CTRL -> SVC : getAircraftByRegistrationNumber(registrationNumber)
-activate SVC
+Controller -> Service : getAircraftByRegistrationNumber(registrationNumber)
+activate Service
 
-' 1. Criar Value Object para pesquisar
-SVC -> RN ** : create(registrationNumber)
+Service -> RN ** : create(registrationNumber)
 
-' 2. Pesquisar na BD
-SVC -> AREPO : findByRegistrationNumber(rn)
-activate AREPO
-AREPO --> SVC : aircraft (Optional)
-deactivate AREPO
+Service -> Repo : findByRegistrationNumber(registrationNumber)
+activate Repo
+Repo --> Service : Optional<Aircraft>
+deactivate Repo
 
-' 3. Converter para DTO usando o novo método privado
-SVC -> SVC : mapToViewDTO(aircraft)
-activate SVC
-SVC -> DTO ** : create(registrationNumber, modelName, \nmanufacturingDate, seatingCapacity, \nstatus, modelPhotoUrl)
-deactivate SVC
+Service -> DTO ** : create(regNum, modelName, manufacturingDate, seatingCapacity, status, modelPhotoUrl)
 
-SVC --> CTRL : aircraftViewDTO
-deactivate SVC
+Service --> Controller : aircraftViewDTO
+deactivate Service
 
-' 4. Adicionar HATEOAS e devolver
-CTRL -> CTRL : resource = EntityModel.of(aircraftViewDTO)
-CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
+Controller -> Controller : resource = EntityModel.of(aircraftViewDTO)
+Controller -> Controller : resource.add(linkTo(self).withSelfRel())
 
-CTRL --> ATCC : 200 OK (resource)
-deactivate CTRL
+Controller --> ATCC : 200 OK (EntityModel<AircraftViewDTO> + HATEOAS Links)
+deactivate Controller
 
 @enduml
