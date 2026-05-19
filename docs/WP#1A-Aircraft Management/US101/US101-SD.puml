@@ -3,39 +3,44 @@ skinparam style strictuml
 autonumber
 
 actor "Backoffice Operator" as OP
-participant "AircraftController" as CTRL
-participant "AircraftService" as SVC
-participant "ModelName" as MN <<Value Object>>
-participant "AircraftModel" as ENT <<Entity>>
-participant "AircraftModelRepository" as REPO
+participant ":AircraftController" as Controller
+participant ":AircraftService" as Service
+participant "ModelName" as MN
+participant "Manufacturer" as Enum
+participant "model:AircraftModel" as Model
+participant ":AircraftModelRepository" as Repository
 
-OP -> CTRL : POST /api/aircraft-models (dto)
-activate CTRL
+OP -> Controller : POST /api/aircraft-models (RegisterAircraftModelDTO)
+activate Controller
 
-CTRL -> SVC : registerModel(dto)
-activate SVC
+Controller -> Service : registerModel(dto)
+activate Service
 
-SVC -> MN ** : create(dto.modelName())
+Service -> MN ** : create(dto.modelName)
 
-SVC -> ENT ** : create(modelName, manufacturer, capacity, \nfuel, range, speed, url)
-activate ENT
-ENT -> ENT : validateDomainInvariants()
-note right: Validates that capacities/speed > 0
-ENT --> SVC : model
-deactivate ENT
+Service -> Enum : valueOf(dto.manufacturer.toUpperCase())
+activate Enum
+Enum --> Service : manufacturer
+deactivate Enum
 
-SVC -> REPO : save(model)
-activate REPO
-REPO --> SVC : savedModel
-deactivate REPO
+Service -> Model ** : create(name, manufacturer, dto.seatingCapacity, dto.fuelCapacity, dto.range, dto.speed, dto.modelPhotoUrl)
+activate Model
+Model -> Model : Assert Validations
+Model --> Service : model
+deactivate Model
 
-SVC --> CTRL : void
-deactivate SVC
+Service -> Repository : save(model)
+activate Repository
+Repository --> Service : savedModel
+deactivate Repository
 
-CTRL -> CTRL : resource = EntityModel.of(dto)
-CTRL -> CTRL : resource.add(linkTo(self).withSelfRel())
+Service --> Controller : void
+deactivate Service
 
-CTRL --> OP : 201 Created (resource)
-deactivate CTRL
+Controller -> Controller : resource = EntityModel.of(dto)
+Controller -> Controller : resource.add(linkTo(self).withSelfRel())
+
+Controller --> OP : 201 Created (EntityModel<RegisterAircraftModelDTO>)
+deactivate Controller
 
 @enduml
