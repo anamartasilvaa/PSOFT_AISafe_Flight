@@ -4,7 +4,7 @@ skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + searchAircrafts(model: String, status: String, year: Integer): ResponseEntity
+        + searchAircrafts(model: String, status: String, year: Integer): ResponseEntity<CollectionModel<EntityModel<AircraftViewDTO>>>
     }
 }
 
@@ -26,6 +26,7 @@ package "Application Layer" {
 package "Domain Layer" {
     class Aircraft <<Entity>> <<Root>> {
         - pk: Long
+        - version: Long
         - manufacturingDate: LocalDate
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double
@@ -35,23 +36,23 @@ package "Domain Layer" {
         INACTIVE
         UNDER_MAINTENANCE
     }
+    class ModelName <<Value Object>>
 }
 
 package "Infrastructure Layer" {
     interface AircraftRepository <<Repository>> {
         + findByManufacturingYear(year: int): List<Aircraft>
         + findByStatus(status: AircraftStatus): List<Aircraft>
-        + findByModel_ModelName(model: ModelName): List<Aircraft>
+        + findByModel_ModelName(modelName: ModelName): List<Aircraft>
         + findAll(): List<Aircraft>
     }
 }
 
-' Relacionamentos
 AircraftController .down.> AircraftService : calls
 AircraftController .down.> AircraftViewDTO : uses
 AircraftService .down.> AircraftViewDTO : creates
 AircraftService .down.> AircraftRepository : uses
 AircraftService .down.> AircraftStatus : uses
+AircraftService .down.> ModelName : uses
 AircraftService .down.> Aircraft : reads
-
 @enduml
