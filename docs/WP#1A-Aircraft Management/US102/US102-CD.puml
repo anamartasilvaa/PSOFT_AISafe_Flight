@@ -1,9 +1,10 @@
 @startuml
 skinparam style strictuml
+skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + createAircraft(dto: RegisterAircraftDTO): ResponseEntity
+        + createAircraft(dto: RegisterAircraftDTO): ResponseEntity<EntityModel<RegisterAircraftDTO>>
     }
 }
 
@@ -22,10 +23,11 @@ package "Application Layer" {
 package "Domain Layer" {
     class Aircraft <<Entity>> <<Root>> {
         - pk: Long
+        - version: Long
         - manufacturingDate: LocalDate
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double
-        + Aircraft(...)
+        + Aircraft(registrationNumber: RegistrationNumber, model: AircraftModel, manufacturingDate: LocalDate, actualSeatingCapacity: Integer)
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -35,9 +37,7 @@ package "Domain Layer" {
         INACTIVE
         UNDER_MAINTENANCE
     }
-    class AircraftModel <<Entity>> {
-        ' Representa o link para o agregado do modelo
-    }
+    class AircraftModel <<Entity>>
 }
 
 package "Infrastructure Layer" {
@@ -49,21 +49,13 @@ package "Infrastructure Layer" {
     }
 }
 
-' Relacionamentos da Camada API e App
-AircraftController .down.> RegisterAircraftDTO : uses
 AircraftController .down.> AircraftService : calls
-AircraftService .down.> RegisterAircraftDTO : reads
-
-' Relacionamentos da Camada de Domínio
-AircraftService .down.> RegistrationNumber : creates
-AircraftService .down.> Aircraft : creates
-AircraftService .down.> AircraftStatus : uses
-AircraftService .down.> AircraftRepository : uses
 AircraftService .down.> AircraftModelRepository : uses
+AircraftService .down.> AircraftRepository : uses
+AircraftService .down.> Aircraft : creates
+AircraftService .down.> RegistrationNumber : creates
 
-' Estrutura do Agregado Aircraft
-Aircraft *-- RegistrationNumber : identified by >
-Aircraft *-- AircraftStatus : is in >
-Aircraft --> AircraftModel : is instance of >
-
+Aircraft *-- "1" RegistrationNumber
+Aircraft *-- "1" AircraftStatus
+Aircraft "1" --> "1" AircraftModel : model
 @enduml
