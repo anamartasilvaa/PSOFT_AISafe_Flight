@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "Authenticated User" as Actor
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant ":AirportRepository" as Repository
+participant "dto:AirportViewDTO" as DTO
+
+Actor -> Controller : GET /api/airports/{iataCode}
+activate Controller
+
+Controller -> Service : getAirportByIataCode(iataCode.toUpperCase())
+activate Service
+
+Service -> Service : cleanCode = iataCode.trim().toUpperCase()
+
+Service -> Repository : findByIataCodeString(cleanCode)
+activate Repository
+Repository --> Service : Optional<Airport>
+deactivate Repository
+
+Service -> Service : mapToDTO(airport)
+activate Service
+Service -> DTO ** : create(...)
+deactivate Service
+
+Service --> Controller : airportViewDTO
+deactivate Service
+
+Controller -> Controller : resource = EntityModel.of(airportViewDTO)
+Controller -> Controller : resource.add(linkTo(self).withSelfRel())
+Controller -> Controller : resource.add(linkTo(addCertification).withRel("add-certification"))
+
+Controller --> Actor : 200 OK (EntityModel<AirportViewDTO> + Links)
+deactivate Controller
+@enduml

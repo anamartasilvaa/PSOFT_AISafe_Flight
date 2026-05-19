@@ -1,0 +1,34 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package controller {
+    class AirportController {
+        + getAirport(iataCode: String): ResponseEntity<EntityModel<AirportViewDTO>>
+    }
+}
+
+package service {
+    class AirportService {
+        + getAirportByIataCode(iataCode: String): AirportViewDTO
+        - mapToDTO(airport: Airport): AirportViewDTO
+    }
+    class AirportViewDTO <<DTO>>
+}
+
+package domain {
+    class Airport <<Entity>>
+}
+
+package repository {
+    interface AirportRepository {
+        + findByIataCodeString(iataCode: String): Optional<Airport>
+    }
+}
+
+AirportController ..> AirportService : uses
+AirportController ..> AirportViewDTO : uses
+AirportService ..> AirportRepository : uses
+AirportService ..> AirportViewDTO : creates
+AirportService ..> Airport : reads
+@enduml

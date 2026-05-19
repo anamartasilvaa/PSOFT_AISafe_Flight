@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - iataCode : IATACode
+        - name : String
+        - city : String
+        - country : String
+        - timezone : String
+        - status : AirportStatus
+    }
+
+    class Runway <<Entity>> {
+        - name : String
+        - length : Double
+        - orientation : String
+    }
+
+    class AirplaneCertification <<Entity>> {
+        - certificationNumber : String
+        - issueDate : LocalDate
+        - expiryDate : LocalDate
+    }
+
+    class Coordinates <<Value Object>>
+    enum AirportType <<Enum>>
+    enum AirportStatus <<Enum>>
+
+    Airport *-- "1" Coordinates : located at >
+    Airport *-- "1" AirportType : is of type >
+    Airport *-- "1" AirportStatus : current state >
+    Airport "1" *-- "*" Runway : contains >
+    Airport "1" *-- "*" AirplaneCertification : issues >
+}
+@enduml
