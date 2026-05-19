@@ -1,0 +1,12 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "Authenticated User" as Actor
+participant "AISafe System" as System
+
+Actor -> System : GET /api/airports/search?name={n}&city={c}&country={co}
+activate System
+System --> Actor : 200 OK (List of Matching Airports + HATEOAS Links)
+deactivate System
+@enduml

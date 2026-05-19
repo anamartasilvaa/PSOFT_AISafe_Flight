@@ -1,0 +1,57 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "Authenticated User" as Actor
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant ":AirportRepository" as Repository
+participant "dto:AirportViewDTO" as DTO
+
+Actor -> Controller : GET /api/airports/search?name={n}&city={c}&country={co}
+activate Controller
+
+Controller -> Service : searchAirports(name, city, country)
+activate Service
+
+alt name != null && !name.isBlank()
+    Service -> Repository : findByNameContainingIgnoreCase(name)
+    activate Repository
+    Repository --> Service : listOfAirports
+    deactivate Repository
+
+else city != null && !city.isBlank()
+    Service -> Repository : findByCityIgnoreCase(city)
+    activate Repository
+    Repository --> Service : listOfAirports
+    deactivate Repository
+
+else country != null && !country.isBlank()
+    Service -> Repository : findByCountryIgnoreCase(country)
+    activate Repository
+    Repository --> Service : listOfAirports
+    deactivate Repository
+
+else no filters provided
+    Service -> Repository : findAll()
+    activate Repository
+    Repository --> Service : listOfAirports
+    deactivate Repository
+end
+
+loop for each airport in listOfAirports
+    Service -> Service : mapToDTO(airport)
+    activate Service
+    Service -> DTO ** : create(...)
+    deactivate Service
+end
+
+Service --> Controller : List<AirportViewDTO>
+deactivate Service
+
+Controller -> Controller : resources = map list to EntityModel with selfRel
+Controller -> Controller : collection = CollectionModel.of(resources)
+
+Controller --> Actor : 200 OK (CollectionModel<EntityModel<AirportViewDTO>> + Links)
+deactivate Controller
+@enduml

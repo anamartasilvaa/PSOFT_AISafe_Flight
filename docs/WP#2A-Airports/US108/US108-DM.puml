@@ -1,0 +1,17 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - version : Long
+        - iataCode : IATACode
+        - name : String
+        - city : String
+        - country : String
+        - type : AirportType
+        - status : AirportStatus
+    }
+}
+@enduml
