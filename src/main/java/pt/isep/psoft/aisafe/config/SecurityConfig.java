@@ -68,6 +68,17 @@ public class SecurityConfig {
 
                     // US107 & US108: View/Search Airports -> All roles
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
+
+                    // 4. WP3 - FLIGHT ROUTES (Roles: ATCC, ADMIN)
+                    // US110: Create Route -> ATCC + Admin
+                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+                    // US112: Update & Deactivate Route -> ATCC + Admin
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+                    // US113 & US114: View/Search Routes -> ATCC + Admin
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
                     auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex

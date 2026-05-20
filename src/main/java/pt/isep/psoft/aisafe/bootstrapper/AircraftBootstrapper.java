@@ -6,21 +6,83 @@ import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftModelDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
+import pt.isep.psoft.aisafe.domain.Checklist;
+import pt.isep.psoft.aisafe.domain.ChecklistItem;
+import pt.isep.psoft.aisafe.domain.MaintenanceTemplate;
+import pt.isep.psoft.aisafe.repositories.MaintenanceTemplateRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class AircraftBootstrapper implements CommandLineRunner {
 
     private final AircraftService aircraftService;
+    private final MaintenanceTemplateRepository maintenanceTemplateRepository;
 
-    public AircraftBootstrapper(AircraftService aircraftService) {
+    public AircraftBootstrapper(AircraftService aircraftService,
+                                MaintenanceTemplateRepository maintenanceTemplateRepository) {
         this.aircraftService = aircraftService;
+        this.maintenanceTemplateRepository = maintenanceTemplateRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
         try {
+
+            // 1. BOOTSTRAP: MAINTENANCE TEMPLATE AGGREGATE
+
+            if (maintenanceTemplateRepository.count() == 0) {
+
+                // --- BUILD CHECK A ---
+                //Create Value Objects (ChecklistItem)
+                List<ChecklistItem> itemsA = new ArrayList<>();
+                itemsA.add(new ChecklistItem("Check tire pressure", true));
+                itemsA.add(new ChecklistItem("Inspect fluid levels", true));
+
+                //Create Entity (Checklist) and associate items
+                Checklist checklistA = new Checklist("Daily Checklist - Check A", "v1.0", itemsA);
+
+                // Create Aggregate Root (MaintenanceTemplate) and associate Checklist
+                MaintenanceTemplate templateA = new MaintenanceTemplate(
+                        "Check A",
+                        "PREVENTIVE",
+                        125.0,
+                        90,
+                        checklistA,
+                        new ArrayList<>() // appliesTo (empty for now)
+                );
+
+
+                maintenanceTemplateRepository.save(templateA);
+
+
+                // --- BUILD CHECK B ---
+                List<ChecklistItem> itemsB = new ArrayList<>();
+                itemsB.add(new ChecklistItem("Deep structural inspection", true));
+                itemsB.add(new ChecklistItem("Avionics calibration", true));
+                itemsB.add(new ChecklistItem("Replace aesthetic elements", false));
+
+                Checklist checklistB = new Checklist("Annual Checklist - Check B", "v2.0", itemsB);
+
+                MaintenanceTemplate templateB = new MaintenanceTemplate(
+                        "Check B",
+                        "DEEP_INSPECTION",
+                        750.0,
+                        365,
+                        checklistB,
+                        new ArrayList<>()
+                );
+
+                maintenanceTemplateRepository.save(templateB);
+
+                System.out.println("BOOTSTRAP: Maintenance Template Aggregates successfully created!");
+            }
+
+            // 2. CRIAR OS MODELOS E AS AERONAVES
+
+
             // --- 1. CRIAR OS MODELOS ---
             // Modelo 1: A320neo
             aircraftService.registerModel(new RegisterAircraftModelDTO(
