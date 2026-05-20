@@ -1,10 +1,6 @@
-package pt.isep.psoft.aisafe;
+package pt.isep.psoft.aisafe.domain;
 
 import org.junit.jupiter.api.Test;
-import pt.isep.psoft.aisafe.domain.Airport;
-import pt.isep.psoft.aisafe.domain.Route;
-import pt.isep.psoft.aisafe.domain.RouteId;
-import pt.isep.psoft.aisafe.domain.RouteStatus;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;

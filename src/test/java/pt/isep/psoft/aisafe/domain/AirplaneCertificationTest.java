@@ -1,10 +1,6 @@
-package pt.isep.psoft.aisafe;
+package pt.isep.psoft.aisafe.domain;
 
 import org.junit.jupiter.api.Test;
-import pt.isep.psoft.aisafe.domain.AircraftModel;
-import pt.isep.psoft.aisafe.domain.AirplaneCertification;
-import pt.isep.psoft.aisafe.domain.Manufacturer;
-import pt.isep.psoft.aisafe.domain.ModelName;
 
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;

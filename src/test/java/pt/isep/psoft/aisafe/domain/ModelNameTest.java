@@ -1,7 +1,6 @@
-package pt.isep.psoft.aisafe;
+package pt.isep.psoft.aisafe.domain;
 
 import org.junit.jupiter.api.Test;
-import pt.isep.psoft.aisafe.domain.ModelName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
