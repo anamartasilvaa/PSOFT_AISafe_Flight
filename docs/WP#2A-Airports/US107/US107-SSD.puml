@@ -2,7 +2,7 @@
 skinparam style strictuml
 autonumber
 
-actor "Authenticated User" as Actor
+actor "ATCC / Backoffice" as Actor
 participant "AISafe System" as System
 
 Actor -> System : GET /api/airports/{iataCode}

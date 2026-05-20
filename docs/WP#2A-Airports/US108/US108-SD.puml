@@ -2,7 +2,7 @@
 skinparam style strictuml
 autonumber
 
-actor "Authenticated User" as Actor
+actor "ATCC" as Actor
 participant ":AirportController" as Controller
 participant ":AirportService" as Service
 participant ":AirportRepository" as Repository
