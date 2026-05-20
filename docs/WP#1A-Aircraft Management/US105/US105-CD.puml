@@ -4,14 +4,13 @@ skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + updateStatus(regNum: String, dto: UpdateAircraftStatusDTO): ResponseEntity
+        + updateStatus(registrationNumber: String, dto: UpdateAircraftStatusDTO): ResponseEntity<EntityModel<AircraftViewDTO>>
     }
 }
 
 package "Application Layer" {
     class AircraftService {
         + updateAircraftStatus(regNum: String, dto: UpdateAircraftStatusDTO): AircraftViewDTO
-        - mapToViewDTO(aircraft: Aircraft): AircraftViewDTO
     }
     class UpdateAircraftStatusDTO <<DTO>> {
         + status: String
@@ -33,7 +32,7 @@ package "Domain Layer" {
         - manufacturingDate: LocalDate
         - actualSeatingCapacity: Integer
         - totalFlightHours: Double
-        + updateStatus(newStatus: AircraftStatus)
+        + updateStatus(newStatus: AircraftStatus): void
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -47,12 +46,11 @@ package "Domain Layer" {
 
 package "Infrastructure Layer" {
     interface AircraftRepository <<Repository>> {
-        + findByRegistrationNumber(regNum: RegistrationNumber): Optional<Aircraft>
+        + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
         + save(aircraft: Aircraft): Aircraft
     }
 }
 
-' Relacionamentos
 AircraftController .down.> UpdateAircraftStatusDTO : uses
 AircraftController .down.> AircraftService : calls
 AircraftService .down.> UpdateAircraftStatusDTO : reads
@@ -62,7 +60,6 @@ AircraftService .down.> AircraftStatus : uses
 AircraftService .down.> AircraftRepository : uses
 AircraftService .down.> Aircraft : updates
 
-Aircraft *-- RegistrationNumber : identified by >
-Aircraft *-- AircraftStatus : has current >
-
+Aircraft *-- "1" RegistrationNumber
+Aircraft *-- "1" AircraftStatus
 @enduml

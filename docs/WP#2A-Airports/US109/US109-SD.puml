@@ -1,0 +1,60 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "Backoffice / Admin" as Admin
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant ":AirportRepository" as Repository
+participant "AirportStatus" as Enum
+participant "airport:Airport" as Airport
+participant "dto:AirportViewDTO" as DTO
+
+Admin -> Controller : PATCH /api/airports/{iataCode}/status (newStatus: String)
+activate Controller
+
+Controller -> Controller : cleanStatus = newStatus.replace("\"", "")
+
+Controller -> Service : updateAirportStatus(iataCode, cleanStatus)
+activate Service
+
+Service -> Repository : findByIataCodeString(iataCode.toUpperCase())
+activate Repository
+Repository --> Service : Optional<Airport>
+deactivate Repository
+
+Service -> Enum : valueOf(status.trim().toUpperCase())
+activate Enum
+Enum --> Service : newAirportStatus
+deactivate Enum
+
+Service -> Airport : updateStatus(newAirportStatus)
+activate Airport
+Airport --> Service
+deactivate Airport
+
+Service -> Repository : save(airport)
+activate Repository
+note right of Repository
+  Optimistic Locking kicks in here.
+  If the @Version field in the DB does not match
+  the one in memory, JPA throws an
+  ObjectOptimisticLockingFailureException.
+end note
+Repository --> Service : savedAirport
+deactivate Repository
+
+Service -> Service : mapToDTO(savedAirport)
+activate Service
+Service -> DTO ** : create(...)
+deactivate Service
+
+Service --> Controller : airportViewDTO
+deactivate Service
+
+Controller -> Controller : resource = EntityModel.of(airportViewDTO)
+Controller -> Controller : resource.add(linkTo(getAirport(iataCode)).withRel("airport-details"))
+
+Controller --> Admin : 200 OK (EntityModel<AirportViewDTO> + Links)
+deactivate Controller
+@enduml

@@ -3,12 +3,12 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant ":System" as SYS
+participant "AISafe System" as SYS
 
-ATCC -> SYS : registerAircraft(registrationNumber, modelName,\n manufacturingDate, seatingCapacity)
+ATCC -> SYS : POST /api/aircraft-models/instances (registrationNumber, modelName, manufacturingDate, seatingCapacity)
 activate SYS
 
-SYS --> ATCC : informs operation success (201 Created)
+SYS --> ATCC : 201 Created (Aircraft Details + HATEOAS Links)
 deactivate SYS
 
 @enduml

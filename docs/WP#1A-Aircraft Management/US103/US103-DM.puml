@@ -4,6 +4,7 @@ hide empty members
 
 package "Aircraft Aggregate" {
     class Aircraft <<Entity>> <<Root>> {
+        - version : Long
         - manufacturingDate : LocalDate
         - actualSeatingCapacity : Integer
     }
@@ -26,9 +27,9 @@ package "Aircraft Model Aggregate" {
     }
 }
 
-Aircraft *-- "1" RegistrationNumber : lookup by >
+Aircraft *-- "1" RegistrationNumber : identified by >
 Aircraft *-- "1" AircraftStatus : current state >
-Aircraft "1" --> "1" AircraftModel : includes details of >
-AircraftModel *-- "1" ModelName : identifies <
+Aircraft "*" --> "1" AircraftModel : includes details of >
+AircraftModel *-- "1" ModelName : identified by >
 
 @enduml

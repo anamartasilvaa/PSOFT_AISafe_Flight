@@ -1,0 +1,29 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - iataCode : IATACode
+    }
+    class AirplaneCertification <<Entity>> {
+        - certificationNumber : String
+        - issueDate : LocalDate
+        - expiryDate : LocalDate
+    }
+
+    Airport "1" *-- "0..*" AirplaneCertification : issues >
+}
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>>
+    class ModelName <<Value Object>> {
+        - name : String
+    }
+
+    AircraftModel *-- "1" ModelName : identified by >
+}
+
+AirplaneCertification "*" --> "1" AircraftModel : authorizes >
+@enduml

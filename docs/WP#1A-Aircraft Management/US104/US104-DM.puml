@@ -4,8 +4,10 @@ hide empty members
 
 package "Aircraft Aggregate" {
     class Aircraft <<Entity>> <<Root>> {
+        - version: Long
         - manufacturingDate : LocalDate
         - actualSeatingCapacity : Integer
+        - totalFlightHours : Double
     }
     class RegistrationNumber <<Value Object>> {
         - number : String
@@ -27,8 +29,7 @@ package "Aircraft Model Aggregate" {
 }
 
 Aircraft *-- "1" RegistrationNumber : identified by >
-Aircraft *-- "1" AircraftStatus : filter param >
-Aircraft "1" --> "1" AircraftModel : is instance of >
-AircraftModel *-- "1" ModelName : filter param <
-
+Aircraft *-- "1" AircraftStatus : current state >
+Aircraft "*" --> "1" AircraftModel : is instance of >
+AircraftModel *-- "1" ModelName : identified by >
 @enduml

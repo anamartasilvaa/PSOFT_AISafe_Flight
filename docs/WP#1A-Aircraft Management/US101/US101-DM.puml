@@ -17,9 +17,10 @@ package "Aircraft Model Aggregate" {
     }
 
     enum Manufacturer <<Enum>> {
-        AIRBUS
         BOEING
+        AIRBUS
         EMBRAER
+        BOMBARDIER
         ATR
     }
 

@@ -3,51 +3,48 @@ skinparam style strictuml
 autonumber
 
 actor "ATCC" as ATCC
-participant "AircraftController" as CTRL
-participant "AircraftService" as SVC
-participant "ModelName" as MN <<Value Object>>
-participant "AircraftModelRepository" as MREPO
-participant "RegistrationNumber" as RN <<Value Object>>
-participant "Aircraft" as ENT <<Entity>>
-participant "AircraftRepository" as AREPO
+participant ":AircraftController" as Controller
+participant ":AircraftService" as Service
+participant "ModelName" as MN
+participant ":AircraftModelRepository" as ModelRepo
+participant "RegistrationNumber" as RN
+participant "aircraft:Aircraft" as Aircraft
+participant ":AircraftRepository" as Repo
 
-ATCC -> CTRL : POST /api/aircraft-models/instances (RegisterAircraftDTO)
-activate CTRL
+ATCC -> Controller : POST /api/aircraft-models/instances (RegisterAircraftDTO)
+activate Controller
 
-CTRL -> SVC : registerAircraft(dto)
-activate SVC
+Controller -> Service : registerAircraft(dto)
+activate Service
 
 ' 1. Procurar o modelo base
-SVC -> MN ** : create(dto.modelName())
-SVC -> MREPO : findByModelName(modelName)
-activate MREPO
-MREPO --> SVC : aircraftModel
-deactivate MREPO
+Service -> MN ** : create(dto.modelName)
+Service -> ModelRepo : findByModelName(modelName)
+activate ModelRepo
+ModelRepo --> Service : Optional<AircraftModel>
+deactivate ModelRepo
 
 ' 2. Criar a nova instância
-SVC -> RN ** : create(dto.registrationNumber())
-SVC -> ENT ** : create(registrationNumber, aircraftModel, \ndto.manufacturingDate(), dto.seatingCapacity())
-activate ENT
-note right of ENT
-  Constructor validates inputs and sets
-  initial status to ACTIVE and
-  totalFlightHours to 0.0
-end note
-ENT --> SVC : aircraft
-deactivate ENT
+Service -> RN ** : create(dto.registrationNumber)
+Service -> Aircraft ** : create(registrationNumber, aircraftModel, dto.manufacturingDate, dto.seatingCapacity)
+activate Aircraft
+
+Aircraft --> Service : aircraft
+deactivate Aircraft
 
 ' 3. Persistir e devolver
-SVC -> AREPO : save(aircraft)
-activate AREPO
-AREPO --> SVC : savedAircraft
-deactivate AREPO
+Service -> Repo : save(aircraft)
+activate Repo
+Repo --> Service : savedAircraft
+deactivate Repo
 
-SVC --> CTRL : void
-deactivate SVC
+Service --> Controller : void
+deactivate Service
 
-CTRL -> CTRL : add(linkTo(self).withSelfRel())
+Controller -> Controller : resource = EntityModel.of(dto)
+Controller -> Controller : resource.add(linkTo(self).withSelfRel())
 
-CTRL --> ATCC : 201 Created (EntityModel<DTO> with HATEOAS)
-deactivate CTRL
+Controller --> ATCC : 201 Created (EntityModel<RegisterAircraftDTO> + HATEOAS Links)
+deactivate Controller
 
 @enduml

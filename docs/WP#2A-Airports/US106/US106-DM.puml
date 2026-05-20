@@ -2,9 +2,10 @@
 skinparam style strictuml
 hide empty members
 
-package "Airport Aggregate (US106 Context)" {
+package "Airport Aggregate" {
 
     class Airport <<Entity>> <<Root>> {
+        - version : Long
         - name : String
         - city : String
         - country : String
@@ -26,16 +27,22 @@ package "Airport Aggregate (US106 Context)" {
         DOMESTIC
     }
 
+    enum AirportStatus <<Enum>> {
+        OPERATIONAL
+        CLOSED
+        UNDER_MAINTENANCE
+    }
+
     class Runway <<Entity>> {
         - name : String
         - length : Double
         - orientation : String
     }
 
-    Airport *-- "1" IATACode : identifies <
+    Airport *-- "1" IATACode : identified by >
     Airport *-- "1" Coordinates : located at >
     Airport *-- "1" AirportType : is of type >
+    Airport *-- "1" AirportStatus : initialized as >
     Airport *-- "0..*" Runway : contains >
 }
-
 @enduml

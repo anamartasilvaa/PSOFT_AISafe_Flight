@@ -1,0 +1,59 @@
+@startuml
+skinparam style strictuml
+autonumber
+
+actor "ATCC / Backoffice" as Actor
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant "ModelName" as MN
+participant ":AirportRepository" as AirportRepo
+participant ":AircraftModelRepository" as ModelRepo
+participant "airport:Airport" as Airport
+participant "cert:AirplaneCertification" as Certification
+participant "dto:AirportViewDTO" as DTO
+
+Actor -> Controller : POST /api/airports/{iataCode}/certifications (AddCertificationDTO)
+activate Controller
+
+Controller -> Service : addCertification(iataCode, dto)
+activate Service
+
+Service -> AirportRepo : findByIataCodeString(iataCode.toUpperCase())
+activate AirportRepo
+AirportRepo --> Service : Optional<Airport>
+deactivate AirportRepo
+
+Service -> MN ** : create(dto.modelName)
+
+Service -> ModelRepo : findByModelName(modelNameVO)
+activate ModelRepo
+ModelRepo --> Service : Optional<AircraftModel>
+deactivate ModelRepo
+
+Service -> Certification ** : create(dto.certificationNumber, aircraftModel, dto.issueDate, dto.expiryDate)
+
+Service -> Airport : addAirplaneCertification(cert)
+activate Airport
+Airport --> Service
+deactivate Airport
+
+Service -> AirportRepo : save(airport)
+activate AirportRepo
+AirportRepo --> Service : savedAirport
+deactivate AirportRepo
+
+Service -> Service : mapToDTO(savedAirport)
+activate Service
+Service -> DTO ** : create(...)
+deactivate Service
+
+Service --> Controller : airportViewDTO
+deactivate Service
+
+Controller -> Controller : resource = EntityModel.of(airportViewDTO)
+Controller -> Controller : resource.add(linkTo(getAirport).withRel("airport-details"))
+Controller -> Controller : resource.add(linkTo(self).withSelfRel())
+
+Controller --> Actor : 200 OK (EntityModel<AirportViewDTO> + Links)
+deactivate Controller
+@enduml

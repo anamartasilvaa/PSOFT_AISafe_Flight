@@ -5,6 +5,7 @@ hide empty members
 package "Aircraft Aggregate" {
 
     class Aircraft <<Entity>> <<Root>> {
+        - version: Long
         + updateStatus(newStatus: AircraftStatus)
     }
 
@@ -18,8 +19,7 @@ package "Aircraft Aggregate" {
         UNDER_MAINTENANCE
     }
 
-    Aircraft *-- "1" RegistrationNumber : lookup by >
+    Aircraft *-- "1" RegistrationNumber : identified by >
     Aircraft *-- "1" AircraftStatus : mutates >
 }
-
 @enduml

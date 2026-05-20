@@ -1,0 +1,38 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package controller {
+    class AirportController {
+        + updateStatus(iataCode: String, newStatus: String): ResponseEntity<EntityModel<AirportViewDTO>>
+    }
+}
+
+package service {
+    class AirportService {
+        + updateAirportStatus(iataCode: String, status: String): AirportViewDTO
+        - mapToDTO(airport: Airport): AirportViewDTO
+    }
+}
+
+package domain {
+    class Airport <<Entity>> <<Root>> {
+        - version: Long
+        + updateStatus(newStatus: AirportStatus): void
+    }
+    enum AirportStatus <<Enum>>
+}
+
+package repository {
+    interface AirportRepository {
+        + findByIataCodeString(iataCode: String): Optional<Airport>
+        + save(airport: Airport): Airport
+    }
+}
+
+AirportController ..> AirportService : uses
+AirportService ..> AirportRepository : uses
+AirportService ..> Airport : modifies
+AirportService ..> AirportStatus : uses
+Airport "1" *-- "1" AirportStatus
+@enduml

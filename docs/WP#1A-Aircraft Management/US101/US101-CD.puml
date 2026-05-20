@@ -4,7 +4,7 @@ skinparam packageStyle rectangle
 
 package "API Layer" {
     class AircraftController {
-        + createModel(dto: RegisterAircraftModelDTO): ResponseEntity
+        + createModel(dto: RegisterAircraftModelDTO): ResponseEntity<EntityModel<RegisterAircraftModelDTO>>
     }
 }
 
@@ -26,8 +26,6 @@ package "Application Layer" {
 package "Domain Layer" {
     class AircraftModel <<Entity>> <<Root>> {
         - pk: Long
-        - modelName: ModelName
-        - manufacturer: Manufacturer
         - defaultSeatingCapacity: Integer
         - fuelCapacity: Double
         - maximumRange: Double
@@ -35,7 +33,7 @@ package "Domain Layer" {
         - modelPhotoUrl: String
         - operatingHoursRange: String
         - seatingConfiguration: String
-        + AircraftModel(...)
+        + AircraftModel(modelName: ModelName, manufacturer: Manufacturer, defaultSeatingCapacity: Integer, fuelCapacity: Double, maximumRange: Double, cruisingSpeed: Double, modelPhotoUrl: String)
     }
 
     class ModelName <<Value Object>> {
@@ -43,9 +41,10 @@ package "Domain Layer" {
     }
 
     enum Manufacturer <<Enum>> {
-        AIRBUS
         BOEING
+        AIRBUS
         EMBRAER
+        BOMBARDIER
         ATR
     }
 }
@@ -53,6 +52,7 @@ package "Domain Layer" {
 package "Infrastructure Layer" {
     interface AircraftModelRepository <<Repository>> {
         + save(model: AircraftModel): AircraftModel
+        + findByModelName(modelName: ModelName): Optional<AircraftModel>
     }
 }
 

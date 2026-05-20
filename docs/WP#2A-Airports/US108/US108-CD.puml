@@ -1,0 +1,40 @@
+@startuml
+skinparam style strictuml
+hide empty members
+
+package controller {
+    class AirportController {
+        + searchAirports(name: String, city: String, country: String): ResponseEntity<CollectionModel<EntityModel<AirportViewDTO>>>
+    }
+}
+
+package service {
+    class AirportService {
+        + searchAirports(name: String, city: String, country: String): List<AirportViewDTO>
+        - mapToDTO(airport: Airport): AirportViewDTO
+    }
+}
+
+package domain {
+    class Airport <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - name: String
+        - city: String
+        - country: String
+    }
+}
+
+package repository {
+    interface AirportRepository {
+        + findByNameContainingIgnoreCase(name: String): List<Airport>
+        + findByCityIgnoreCase(city: String): List<Airport>
+        + findByCountryIgnoreCase(country: String): List<Airport>
+        + findAll(): List<Airport>
+    }
+}
+
+AirportController ..> AirportService : uses
+AirportService ..> AirportRepository : uses
+AirportService ..> Airport : reads
+@enduml
