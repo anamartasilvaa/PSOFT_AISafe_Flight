@@ -48,9 +48,19 @@ public class UserBootstrapper implements CommandLineRunner {
                 userService.registerUser(
                         "atcc@aisafe.pt",
                         "AtccPass123!",
-                        Set.of(Role.ATCC) // Atribuir a nova Role
+                        Set.of(Role.ATCC)
                 );
                 System.out.println("BOOTSTRAP: ATCC created!");
+            }
+
+            // 4. Criar o Técnico de Manutenção (MAINTENANCE_TECH)
+            if (!userService.existsByUsername("tech@aisafe.pt")) {
+                userService.registerUser(
+                        "tech@aisafe.pt",
+                        "TechPass123!",
+                        Set.of(Role.MAINTENANCE_TECH)
+                );
+                System.out.println("BOOTSTRAP: Maintenance Technician created!");
             }
 
         } catch (Exception e) {

@@ -79,6 +79,8 @@ public class SecurityConfig {
                     // US113 & US114: View/Search Routes -> ATCC + Admin
                     auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
 
+                    // 5. WP4 - MAINTENANCE RECORDS (Roles: MAINTENANCE_TECH, ADMIN)
+                    auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
                     auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex
