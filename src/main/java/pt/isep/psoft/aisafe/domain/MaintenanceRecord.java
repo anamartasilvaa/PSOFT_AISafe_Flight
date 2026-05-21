@@ -11,6 +11,9 @@ public class MaintenanceRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false)
     private String description;
 
@@ -21,8 +24,6 @@ public class MaintenanceRecord {
     private Integer expectedDuration;
 
     private String completionNotes;
-
-    // APAGADO: private Double cost;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,7 +60,6 @@ public class MaintenanceRecord {
         this.status = MaintenanceRecordStatus.SCHEDULED;
     }
 
-
     public void complete(String completionNotes) {
         Assert.hasText(completionNotes, "Completion notes are required.");
         this.status = MaintenanceRecordStatus.COMPLETED;
@@ -67,6 +67,7 @@ public class MaintenanceRecord {
     }
 
     public Long getPk() { return pk; }
+    public Long getVersion() { return version; }
     public String getDescription() { return description; }
     public LocalDate getStartDate() { return startDate; }
     public Integer getExpectedDuration() { return expectedDuration; }
