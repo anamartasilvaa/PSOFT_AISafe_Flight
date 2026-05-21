@@ -5,42 +5,11 @@ hide empty members
 package "Aircraft Aggregate" {
 
     class Aircraft <<Entity>> <<Root>> {
+        - version : Long
         - manufacturingDate : LocalDate
         - actualSeatingCapacity : Integer
-        - totalFlightHours : Double = 0.0
-    }@startuml
-     skinparam style strictuml
-     hide empty members
-
-     package "Aircraft Aggregate" {
-
-         class Aircraft <<Entity>> <<Root>> {
-             - version : Long
-             - manufacturingDate : LocalDate
-             - actualSeatingCapacity : Integer
-             - totalFlightHours : Double
-         }
-
-         class RegistrationNumber <<Value Object>> {
-             - number : String
-         }
-
-         enum AircraftStatus <<Enum>> {
-              ACTIVE
-              INACTIVE
-              UNDER_MAINTENANCE
-         }
-     }
-
-     package "Aircraft Model Aggregate" {
-         class AircraftModel <<Entity>> <<Root>>
-     }
-
-     Aircraft *-- "1" RegistrationNumber : identified by >
-     Aircraft *-- "1" AircraftStatus : initialized as >
-     Aircraft "*" --> "1" AircraftModel : is instance of >
-
-     @enduml
+        - totalFlightHours : Double
+    }
 
     class RegistrationNumber <<Value Object>> {
         - number : String
@@ -54,11 +23,11 @@ package "Aircraft Aggregate" {
 }
 
 package "Aircraft Model Aggregate" {
-    class AircraftModel <<Entity>>
+    class AircraftModel <<Entity>> <<Root>>
 }
 
 Aircraft *-- "1" RegistrationNumber : identified by >
 Aircraft *-- "1" AircraftStatus : initialized as >
-Aircraft "1" --> "1" AircraftModel : is instance of >
+Aircraft "*" --> "1" AircraftModel : is instance of >
 
 @enduml

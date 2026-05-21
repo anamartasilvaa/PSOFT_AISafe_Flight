@@ -1,6 +1,7 @@
 package pt.isep.psoft.aisafe.bootstrapper;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftDTO;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Order(2)
 @Component
 public class AircraftBootstrapper implements CommandLineRunner {
 

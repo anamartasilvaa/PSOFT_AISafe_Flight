@@ -10,10 +10,6 @@ import pt.isep.psoft.aisafe.repositories.AircraftRepository;
 import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

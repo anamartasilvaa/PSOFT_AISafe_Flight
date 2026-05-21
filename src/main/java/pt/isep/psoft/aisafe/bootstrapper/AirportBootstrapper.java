@@ -4,12 +4,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import pt.isep.psoft.aisafe.application.AirportService;
+import pt.isep.psoft.aisafe.application.DTO.AddCertificationDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAirportDTO;
 import pt.isep.psoft.aisafe.application.DTO.RunwayDTO;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
-@Order(2)
+@Order(3)
 public class AirportBootstrapper implements CommandLineRunner {
 
     private final AirportService airportService;
@@ -21,6 +24,8 @@ public class AirportBootstrapper implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
+            // --- 1. CRIAR OS AEROPORTOS E PISTAS ---
+
             // Aeroporto 1: Porto (OPO)
             airportService.registerAirport(new RegisterAirportDTO(
                     "OPO", "Aeroporto Francisco Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon",
@@ -43,10 +48,34 @@ public class AirportBootstrapper implements CommandLineRunner {
                             new RunwayDTO("13R/31L", 4442.0, "Northwest-Southeast")) // JFK tem várias pistas!
             ));
 
-            System.out.println("BOOTSTRAP: 3 Airports (OPO, LIS, JFK) successfully added!");
+            // --- 2. ADICIONAR CERTIFICAÇÕES (US106a) ---
+
+            // Definir datas para as certificações
+            LocalDate issueDate = LocalDate.now();
+            LocalDate expiryDate = LocalDate.now().plusYears(5);
+
+            // OPO certificado para A320neo
+            airportService.addCertification("OPO", new AddCertificationDTO(
+                    "CERT-OPO-001", "A320neo", issueDate, expiryDate
+            ));
+
+            // LIS certificado para B737 MAX
+            airportService.addCertification("LIS", new AddCertificationDTO(
+                    "CERT-LIS-001", "B737 MAX", issueDate, expiryDate
+            ));
+
+            // JFK certificado para ambos
+            airportService.addCertification("JFK", new AddCertificationDTO(
+                    "CERT-JFK-001", "A320neo", issueDate, expiryDate
+            ));
+            airportService.addCertification("JFK", new AddCertificationDTO(
+                    "CERT-JFK-002", "B737 MAX", issueDate, expiryDate
+            ));
+
+            System.out.println("BOOTSTRAP: 3 Airports (OPO, LIS, JFK) with runways and certifications successfully added!");
 
         } catch (Exception e) {
-            System.out.println("Note: Airports might already exist or: " + e.getMessage());
+            System.out.println("Note: Airports/Certifications might already exist or: " + e.getMessage());
         }
     }
 }
