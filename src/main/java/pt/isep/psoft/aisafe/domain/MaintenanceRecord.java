@@ -22,7 +22,7 @@ public class MaintenanceRecord {
 
     private String completionNotes;
 
-    private Double cost;
+    // APAGADO: private Double cost;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -42,27 +42,28 @@ public class MaintenanceRecord {
 
     protected MaintenanceRecord() {}
 
-    public MaintenanceRecord(Aircraft aircraft, MaintenanceTemplate template, String description, Integer expectedDuration, ComponentCategory componentCategory) {
+    public MaintenanceRecord(Aircraft aircraft, MaintenanceTemplate template, String description, Integer expectedDuration, ComponentCategory componentCategory, LocalDate startDate) {
         Assert.notNull(aircraft, "Aircraft is required.");
         Assert.notNull(template, "Template is required.");
         Assert.hasText(description, "Description is required.");
         Assert.notNull(expectedDuration, "Expected duration is required.");
         Assert.notNull(componentCategory, "Component category is required.");
+        Assert.notNull(startDate, "Start date is required.");
 
         this.aircraft = aircraft;
         this.template = template;
         this.description = description;
         this.expectedDuration = expectedDuration;
         this.componentCategory = componentCategory;
-        this.startDate = LocalDate.now();
+        this.startDate = startDate;
         this.status = MaintenanceRecordStatus.SCHEDULED;
     }
 
-    public void complete(String completionNotes, Double cost) {
+
+    public void complete(String completionNotes) {
         Assert.hasText(completionNotes, "Completion notes are required.");
         this.status = MaintenanceRecordStatus.COMPLETED;
         this.completionNotes = completionNotes;
-        this.cost = cost;
     }
 
     public Long getPk() { return pk; }
@@ -70,7 +71,7 @@ public class MaintenanceRecord {
     public LocalDate getStartDate() { return startDate; }
     public Integer getExpectedDuration() { return expectedDuration; }
     public String getCompletionNotes() { return completionNotes; }
-    public Double getCost() { return cost; }
+
     public MaintenanceRecordStatus getStatus() { return status; }
     public ComponentCategory getComponentCategory() { return componentCategory; }
     public Aircraft getAircraft() { return aircraft; }

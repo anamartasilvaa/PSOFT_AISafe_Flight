@@ -1,6 +1,9 @@
 package pt.isep.psoft.aisafe.application.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record CompleteMaintenanceDTO(
-        String completionNotes,
-        Double cost
+
+        @NotBlank(message = "Completion notes cannot be blank.")
+        String completionNotes
 ) {}

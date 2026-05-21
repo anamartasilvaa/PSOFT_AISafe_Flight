@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pt.isep.psoft.aisafe.application.DTO.CreateRouteDTO;
 import pt.isep.psoft.aisafe.application.DTO.RouteViewDTO;
@@ -29,7 +28,6 @@ public class RouteController {
 
     // --- US110: Criar uma Rota ---
     @PostMapping
-    @PreAuthorize("hasAuthority('ATCC')")
     @Operation(summary = "Creates a new flight route")
     public ResponseEntity<EntityModel<RouteViewDTO>> createRoute(@Valid @RequestBody CreateRouteDTO dto) {
 
@@ -43,7 +41,6 @@ public class RouteController {
 
     // --- US112: Atualizar Parâmetros da Rota ---
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAuthority('ATCC')")
     @Operation(summary = "Updates technical parameters of an existing route")
     public ResponseEntity<EntityModel<RouteViewDTO>> updateRoute(
             @PathVariable String id,
@@ -59,7 +56,6 @@ public class RouteController {
 
     // --- US112: Desativar a Rota ---
     @PatchMapping("/{id}/deactivate")
-    @PreAuthorize("hasAuthority('ATCC')")
     @Operation(summary = "Deactivates a route")
     public ResponseEntity<EntityModel<RouteViewDTO>> deactivateRoute(@PathVariable String id) {
 
@@ -71,14 +67,23 @@ public class RouteController {
         return ResponseEntity.ok(resource);
     }
 
-    // --- US113 e US114: Pesquisar Rotas ---
+    // --- US113: Pesquisar Rotas por Aeroporto ---
+    @GetMapping("/airport/{iata}")
+    @Operation(summary = "Search routes by origin airport")
+    public ResponseEntity<List<RouteViewDTO>> searchRoutesByAirport(@PathVariable String iata) {
+
+        // Passamos o 'iata' (ex: OPO) como origem, e null como destino
+        List<RouteViewDTO> routes = routeService.searchRoutes(iata, null);
+
+        return ResponseEntity.ok(routes);
+    }
+
+    // --- US113 e US114: Pesquisar Rotas  ---
     @GetMapping
-    @PreAuthorize("hasAuthority('ATCC')")
     @Operation(summary = "Search routes by origin, destination, or both")
     public ResponseEntity<List<RouteViewDTO>> searchRoutes(
             @RequestParam(required = false) String origin,
             @RequestParam(required = false) String destination) {
-
 
         List<RouteViewDTO> routes = routeService.searchRoutes(origin, destination);
 

@@ -12,7 +12,7 @@ class RouteIdTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             new RouteId(null);
         });
-        assertEquals("Route ID cannot be null or empty!", exception.getMessage());
+        assertEquals("Route ID cannot be blank.", exception.getMessage());
     }
 
     @Test
@@ -20,7 +20,7 @@ class RouteIdTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             new RouteId("   ");
         });
-        assertEquals("Route ID cannot be null or empty!", exception.getMessage());
+        assertEquals("Route ID cannot be blank.", exception.getMessage());
     }
 
     @Test

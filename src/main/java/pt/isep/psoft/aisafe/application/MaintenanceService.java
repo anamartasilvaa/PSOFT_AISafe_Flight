@@ -13,7 +13,7 @@ public class MaintenanceService {
     private final MaintenanceTemplateRepository templateRepository;
     private final MaintenanceRecordRepository recordRepository;
     private final AircraftRepository aircraftRepository;
-    private final AircraftModelRepository aircraftModelRepository; // Adicionado para procurar os modelos
+    private final AircraftModelRepository aircraftModelRepository;
 
     public MaintenanceService(MaintenanceTemplateRepository templateRepository,
                               MaintenanceRecordRepository recordRepository,
@@ -32,16 +32,13 @@ public class MaintenanceService {
             throw new IllegalArgumentException("Template name already exists: " + dto.templateName());
         }
 
-
         List<AircraftModel> models = (List<AircraftModel>) aircraftModelRepository.findAllById(dto.applicableModelIds());
-
 
         List<ChecklistItem> items = dto.checklistItems().stream()
                 .map(itemDto -> new ChecklistItem(itemDto.taskDescription(), itemDto.isMandatory()))
                 .toList();
 
         Checklist checklist = new Checklist(dto.checklistTitle(), dto.checklistVersion(), items);
-
 
         MaintenanceTemplate template = new MaintenanceTemplate(
                 dto.templateName(),
@@ -63,12 +60,17 @@ public class MaintenanceService {
         MaintenanceTemplate template = templateRepository.findById(dto.templateId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance template not found with ID: " + dto.templateId()));
 
+        // 1. Convertemos a String da data que o teu Postman enviou para o formato LocalDate do Java
+        java.time.LocalDate startDate = java.time.LocalDate.parse(dto.startDate());
+
+        // 2. Passamos essa data para o registo!
         MaintenanceRecord record = new MaintenanceRecord(
                 aircraft,
                 template,
                 dto.description(),
                 dto.expectedDuration(),
-                dto.componentCategory()
+                dto.componentCategory(),
+                startDate
         );
         return recordRepository.save(record);
     }
@@ -81,6 +83,8 @@ public class MaintenanceService {
     // US117 - Calculate Fleet Total Maintenance Hours
     public Integer getTotalMaintenanceHours() {
         return recordRepository.findAll().stream()
+                // só contabiliza se o status for COMPLETED
+                .filter(record -> record.getStatus() == MaintenanceRecordStatus.COMPLETED)
                 .mapToInt(MaintenanceRecord::getExpectedDuration)
                 .sum();
     }
@@ -90,7 +94,7 @@ public class MaintenanceService {
         MaintenanceRecord record = recordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance record not found with ID: " + recordId));
 
-        record.complete(dto.completionNotes(), dto.cost());
+        record.complete(dto.completionNotes());
         return recordRepository.save(record);
     }
 }
