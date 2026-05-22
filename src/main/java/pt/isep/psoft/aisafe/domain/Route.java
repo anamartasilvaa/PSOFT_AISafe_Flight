@@ -9,14 +9,14 @@ public class Route {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pk; // O ID técnico para a BD
+    private Long pk;
 
     @Version
     private Long version;
 
     @Embedded
     @AttributeOverride(name = "id", column = @Column(name = "route_id", unique = true, nullable = false))
-    private RouteId routeId; // O teu ID de negócio
+    private RouteId routeId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "origin_pk")
@@ -50,9 +50,9 @@ public class Route {
         this.minimumCapacity = minimumCapacity;
     }
 
-    // ==========================================
+
     // GETTERS
-    // ==========================================
+
     public RouteId getRouteId() { return routeId; }
     public Airport getOrigin() { return origin; }
     public Airport getDestination() { return destination; }
@@ -61,9 +61,9 @@ public class Route {
     public Integer getMinimumCapacity() { return minimumCapacity; }
     public RouteStatus getStatus() { return status; }
 
-    // ==========================================
+
     // MÉTODOS DE NEGÓCIO (US112)
-    // ==========================================
+
 
     // US112 - Desativar a rota
     public void deactivate() {

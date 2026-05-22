@@ -11,6 +11,7 @@ import pt.isep.psoft.aisafe.application.DTO.CreateRouteDTO;
 import pt.isep.psoft.aisafe.application.DTO.RouteViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateRouteDTO;
 import pt.isep.psoft.aisafe.application.RouteService;
+import pt.isep.psoft.aisafe.domain.RouteHistory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ public class RouteController {
 
         resource.add(linkTo(methodOn(RouteController.class).updateRoute(rId, null)).withRel("update-route"));
         resource.add(linkTo(methodOn(RouteController.class).deactivateRoute(rId)).withRel("deactivate-route"));
+        resource.add(linkTo(methodOn(RouteController.class).getRouteHistory(rId)).withRel("route-history"));
 
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -55,6 +57,7 @@ public class RouteController {
         EntityModel<RouteViewDTO> resource = EntityModel.of(updated);
 
         resource.add(linkTo(methodOn(RouteController.class).deactivateRoute(id)).withRel("deactivate-route"));
+        resource.add(linkTo(methodOn(RouteController.class).getRouteHistory(id)).withRel("route-history"));
 
         return ResponseEntity.ok(resource);
     }
@@ -68,11 +71,12 @@ public class RouteController {
         EntityModel<RouteViewDTO> resource = EntityModel.of(deactivated);
 
         resource.add(linkTo(methodOn(RouteController.class).updateRoute(id, null)).withRel("update-route"));
+        resource.add(linkTo(methodOn(RouteController.class).getRouteHistory(id)).withRel("route-history"));
 
         return ResponseEntity.ok(resource);
     }
 
-    // --- US113: Ver detalhes de uma rota pelo ID (NOVO) ---
+    // --- US113: Ver detalhes de uma rota pelo ID ---
     @GetMapping("/{id}")
     @Operation(summary = "Get route details by ID")
     public ResponseEntity<EntityModel<RouteViewDTO>> getRouteById(@PathVariable String id) {
@@ -82,8 +86,16 @@ public class RouteController {
 
         resource.add(linkTo(methodOn(RouteController.class).getRouteById(id)).withSelfRel());
         resource.add(linkTo(methodOn(RouteController.class).updateRoute(id, null)).withRel("update-route"));
+        resource.add(linkTo(methodOn(RouteController.class).getRouteHistory(id)).withRel("route-history"));
 
         return ResponseEntity.ok(resource);
+    }
+
+    // --- US111: Ver histórico de uma rota (NOVO) ---
+    @GetMapping("/{id}/history")
+    @Operation(summary = "Get history of a specific route")
+    public ResponseEntity<List<RouteHistory>> getRouteHistory(@PathVariable String id) {
+        return ResponseEntity.ok(routeService.getRouteHistory(id));
     }
 
     // --- US113: Pesquisar Rotas por Aeroporto ---
@@ -97,6 +109,7 @@ public class RouteController {
                     EntityModel<RouteViewDTO> em = EntityModel.of(route);
                     em.add(linkTo(methodOn(RouteController.class).updateRoute(route.routeId(), null)).withRel("update-route"));
                     em.add(linkTo(methodOn(RouteController.class).deactivateRoute(route.routeId())).withRel("deactivate-route"));
+                    em.add(linkTo(methodOn(RouteController.class).getRouteHistory(route.routeId())).withRel("route-history"));
                     return em;
                 })
                 .collect(Collectors.toList());
@@ -121,6 +134,7 @@ public class RouteController {
 
                     em.add(linkTo(methodOn(RouteController.class).updateRoute(route.routeId(), null)).withRel("update-route"));
                     em.add(linkTo(methodOn(RouteController.class).deactivateRoute(route.routeId())).withRel("deactivate-route"));
+                    em.add(linkTo(methodOn(RouteController.class).getRouteHistory(route.routeId())).withRel("route-history"));
                     return em;
                 })
                 .collect(Collectors.toList());

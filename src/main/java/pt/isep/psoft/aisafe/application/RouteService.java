@@ -75,7 +75,7 @@ public class RouteService {
         return convertToDTO(saved);
     }
 
-    // --- US113: Ver Detalhes de uma Rota Específica (NOVO MÉTODO) ---
+    // --- US113: Ver Detalhes de uma Rota Específica ---
     public RouteViewDTO getRoute(String id) {
         RouteId routeId = new RouteId(id);
         Route route = routeRepository.findByRouteId(routeId)
@@ -99,6 +99,11 @@ public class RouteService {
         }
 
         return results.stream().map(this::convertToDTO).toList();
+    }
+
+    // --- US111: Ver Histórico da Rota  ---
+    public List<RouteHistory> getRouteHistory(String routeId) {
+        return routeHistoryRepository.findByRouteIdOrderByTimestampDesc(routeId);
     }
 
     private RouteViewDTO convertToDTO(Route route) {
