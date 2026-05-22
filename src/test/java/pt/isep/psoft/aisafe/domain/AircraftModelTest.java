@@ -8,13 +8,13 @@ class AircraftModelTest {
 
     @Test
     void ensureValidAircraftModelIsCreated() {
-        // Arrange
+
         ModelName name = new ModelName("737 MAX");
 
-        // Act - Adicionado o 7º argumento
+
         AircraftModel model = new AircraftModel(name, Manufacturer.BOEING, 180, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg");
 
-        // Assert
+
         assertNotNull(model);
     }
 

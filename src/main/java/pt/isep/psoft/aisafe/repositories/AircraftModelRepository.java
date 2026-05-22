@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AircraftModelRepository extends CrudRepository<AircraftModel, Long> {
 
-    // Pesquisa pelo Value Object que identifica o modelo
+
     Optional<AircraftModel> findByModelName(ModelName modelName);
 }

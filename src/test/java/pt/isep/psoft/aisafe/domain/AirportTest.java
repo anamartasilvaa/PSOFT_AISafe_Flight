@@ -14,7 +14,7 @@ class AirportTest {
     @Test
     void ensureValidAirportIsCreated() {
         IATACode iata = new IATACode("OPO");
-        // CORREÇÃO: Adicionados City, Country e Timezone no construtor
+
         Airport airport = new Airport(iata, "Francisco Sá Carneiro", "Porto", "Portugal", "GMT+1", AirportType.INTERNATIONAL, createValidCoordinates());
 
         assertNotNull(airport);
@@ -26,7 +26,7 @@ class AirportTest {
     void ensureAirportCannotBeCreatedWithoutCoordinates() {
         IATACode iata = new IATACode("OPO");
         assertThrows(IllegalArgumentException.class, () -> {
-            // CORREÇÃO: Adicionados os novos campos aqui também para o teste compilar
+
             new Airport(iata, "Francisco Sá Carneiro", "Porto", "Portugal", "GMT+1", AirportType.INTERNATIONAL, null);
         });
     }
@@ -37,7 +37,7 @@ class AirportTest {
         Runway runway = new Runway("17/35", 3480.0, "North-South");
 
         assertDoesNotThrow(() -> airport.addRunway(runway));
-        // Verifica se a lista de pistas não está vazia (opcional mas bom)
+
         assertFalse(airport.getRunways().isEmpty());
 
         assertThrows(IllegalArgumentException.class, () -> airport.addRunway(null));
@@ -57,7 +57,7 @@ class AirportTest {
     @Test
     void ensureAirportCannotBeCreatedWithMissingData() {
         IATACode iata = new IATACode("OPO");
-        // Teste para garantir que campos obrigatórios (como cidade) não podem ser nulos/vazios
+
         assertThrows(IllegalArgumentException.class, () -> {
             new Airport(iata, "Sá Carneiro", null, "Portugal", "GMT+1", AirportType.INTERNATIONAL, createValidCoordinates());
         });

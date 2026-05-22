@@ -1,4 +1,4 @@
-package pt.isep.psoft.aisafe.config; // Adjust if your folder is named infrastructure
+package pt.isep.psoft.aisafe.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;

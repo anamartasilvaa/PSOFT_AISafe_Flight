@@ -26,14 +26,14 @@ public class UserService {
             throw new IllegalArgumentException("Username already exists!");
         }
 
-        // Encriptar a password antes de guardar
+
         String encodedPassword = passwordEncoder.encode(rawPassword);
 
         User newUser = new User(username, encodedPassword, roles);
         userRepository.save(newUser);
     }
 
-    // ISTO RESOLVE O "Cannot resolve method"
+
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }

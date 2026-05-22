@@ -66,8 +66,6 @@ public class AircraftService {
         );
     }
 
-    // --- AQUI ESTÁ O MÉTODO ATUALIZADO COM A PAGINAÇÃO ---
-    // Onde tinhas 4 argumentos, agora passas a ter 5
     public List<AircraftViewDTO> searchAircrafts(String model, String status, Integer year) {
         List<Aircraft> results;
 
@@ -100,7 +98,7 @@ public class AircraftService {
                 aircraft.getManufacturingDate(),
                 aircraft.getActualSeatingCapacity(),
                 aircraft.getStatus().toString(),
-                aircraft.getAircraftModel().getModelPhotoUrl() // <-- Adicionar isto aqui
+                aircraft.getAircraftModel().getModelPhotoUrl()
         );
     }
     private AircraftViewDTO mapToViewDTO(Aircraft aircraft) {
