@@ -20,7 +20,6 @@ public class JwtService {
     private final SecretKey key;
     private final long expirationMs;
 
-    // Vai buscar os valores ao application.properties
     public JwtService(@Value("${security.jwt.secret}") String secret,
                       @Value("${security.jwt.expiration-ms}") long expirationMs) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
@@ -33,7 +32,7 @@ public class JwtService {
                 .toList();
 
         return Jwts.builder()
-                .subject(user.getUserId().toString()) // O UUID do domínio
+                .subject(user.getUserId().toString())
                 .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))

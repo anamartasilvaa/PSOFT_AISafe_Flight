@@ -22,15 +22,15 @@ class AircraftTest {
 
     @Test
     void ensureValidAircraftIsCreated() {
-        // Arrange
+
         RegistrationNumber regNum = new RegistrationNumber("CS-TPA");
         AircraftModel model = createValidModel();
         LocalDate manufacturingDate = LocalDate.of(2022, 5, 10);
 
-        // Act
+
         Aircraft aircraft = new Aircraft(regNum, model, manufacturingDate, 180);
 
-        // Assert
+
         assertNotNull(aircraft);
     }
 
@@ -54,12 +54,12 @@ class AircraftTest {
         AircraftModel model = createValidModel();
         LocalDate manufacturingDate = LocalDate.of(2022, 5, 10);
 
-        // Null Registration Number
+
         assertThrows(IllegalArgumentException.class, () -> {
             new Aircraft(null, model, manufacturingDate, 180);
         });
 
-        // Null Model
+
         RegistrationNumber regNum = new RegistrationNumber("CS-TPA");
         assertThrows(IllegalArgumentException.class, () -> {
             new Aircraft(regNum, null, manufacturingDate, 180);
@@ -68,15 +68,15 @@ class AircraftTest {
 
     @Test
     void ensureUpdateStatusWorksCorrectly() {
-        // Arrange
+
         RegistrationNumber regNum = new RegistrationNumber("CS-TPA");
         AircraftModel model = createValidModel();
         Aircraft aircraft = new Aircraft(regNum, model, LocalDate.now(), 180);
 
-        // Act & Assert (No exceptions should be thrown)
+
         assertDoesNotThrow(() -> aircraft.updateStatus(AircraftStatus.UNDER_MAINTENANCE));
 
-        // Null status should throw exception
+
         assertThrows(IllegalArgumentException.class, () -> aircraft.updateStatus(null));
     }
 }

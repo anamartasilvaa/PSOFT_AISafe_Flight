@@ -31,7 +31,6 @@ public class AirportController {
         AirportViewDTO created = service.registerAirport(dto);
 
         EntityModel<AirportViewDTO> resource = EntityModel.of(created);
-        // Link para o GET do aeroporto criado
         resource.add(linkTo(methodOn(AirportController.class).getAirport(created.iataCode())).withSelfRel());
 
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
@@ -43,10 +42,8 @@ public class AirportController {
 
         EntityModel<AirportViewDTO> resource = EntityModel.of(airport);
 
-        // Link principal (Self)
         resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withSelfRel());
 
-        // Link de conveniência para adicionar certificações (US106a)
         resource.add(linkTo(methodOn(AirportController.class)
                 .addCertification(iataCode, null)).withRel("add-certification"));
 
@@ -88,8 +85,6 @@ public class AirportController {
             @PathVariable String iataCode,
             @RequestBody String newStatus) {
 
-        // O status pode vir no body como uma string simples ou JSON.
-        // Se vier como JSON: {"status": "CLOSED"}, terás de criar um DTO pequeno.
         AirportViewDTO updated = service.updateAirportStatus(iataCode, newStatus.replace("\"", ""));
 
         EntityModel<AirportViewDTO> resource = EntityModel.of(updated);

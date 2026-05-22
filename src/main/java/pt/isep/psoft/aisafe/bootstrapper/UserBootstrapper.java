@@ -8,7 +8,7 @@ import pt.isep.psoft.aisafe.domain.Role;
 import java.util.Set;
 
 @Component
-@Order(1) // Garante que corre antes dos outros bootstrappers
+@Order(1)
 public class UserBootstrapper implements CommandLineRunner {
 
     private final UserService userService;
@@ -20,10 +20,8 @@ public class UserBootstrapper implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            // 1. Verificar se o Admin já existe para não criar duplicados
             if (!userService.existsByUsername("admin@aisafe.pt")) {
 
-                // AQUI É ONDE COLOCAS A LINHA:
                 userService.registerUser(
                         "admin@aisafe.pt",
                         "AdminPass123!",
@@ -33,7 +31,6 @@ public class UserBootstrapper implements CommandLineRunner {
                 System.out.println("BOOTSTRAP: System Administrator created!");
             }
 
-            // 2. Podes fazer o mesmo para o Backoffice Operator
             if (!userService.existsByUsername("operator@aisafe.pt")) {
                 userService.registerUser(
                         "operator@aisafe.pt",
@@ -43,7 +40,7 @@ public class UserBootstrapper implements CommandLineRunner {
                 System.out.println("BOOTSTRAP: Backoffice Operator created!");
             }
 
-            // 3. Criar o Colaborador da Empresa de Transportes (ATCC)
+
             if (!userService.existsByUsername("atcc@aisafe.pt")) {
                 userService.registerUser(
                         "atcc@aisafe.pt",
@@ -53,7 +50,7 @@ public class UserBootstrapper implements CommandLineRunner {
                 System.out.println("BOOTSTRAP: ATCC created!");
             }
 
-            // 4. Criar o Técnico de Manutenção (MAINTENANCE_TECH)
+
             if (!userService.existsByUsername("tech@aisafe.pt")) {
                 userService.registerUser(
                         "tech@aisafe.pt",

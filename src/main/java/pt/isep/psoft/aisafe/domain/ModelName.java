@@ -11,6 +11,6 @@ public record ModelName(String name) {
 
     @Override
     public String toString() {
-        return this.name; // Usa o nome da variável que guarda o nome do modelo
+        return this.name;
     }
 }

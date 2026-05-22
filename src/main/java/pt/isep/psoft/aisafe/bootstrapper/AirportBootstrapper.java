@@ -26,21 +26,20 @@ public class AirportBootstrapper implements CommandLineRunner {
         try {
             // --- 1. CRIAR OS AEROPORTOS E PISTAS ---
 
-            // Aeroporto 1: Porto (OPO)
+
             airportService.registerAirport(new RegisterAirportDTO(
                     "OPO", "Aeroporto Francisco Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon",
                     "INTERNATIONAL", 41.2356, -8.6781,
                     List.of(new RunwayDTO("17/35", 3480.0, "North-South"))
             ));
 
-            // Aeroporto 2: Lisboa (LIS)
+
             airportService.registerAirport(new RegisterAirportDTO(
                     "LIS", "Aeroporto Humberto Delgado", "Lisbon", "Portugal", "Europe/Lisbon",
                     "INTERNATIONAL", 38.7742, -9.1342,
                     List.of(new RunwayDTO("03/21", 3805.0, "North-South"))
             ));
 
-            // Aeroporto 3: Nova Iorque (JFK)
             airportService.registerAirport(new RegisterAirportDTO(
                     "JFK", "John F. Kennedy International Airport", "New York", "USA", "America/New_York",
                     "INTERNATIONAL", 40.6413, -73.7781,
@@ -50,21 +49,21 @@ public class AirportBootstrapper implements CommandLineRunner {
 
             // --- 2. ADICIONAR CERTIFICAÇÕES (US106a) ---
 
-            // Definir datas para as certificações
+
             LocalDate issueDate = LocalDate.now();
             LocalDate expiryDate = LocalDate.now().plusYears(5);
 
-            // OPO certificado para A320neo
+
             airportService.addCertification("OPO", new AddCertificationDTO(
                     "CERT-OPO-001", "A320neo", issueDate, expiryDate
             ));
 
-            // LIS certificado para B737 MAX
+
             airportService.addCertification("LIS", new AddCertificationDTO(
                     "CERT-LIS-001", "B737 MAX", issueDate, expiryDate
             ));
 
-            // JFK certificado para ambos
+
             airportService.addCertification("JFK", new AddCertificationDTO(
                     "CERT-JFK-001", "A320neo", issueDate, expiryDate
             ));

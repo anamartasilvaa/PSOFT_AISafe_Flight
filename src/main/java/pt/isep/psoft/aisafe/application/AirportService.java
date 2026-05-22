@@ -116,7 +116,7 @@ public class AirportService {
                 airport.getCountry(),
                 airport.getTimezone(),
                 airport.getType().toString(),
-                airport.getStatus().toString(), // Mapeamento do status para o DTO
+                airport.getStatus().toString(), 
                 airport.getRunways().stream()
                         .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
                         .collect(Collectors.toList()),

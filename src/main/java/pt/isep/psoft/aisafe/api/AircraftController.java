@@ -27,9 +27,7 @@ public class AircraftController {
         this.service = service;
     }
 
-    /**
-     * US101 - Register an aircraft model
-     */
+    /*US101 - Register an aircraft model*/
     @PostMapping
     public ResponseEntity<EntityModel<RegisterAircraftModelDTO>> createModel(@RequestBody RegisterAircraftModelDTO dto) {
         service.registerModel(dto);
@@ -38,9 +36,7 @@ public class AircraftController {
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
-    /**
-     * US102 - Register a specific aircraft instance
-     */
+    /*US102 - Register a specific aircraft instance*/
     @PostMapping("/instances")
     public ResponseEntity<EntityModel<RegisterAircraftDTO>> createAircraft(@RequestBody RegisterAircraftDTO dto) {
         service.registerAircraft(dto);
@@ -49,9 +45,7 @@ public class AircraftController {
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
-    /**
-     * US103 - View aircraft details by registration number
-     */
+    /*US103 - View aircraft details by registration number*/
     @GetMapping("/instances/{registrationNumber}")
     public ResponseEntity<EntityModel<AircraftViewDTO>> getAircraft(@PathVariable String registrationNumber) {
         AircraftViewDTO dto = service.getAircraftByRegistrationNumber(registrationNumber);
@@ -75,9 +69,7 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).searchAircrafts(model, status, year)).withSelfRel()));
     }
 
-    /**
-     * US105 - Update an aircraft operational status
-     */
+    /*US105 - Update an aircraft operational status*/
     @PatchMapping("/instances/{registrationNumber}/status")
     public ResponseEntity<EntityModel<AircraftViewDTO>> updateStatus(
             @PathVariable String registrationNumber,

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AirplaneCertificationTest {
 
     private AircraftModel createDummyModel() {
-        // Adicionado o 7º argumento
+
         return new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg");
     }
 
@@ -26,7 +26,7 @@ class AirplaneCertificationTest {
     void ensureExpiryDateMustBeAfterIssueDate() {
         AircraftModel model = createDummyModel();
         LocalDate issue = LocalDate.of(2023, 1, 1);
-        LocalDate expiry = LocalDate.of(2022, 1, 1); // Expiry before issue
+        LocalDate expiry = LocalDate.of(2022, 1, 1);
 
         assertThrows(IllegalArgumentException.class, () -> {
             new AirplaneCertification("CERT-123", model, issue, expiry);

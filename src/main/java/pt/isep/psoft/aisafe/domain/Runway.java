@@ -32,7 +32,7 @@ public class Runway {
         this.orientation = orientation;
     }
 
-    // --- AQUI ESTÃO OS GETTERS QUE FALTAVAM! ---
+
     public String getName() {
         return name;
     }

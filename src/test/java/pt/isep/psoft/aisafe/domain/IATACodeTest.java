@@ -8,16 +8,16 @@ class IATACodeTest {
 
     @Test
     void ensureValidIATACodeIsCreated() {
-        // Arrange & Act
+
         IATACode iata = new IATACode("OPO");
 
-        // Assert
+
         assertEquals("OPO", iata.code());
     }
 
     @Test
     void ensureIATACodeCannotBeBlank() {
-        // Assert que lança uma IllegalArgumentException (vinda do Assert.hasText)
+
         assertThrows(IllegalArgumentException.class, () -> {
             new IATACode("");
         });

@@ -22,16 +22,15 @@ public class AuthenticateUserUseCase {
     }
 
     public TokenResponse execute(LoginRequest request) {
-        // 1. Procurar o utilizador
+        //Procurar o utilizador
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(InvalidCredentialsException::new);
 
-        // 2. Verificar se a password bate certo com o Hash BCrypt
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new InvalidCredentialsException();
         }
 
-        // 3. Gerar e devolver o Token
+        // Gerar e devolver o Token
         return new TokenResponse(jwtService.generateToken(user));
     }
 }

@@ -10,12 +10,12 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
-    // Identidade da Base de Dados (Escondida do Domínio)
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
 
-    // Identidade de Domínio (Usada no JWT)
+
     @Column(nullable = false, unique = true)
     private UUID userId = UUID.randomUUID();
 
@@ -25,7 +25,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // A forma do professor mapear o Set de Roles na BD
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_pk"))
     @Enumerated(EnumType.STRING)
@@ -49,7 +49,7 @@ public class User {
     public String getPassword() { return password; }
     public Set<Role> getRoles() { return roles; }
 
-    // equals e hashCode baseados EXCLUSIVAMENTE na identidade de domínio (userId)
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

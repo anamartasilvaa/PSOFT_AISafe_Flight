@@ -7,5 +7,5 @@ public record RegisterAircraftModelDTO(
         Double fuelCapacity,
         Double range,
         Double speed,
-        String modelPhotoUrl // Novo campo
+        String modelPhotoUrl
 ) {}

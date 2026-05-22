@@ -52,12 +52,12 @@ public class Aircraft {
         this.manufacturingDate = manufacturingDate;
         this.actualSeatingCapacity = actualSeatingCapacity;
 
-        // Business Rules for a newly registered aircraft
+
         this.status = AircraftStatus.ACTIVE;
         this.totalFlightHours = 0.0;
     }
 
-    // Domain behavior: Update status
+
     public void updateStatus(AircraftStatus newStatus) {
         Assert.notNull(newStatus, "New status must not be null.");
         this.status = newStatus;

@@ -12,15 +12,15 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. Apanha a tua exceção customizada de login falhado (Devolve 401 Unauthorized)
+    //Devolve 401 Unauthorized
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Object> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", ex.getMessage())); // Devolve a mensagem "Invalid credentials"
+                .body(Map.of("error", ex.getMessage()));
     }
 
-    // 2. Apanha o erro do Spring quando um utilizador não tem permissão (Devolve 403 Forbidden)
+    //Devolve 403 Forbidden
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity
@@ -28,7 +28,6 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "Access denied: you don't have enough permissions."));
     }
 
-    // (Opcional) Apanhar Argumentos Inválidos (ex: NullPointers ou asserts do domínio)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity

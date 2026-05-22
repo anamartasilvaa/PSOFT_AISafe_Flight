@@ -30,20 +30,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Desativar CSRF (Justificação: Usamos tokens no header, não cookies)
+
                 .csrf(csrf -> csrf.disable())
 
-                // 2. Sessões Stateless (Sem estado no servidor)
+
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 3. Regras de Autorização
+
                 .authorizeHttpRequests(auth -> {
-                    // Endpoints Públicos
+
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
 
                     auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
 
-                    // Permitir H2 Console se ativada
+
                     if (h2ConsoleEnabled) {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
@@ -90,10 +90,10 @@ public class SecurityConfig {
                             response.getWriter().write("{\"error\": \"Access denied: you don't have enough permissions.\"}");
                         })
                 )
-                // 4. Injetar o teu Filtro ANTES do filtro normal do Spring
+
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Configuração extra para a consola H2 funcionar (usa frames)
+
         if (h2ConsoleEnabled) {
             http.headers(h -> h.frameOptions(f -> f.sameOrigin()));
         } else {

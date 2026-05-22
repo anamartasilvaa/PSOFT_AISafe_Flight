@@ -10,7 +10,7 @@ import java.util.Objects;
 @Entity
 public class Airport {
 
-    // 1. Identidade técnica e Versão (Optimistic Locking)
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
@@ -18,7 +18,7 @@ public class Airport {
     @Version
     private Long version;
 
-    // 2. Atributos de Domínio
+
     @Embedded
     @AttributeOverride(name = "code", column = @Column(name = "iata_code", unique = true, nullable = false))
     private IATACode iataCode;
@@ -42,7 +42,7 @@ public class Airport {
     @Embedded
     private Coordinates coordinates;
 
-    // 3. Relações (One-to-Many)
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "airport_pk")
     private List<Runway> runways = new ArrayList<>();
@@ -51,7 +51,7 @@ public class Airport {
     @JoinColumn(name = "airport_pk")
     private List<AirplaneCertification> certifications = new ArrayList<>();
 
-    // 4. Construtores
+
     protected Airport() {}
 
     public Airport(IATACode iataCode, String name, String city, String country, String timezone, AirportType type, Coordinates coordinates) {
@@ -72,7 +72,7 @@ public class Airport {
         this.coordinates = coordinates;
     }
 
-    // 5. Métodos de Negócio
+
     public void addRunway(Runway runway) {
         Assert.notNull(runway, "Runway must not be null.");
         this.runways.add(runway);
@@ -83,7 +83,7 @@ public class Airport {
         this.certifications.add(certification);
     }
 
-    // 6. Getters (Essenciais para a camada de Application/Service)
+
     public IATACode getIataCode() { return iataCode; }
     public String getName() { return name; }
     public String getCity() { return city; }
