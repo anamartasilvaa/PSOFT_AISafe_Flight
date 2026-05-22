@@ -1,6 +1,7 @@
 package pt.isep.psoft.aisafe.api;
 
 import jakarta.validation.Valid;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,9 @@ import pt.isep.psoft.aisafe.domain.MaintenanceRecord;
 import pt.isep.psoft.aisafe.domain.MaintenanceTemplate;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/maintenance")
@@ -21,18 +25,25 @@ public class MaintenanceController {
         this.maintenanceService = maintenanceService;
     }
 
-    // US115 (Part 1) - Create Template (Manual)
+    // US115a - Create Template (Manual)
     @PostMapping("/templates")
     public ResponseEntity<MaintenanceTemplate> createTemplate(@Valid @RequestBody CreateMaintenanceTemplateDTO dto) {
         MaintenanceTemplate created = maintenanceService.createTemplate(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // US115 (Part 2) - Register Active Maintenance Record
+    // US115 - Register Active Maintenance Record
     @PostMapping("/records")
-    public ResponseEntity<MaintenanceRecord> registerMaintenance(@Valid @RequestBody RegisterMaintenanceDTO dto) {
+    public ResponseEntity<EntityModel<MaintenanceRecord>> registerMaintenance(@Valid @RequestBody RegisterMaintenanceDTO dto) {
         MaintenanceRecord record = maintenanceService.registerMaintenance(dto);
-        return new ResponseEntity<>(record, HttpStatus.CREATED);
+
+        EntityModel<MaintenanceRecord> resource = EntityModel.of(record);
+
+        resource.add(linkTo(methodOn(MaintenanceController.class).completeMaintenance(record.getPk(), null)).withRel("complete-this-record"));
+
+        resource.add(linkTo(methodOn(MaintenanceController.class).getAircraftHistory(dto.registrationNumber())).withRel("aircraft-history"));
+
+        return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
 
     // US116 - Get History by Aircraft Registration Number
@@ -49,9 +60,16 @@ public class MaintenanceController {
 
     // US119 - Mark Maintenance as Completed
     @PatchMapping("/records/{id}/complete")
-    public ResponseEntity<MaintenanceRecord> completeMaintenance(
+    public ResponseEntity<EntityModel<MaintenanceRecord>> completeMaintenance(
             @PathVariable Long id,
             @Valid @RequestBody CompleteMaintenanceDTO dto) {
-        return ResponseEntity.ok(maintenanceService.completeMaintenance(id, dto));
+
+        MaintenanceRecord record = maintenanceService.completeMaintenance(id, dto);
+
+
+        EntityModel<MaintenanceRecord> resource = EntityModel.of(record);
+        resource.add(linkTo(methodOn(MaintenanceController.class).getTotalHours()).withRel("view-fleet-total-hours"));
+
+        return ResponseEntity.ok(resource);
     }
 }
