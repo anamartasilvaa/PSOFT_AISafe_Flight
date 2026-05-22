@@ -1,5 +1,6 @@
 package pt.isep.psoft.aisafe.api;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,14 +23,14 @@ public class MaintenanceController {
 
     // US115 (Part 1) - Create Template (Manual)
     @PostMapping("/templates")
-    public ResponseEntity<MaintenanceTemplate> createTemplate(@RequestBody CreateMaintenanceTemplateDTO dto) {
+    public ResponseEntity<MaintenanceTemplate> createTemplate(@Valid @RequestBody CreateMaintenanceTemplateDTO dto) {
         MaintenanceTemplate created = maintenanceService.createTemplate(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     // US115 (Part 2) - Register Active Maintenance Record
     @PostMapping("/records")
-    public ResponseEntity<MaintenanceRecord> registerMaintenance(@RequestBody RegisterMaintenanceDTO dto) {
+    public ResponseEntity<MaintenanceRecord> registerMaintenance(@Valid @RequestBody RegisterMaintenanceDTO dto) {
         MaintenanceRecord record = maintenanceService.registerMaintenance(dto);
         return new ResponseEntity<>(record, HttpStatus.CREATED);
     }
@@ -50,7 +51,7 @@ public class MaintenanceController {
     @PatchMapping("/records/{id}/complete")
     public ResponseEntity<MaintenanceRecord> completeMaintenance(
             @PathVariable Long id,
-            @RequestBody CompleteMaintenanceDTO dto) {
+            @Valid @RequestBody CompleteMaintenanceDTO dto) {
         return ResponseEntity.ok(maintenanceService.completeMaintenance(id, dto));
     }
 }
