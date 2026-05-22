@@ -72,6 +72,20 @@ public class RouteController {
         return ResponseEntity.ok(resource);
     }
 
+    // --- US113: Ver detalhes de uma rota pelo ID (NOVO) ---
+    @GetMapping("/{id}")
+    @Operation(summary = "Get route details by ID")
+    public ResponseEntity<EntityModel<RouteViewDTO>> getRouteById(@PathVariable String id) {
+
+        RouteViewDTO route = routeService.getRoute(id);
+        EntityModel<RouteViewDTO> resource = EntityModel.of(route);
+
+        resource.add(linkTo(methodOn(RouteController.class).getRouteById(id)).withSelfRel());
+        resource.add(linkTo(methodOn(RouteController.class).updateRoute(id, null)).withRel("update-route"));
+
+        return ResponseEntity.ok(resource);
+    }
+
     // --- US113: Pesquisar Rotas por Aeroporto ---
     @GetMapping("/airport/{iata}")
     @Operation(summary = "Search routes by origin airport")
@@ -81,7 +95,6 @@ public class RouteController {
                 .stream()
                 .map(route -> {
                     EntityModel<RouteViewDTO> em = EntityModel.of(route);
-                    // CORRIGIDO: route.routeId()
                     em.add(linkTo(methodOn(RouteController.class).updateRoute(route.routeId(), null)).withRel("update-route"));
                     em.add(linkTo(methodOn(RouteController.class).deactivateRoute(route.routeId())).withRel("deactivate-route"));
                     return em;
