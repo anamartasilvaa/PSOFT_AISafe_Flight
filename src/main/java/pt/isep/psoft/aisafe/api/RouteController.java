@@ -2,6 +2,7 @@ package pt.isep.psoft.aisafe.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import pt.isep.psoft.aisafe.application.DTO.UpdateRouteDTO;
 import pt.isep.psoft.aisafe.application.RouteService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -34,7 +36,10 @@ public class RouteController {
         RouteViewDTO created = routeService.createRoute(dto);
         EntityModel<RouteViewDTO> resource = EntityModel.of(created);
 
-        resource.add(linkTo(methodOn(RouteController.class).createRoute(dto)).withSelfRel());
+        String rId = created.routeId();
+
+        resource.add(linkTo(methodOn(RouteController.class).updateRoute(rId, null)).withRel("update-route"));
+        resource.add(linkTo(methodOn(RouteController.class).deactivateRoute(rId)).withRel("deactivate-route"));
 
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }
@@ -49,7 +54,7 @@ public class RouteController {
         RouteViewDTO updated = routeService.updateRoute(id, dto);
         EntityModel<RouteViewDTO> resource = EntityModel.of(updated);
 
-        resource.add(linkTo(methodOn(RouteController.class).updateRoute(id, dto)).withSelfRel());
+        resource.add(linkTo(methodOn(RouteController.class).deactivateRoute(id)).withRel("deactivate-route"));
 
         return ResponseEntity.ok(resource);
     }
@@ -62,7 +67,7 @@ public class RouteController {
         RouteViewDTO deactivated = routeService.deactivateRoute(id);
         EntityModel<RouteViewDTO> resource = EntityModel.of(deactivated);
 
-        resource.add(linkTo(methodOn(RouteController.class).deactivateRoute(id)).withSelfRel());
+        resource.add(linkTo(methodOn(RouteController.class).updateRoute(id, null)).withRel("update-route"));
 
         return ResponseEntity.ok(resource);
     }
@@ -70,23 +75,46 @@ public class RouteController {
     // --- US113: Pesquisar Rotas por Aeroporto ---
     @GetMapping("/airport/{iata}")
     @Operation(summary = "Search routes by origin airport")
-    public ResponseEntity<List<RouteViewDTO>> searchRoutesByAirport(@PathVariable String iata) {
+    public ResponseEntity<CollectionModel<EntityModel<RouteViewDTO>>> searchRoutesByAirport(@PathVariable String iata) {
 
-        // Passamos o 'iata' (ex: OPO) como origem, e null como destino
-        List<RouteViewDTO> routes = routeService.searchRoutes(iata, null);
+        List<EntityModel<RouteViewDTO>> routes = routeService.searchRoutes(iata, null)
+                .stream()
+                .map(route -> {
+                    EntityModel<RouteViewDTO> em = EntityModel.of(route);
+                    // CORRIGIDO: route.routeId()
+                    em.add(linkTo(methodOn(RouteController.class).updateRoute(route.routeId(), null)).withRel("update-route"));
+                    em.add(linkTo(methodOn(RouteController.class).deactivateRoute(route.routeId())).withRel("deactivate-route"));
+                    return em;
+                })
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(routes);
+        CollectionModel<EntityModel<RouteViewDTO>> collection = CollectionModel.of(routes);
+        collection.add(linkTo(methodOn(RouteController.class).searchRoutesByAirport(iata)).withSelfRel());
+
+        return ResponseEntity.ok(collection);
     }
 
-    // --- US113 e US114: Pesquisar Rotas  ---
+    // --- US113 e US114: Pesquisar Rotas ---
     @GetMapping
     @Operation(summary = "Search routes by origin, destination, or both")
-    public ResponseEntity<List<RouteViewDTO>> searchRoutes(
+    public ResponseEntity<CollectionModel<EntityModel<RouteViewDTO>>> searchRoutes(
             @RequestParam(required = false) String origin,
             @RequestParam(required = false) String destination) {
 
-        List<RouteViewDTO> routes = routeService.searchRoutes(origin, destination);
+        List<EntityModel<RouteViewDTO>> routes = routeService.searchRoutes(origin, destination)
+                .stream()
+                .map(route -> {
+                    EntityModel<RouteViewDTO> em = EntityModel.of(route);
 
-        return ResponseEntity.ok(routes);
+                    em.add(linkTo(methodOn(RouteController.class).updateRoute(route.routeId(), null)).withRel("update-route"));
+                    em.add(linkTo(methodOn(RouteController.class).deactivateRoute(route.routeId())).withRel("deactivate-route"));
+                    return em;
+                })
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<RouteViewDTO>> collection = CollectionModel.of(routes);
+        collection.add(linkTo(methodOn(RouteController.class).searchRoutes(origin, destination)).withSelfRel());
+
+        return ResponseEntity.ok(collection);
     }
 }
