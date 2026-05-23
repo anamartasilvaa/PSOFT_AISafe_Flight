@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "AISafe API" as SYS
+
+title SSD - US115a
+
+Tech -> SYS : POST /api/maintenance-templates \n(CreateMaintenanceTemplateDTO)
+activate SYS
+
+SYS --> Tech : 201 Created \n(Maintenance Template Details + HATEOAS Links)
+deactivate SYS
+@enduml

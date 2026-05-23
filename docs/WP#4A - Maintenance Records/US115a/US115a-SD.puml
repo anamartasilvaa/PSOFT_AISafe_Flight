@@ -1,0 +1,40 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "MaintenanceTemplateController" as Ctrl
+participant "MaintenanceTemplateService" as Svc
+participant "MaintenanceTemplate" as Template
+participant "MaintenanceTemplateRepository" as Repo
+participant "MaintenanceTemplateViewDTO" as DTO
+
+title SD - US115a
+
+Tech -> Ctrl : POST /api/maintenance-templates (CreateMaintenanceTemplateDTO)
+activate Ctrl
+
+Ctrl -> Svc : createTemplate(dto)
+activate Svc
+
+' Domain instantiation inside the transactional boundary
+Svc -> Template ** : create(dto.templateName, dto.templateType, dto.applicableModels, dto.checklistTasks)
+activate Template
+Template --> Svc : templateInstance
+deactivate Template
+
+Svc -> Repo : save(templateInstance)
+activate Repo
+Repo --> Svc : savedTemplate
+deactivate Repo
+
+Svc -> DTO ** : create(savedTemplate)
+activate DTO
+DTO --> Svc : templateViewDTO
+deactivate DTO
+
+Svc --> Ctrl : templateViewDTO
+deactivate Svc
+
+Ctrl --> Tech : 201 Created (EntityModel<MaintenanceTemplateViewDTO>)
+deactivate Ctrl
+@enduml

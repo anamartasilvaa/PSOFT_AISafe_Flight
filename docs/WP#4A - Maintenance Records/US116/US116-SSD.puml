@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "AISafe API" as Sys
+
+title SSD - US116
+
+Tech -> Sys : GET /api/maintenance-records/aircraft/{registration}
+activate Sys
+
+Sys --> Tech : 200 OK \n(List of Maintenance Records + HATEOAS Links)
+deactivate Sys
+@enduml

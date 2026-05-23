@@ -1,0 +1,36 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+title Domain Model - US115a
+hide empty members
+
+package "Maintenance Template Aggregate" {
+    class MaintenanceTemplate <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - templateName: String
+    }
+
+    enum TemplateType <<Enumeration>> {
+        INSPECTION
+        SCHEDULED_MAINTENANCE
+        OVERHAUL
+        MODIFICATION
+    }
+
+    class AircraftModel <<Value Object>> {
+        - modelName: String
+        - manufacturer: String
+    }
+
+    class TemplateChecklistItem <<Value Object>> {
+        - taskDescription: String
+        - sequenceOrder: Integer
+    }
+
+    MaintenanceTemplate "1" --> "1" TemplateType : has type >
+    MaintenanceTemplate "1" *-- "*" AircraftModel : applicable to >
+    MaintenanceTemplate "1" *-- "*" TemplateChecklistItem : defines >
+}
+@enduml

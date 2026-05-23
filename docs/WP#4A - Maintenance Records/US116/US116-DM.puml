@@ -1,0 +1,34 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+title Domain Model - US116
+hide empty members
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+    MaintenanceRecord "1" *-- "1" MaintenanceRecordId : identified by >
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+    }
+    class Registration <<Value Object>> {
+        - tailNumber: String
+    }
+    Aircraft "1" *-- "1" Registration : identified by >
+}
+
+MaintenanceRecord "*" --> "1" Aircraft : pertains to >
+@enduml

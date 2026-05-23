@@ -1,0 +1,60 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US115a
+
+package "API Layer" {
+    class MaintenanceTemplateController <<RestController>> {
+        + createTemplate(dto: CreateMaintenanceTemplateDTO): ResponseEntity<EntityModel<MaintenanceTemplateViewDTO>>
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceTemplateService <<Service>> {
+        + createTemplate(dto: CreateMaintenanceTemplateDTO): MaintenanceTemplateViewDTO
+    }
+    class CreateMaintenanceTemplateDTO <<DTO>> {
+        + templateName: String
+        + templateType: String
+        + applicableModels: List<String>
+        + checklistTasks: List<String>
+    }
+    class MaintenanceTemplateViewDTO <<DTO>> {
+        + templateId: Long
+        + templateName: String
+        + templateType: String
+        + status: String
+    }
+}
+
+package "Domain Layer" {
+    class MaintenanceTemplate <<Entity>> <<Root>> {
+        - version: Long
+        - templateName: String
+        + MaintenanceTemplate(name, type, models, checklist)
+    }
+    enum TemplateType <<Enumeration>> {
+        INSPECTION
+        SCHEDULED_MAINTENANCE
+        OVERHAUL
+        MODIFICATION
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenanceTemplateRepository <<Repository>> {
+        + save(template: MaintenanceTemplate): MaintenanceTemplate
+    }
+}
+
+' Layer Dependencies
+MaintenanceTemplateController .down.> MaintenanceTemplateService : delegates to >
+MaintenanceTemplateController .down.> CreateMaintenanceTemplateDTO : consumes >
+MaintenanceTemplateController .down.> MaintenanceTemplateViewDTO : produces >
+
+MaintenanceTemplateService .down.> MaintenanceTemplateRepository : uses >
+MaintenanceTemplateService .down.> MaintenanceTemplate : creates >
+MaintenanceTemplateService .down.> MaintenanceTemplateViewDTO : creates >
+
+MaintenanceTemplate "1" --> "1" TemplateType
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceRecordService" as Svc
+participant "MaintenanceRecordRepository" as Repo
+participant "MaintenanceRecordViewDTO" as DTO
+
+title SD - US116
+
+Tech -> Ctrl : GET /api/maintenance-records/aircraft/{registration}
+activate Ctrl
+
+Ctrl -> Svc : getRecordsByAircraft(registration)
+activate Svc
+
+Svc -> Repo : findByAircraftRegistration(registration)
+activate Repo
+Repo --> Svc : List<MaintenanceRecord> (recordsList)
+deactivate Repo
+
+Svc -> DTO ** : mapToDTOs(recordsList)
+activate DTO
+DTO --> Svc : List<MaintenanceRecordViewDTO>
+deactivate DTO
+
+Svc --> Ctrl : List<MaintenanceRecordViewDTO>
+deactivate Svc
+
+Ctrl --> Tech : 200 OK (CollectionModel<MaintenanceRecordViewDTO>)
+deactivate Ctrl
+@enduml

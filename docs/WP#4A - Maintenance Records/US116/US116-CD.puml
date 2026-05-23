@@ -1,0 +1,53 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US116
+
+package "API Layer" {
+    class MaintenanceRecordController <<RestController>> {
+        + getRecordsByAircraft(registration: String): ResponseEntity<CollectionModel<MaintenanceRecordViewDTO>>
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceRecordService <<Service>> {
+        + getRecordsByAircraft(registration: String): List<MaintenanceRecordViewDTO>
+    }
+    class MaintenanceRecordViewDTO <<DTO>> {
+        + recordId: String
+        + aircraftRegistration: String
+        + description: String
+        + startDate: LocalDateTime
+        + status: String
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenanceRecordRepository <<Repository>> {
+        + findByAircraftRegistration(registration: String): List<MaintenanceRecord>
+    }
+}
+
+package "Domain Layer" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+}
+
+
+MaintenanceRecordController .down.> MaintenanceRecordService : delegates to >
+MaintenanceRecordController .down.> MaintenanceRecordViewDTO : produces >
+
+MaintenanceRecordService .down.> MaintenanceRecordRepository : uses >
+MaintenanceRecordService .down.> MaintenanceRecord : reads >
+MaintenanceRecordService .down.> MaintenanceRecordViewDTO : creates >
+
+MaintenanceRecordRepository .down.> MaintenanceRecord : returns >
+MaintenanceRecord *-- "1" MaintenanceRecordId : identified by >
+@enduml
