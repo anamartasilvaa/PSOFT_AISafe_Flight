@@ -9,13 +9,13 @@ title SSD - US113
 == Alternative A: List Routes by Origin Airport ==
 User -> Sys : GET /api/routes/origin/{iataCode}
 activate Sys
-Sys --> User : 200 OK \n(Lista de Rotas da Origem + Links HATEOAS)
+Sys --> User : 200 OK \n(List of Routes from Origin + HATEOAS Links)
 deactivate Sys
 
 == Alternative B: View Route Details by ID ==
 User -> Sys : GET /api/routes/{id}
 activate Sys
-Sys --> User : 200 OK \n(Detalhes da Rota + Links HATEOAS)
+Sys --> User : 200 OK \n(Route Details + HATEOAS Links)
 deactivate Sys
 
 @enduml

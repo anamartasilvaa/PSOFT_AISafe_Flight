@@ -4,7 +4,7 @@ autonumber
 actor "ATCC / Backoffice" as ATCC
 participant "AISafe API" as SYS
 
-title SSD - US110 (Create Route)
+title SSD - US110
 
 ATCC -> SYS : POST /api/routes \n(CreateRouteDTO)
 activate SYS

@@ -1,7 +1,7 @@
 @startuml
 skinparam style strictuml
 skinparam packageStyle rectangle
-title Class Diagram - US114 (Search Routes)
+title Class Diagram - US114
 
 package "API Layer" {
     class RouteController {
@@ -24,20 +24,31 @@ package "Application Layer" {
 
 package "Infrastructure Layer" {
     interface RouteRepository <<Repository>> {
-        + findByOrigin_IataCode(origin: String): List<Route>
-        + findByDestination_IataCode(dest: String): List<Route>
-        + findByOrigin_IataCodeAndDestination_IataCode(origin: String, dest: String): List<Route>
+        + findByOrigin_IataCode_Code(origin: String): List<Route>
+        + findByDestination_IataCode_Code(dest: String): List<Route>
+        + findByOrigin_IataCode_CodeAndDestination_IataCode_Code(origin: String, dest: String): List<Route>
     }
 }
 
 package "Domain Layer" {
-    class Route <<Entity>> <<Root>>
+    class Route <<Entity>> <<Root>> {
+        - version: Long
+        - estimatedFlightTime: Integer
+        - minimumRange: Double
+        - minimumCapacity: Integer
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
 }
 
-RouteController .down.> RouteService : calls
-RouteController .down.> RouteViewDTO : returns
+' Ligações
+RouteController .down.> RouteService : delegates to >
+RouteController .down.> RouteViewDTO : produces >
 
-RouteService .down.> RouteRepository : uses
-RouteService .down.> Route : reads
+RouteService .down.> RouteRepository : uses >
+RouteService .down.> Route : reads >
+RouteService .down.> RouteViewDTO : creates >
 
+Route *-- "1" RouteId
 @enduml

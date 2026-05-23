@@ -1,28 +1,34 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC" as User
+actor "ATCC / Backoffice" as User
 participant "RouteController" as Ctrl
 participant "RouteService" as Svc
 participant "RouteRepository" as Repo
+participant "RouteViewDTO" as DTO
 
-title Sequence Diagram - US114 (Search Routes)
+title SD - US114
 
-User -> Ctrl : GET /api/routes/search?origin={originIata}&dest={destinationIata}
+User -> Ctrl : GET /api/routes?origin={originIata}&dest={destinationIata}
 activate Ctrl
 
 Ctrl -> Svc : searchRoutes(originIata, destinationIata)
 activate Svc
 
-Svc -> Repo : findByOrigin_IataCodeAndDestination_IataCode(originIata, destinationIata)
+Svc -> Repo : findByOrigin_IataCode_CodeAndDestination_IataCode_Code(originIata, destinationIata)
 activate Repo
-Repo --> Svc : routesList: List<Route>
+Repo --> Svc : List<Route> (routesList)
 deactivate Repo
+
+Svc -> DTO ** : mapToDTOs(routesList)
+activate DTO
+DTO --> Svc : List<RouteViewDTO>
+deactivate DTO
 
 Svc --> Ctrl : List<RouteViewDTO>
 deactivate Svc
 
-Ctrl --> User : 200 OK (List<RouteViewDTO>)
+Ctrl --> User : 200 OK (CollectionModel)
 deactivate Ctrl
 
 @enduml

@@ -4,7 +4,7 @@ autonumber
 actor "ATCC" as ATCC
 participant "AISafe API" as SYS
 
-title SSD - US111 (Keep track of route history)
+title SSD - US111
 
 ATCC -> SYS : GET /api/routes/{id}/history
 activate SYS
