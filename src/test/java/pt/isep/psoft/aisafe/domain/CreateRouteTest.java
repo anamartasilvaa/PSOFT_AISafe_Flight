@@ -88,7 +88,7 @@ class CreateRouteTest {
             routeService.createRoute(dto);
         });
 
-        assertTrue(ex.getMessage().contains("Origin Airport not found"));
+        assertEquals("Origin Airport not found: FAKE", ex.getMessage());
         verify(routeRepository, never()).save(any());
     }
 }

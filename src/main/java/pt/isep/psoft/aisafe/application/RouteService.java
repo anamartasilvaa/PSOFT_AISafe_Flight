@@ -4,12 +4,16 @@ import org.springframework.stereotype.Service;
 import pt.isep.psoft.aisafe.application.DTO.CreateRouteDTO;
 import pt.isep.psoft.aisafe.application.DTO.RouteViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateRouteDTO;
+import pt.isep.psoft.aisafe.application.DTO.RouteHistoryDTO; // <-- ADICIONADO
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AirportRepository;
 import pt.isep.psoft.aisafe.repositories.RouteRepository;
 import pt.isep.psoft.aisafe.repositories.RouteHistoryRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RouteService {
@@ -54,7 +58,7 @@ public class RouteService {
         route.deactivate();
         Route saved = routeRepository.save(route);
 
-        routeHistoryRepository.save(new RouteHistory(saved.getRouteId().id(), "DEACTIVATED"));
+        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "DEACTIVATED"); // <-- CORREÇÃO DA AUDITORIA TEMPORAL
 
         return convertToDTO(saved);
     }
@@ -70,7 +74,7 @@ public class RouteService {
 
         Route saved = routeRepository.save(route);
 
-        routeHistoryRepository.save(new RouteHistory(saved.getRouteId().id(), "UPDATED"));
+        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "UPDATED"); // <-- CORREÇÃO DA AUDITORIA TEMPORAL
 
         return convertToDTO(saved);
     }
@@ -102,8 +106,17 @@ public class RouteService {
     }
 
     // --- US111: Ver Histórico da Rota  ---
-    public List<RouteHistory> getRouteHistory(String routeId) {
-        return routeHistoryRepository.findByRouteIdOrderByStartDateDesc(routeId);
+    public List<RouteHistoryDTO> getRouteHistory(String routeId) {
+        List<RouteHistory> entities = routeHistoryRepository.findByRouteIdOrderByStartDateDesc(routeId);
+
+        return entities.stream().map(entity ->
+                new RouteHistoryDTO(
+                        entity.getRouteId(),
+                        entity.getAction(),
+                        entity.getStartDate(),
+                        entity.getEndDate()
+                )
+        ).collect(Collectors.toList());
     }
 
     private RouteViewDTO convertToDTO(Route route) {
@@ -113,5 +126,18 @@ public class RouteService {
                 route.getDestination().getIataCode().code(),
                 route.getStatus().name()
         );
+    }
+
+
+    private void closeOldHistoryAndCreateNew(String routeId, String action) {
+        Optional<RouteHistory> activeHistory = routeHistoryRepository.findFirstByRouteIdAndEndDateIsNull(routeId);
+
+        if (activeHistory.isPresent()) {
+            RouteHistory old = activeHistory.get();
+            old.closeHistory(LocalDateTime.now());
+            routeHistoryRepository.save(old);
+        }
+
+        routeHistoryRepository.save(new RouteHistory(routeId, action));
     }
 }
