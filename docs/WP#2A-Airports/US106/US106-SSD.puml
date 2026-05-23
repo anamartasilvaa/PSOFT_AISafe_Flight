@@ -1,6 +1,7 @@
 @startuml
 skinparam style strictuml
 autonumber
+title SSD-US106
 
 actor "Backoffice / Admin" as Admin
 participant "AISafe System" as System

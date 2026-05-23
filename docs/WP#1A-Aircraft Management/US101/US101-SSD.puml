@@ -1,6 +1,7 @@
 @startuml
 skinparam style strictuml
 autonumber
+title SSD US-101
 
 actor "Backoffice Operator" as OP
 participant "AISafe System" as SYS
