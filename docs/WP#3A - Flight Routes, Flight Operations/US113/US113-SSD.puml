@@ -1,21 +1,21 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC" as User
-participant "AI-Safe System" as Sys
+actor "ATCC / Backoffice" as User
+participant "AISafe API" as Sys
 
-title System Sequence Diagram - US113
+title SSD - US113
 
-== Alternative A: List Routes by Airport ==
-User -> Sys : getRoutesByAirport(iataCode)
+== Alternative A: List Routes by Origin Airport ==
+User -> Sys : GET /api/routes/origin/{iataCode}
 activate Sys
-Sys --> User : 200 OK (List of Routes from Airport)
+Sys --> User : 200 OK \n(Lista de Rotas da Origem + Links HATEOAS)
 deactivate Sys
 
-== Alternative B: View Details by ID ==
-User -> Sys : getRouteById(id)
+== Alternative B: View Route Details by ID ==
+User -> Sys : GET /api/routes/{id}
 activate Sys
-Sys --> User : 200 OK (Route Details)
+Sys --> User : 200 OK \n(Detalhes da Rota + Links HATEOAS)
 deactivate Sys
 
 @enduml

@@ -7,37 +7,47 @@ hide empty members
 
 package "Route Aggregate" {
     class Route <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
         - estimatedFlightTime: Integer
         - minimumRange: Double
         - minimumCapacity: Integer
-        - distance: Double
     }
-
     class RouteId <<Value Object>> {
         - id: String
     }
-
-    class RouteStatus <<Value Object>> {
+    enum RouteStatus <<Enumeration>> {
         ACTIVE
         INACTIVE
     }
-
-    class RouteHistory <<Value Object>> {
-        - startDate: Date
-        - endDate: Date
-    }
-
     Route "1" *-- "1" RouteId : identified by >
-    Route "1" *-- "1" RouteStatus : has >
-    Route "1" *-- "1" RouteHistory : has >
+    Route "1" --> "1" RouteStatus : has >
+}
+
+package "History Tracking" {
+    class RouteHistory <<Entity>> {
+        - routeId: String
+        - action: String
+        - startDate: LocalDateTime
+        - endDate: LocalDateTime
+        + closeHistory(endDate: LocalDateTime): void
+    }
 }
 
 package "Airport Aggregate" {
-    class Airport <<Entity>> <<Root>>
+    class Airport <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - name: String
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    Airport "1" *-- "1" IATACode : identified by >
 }
 
-Route "*" --> "1" Airport : departs from (Origin) >
-Route "*" --> "1" Airport : arrives at (Destination) >
-
+Route "1" *-- "*" RouteHistory : tracks history of >
+Route "*" --> "1" Airport : origin >
+Route "*" --> "1" Airport : destination >
 
 @enduml
