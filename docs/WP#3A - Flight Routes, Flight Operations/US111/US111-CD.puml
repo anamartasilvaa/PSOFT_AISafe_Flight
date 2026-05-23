@@ -1,28 +1,49 @@
 @startuml
 skinparam style strictuml
 skinparam packageStyle rectangle
-
 title Class Diagram - US111
 
+package "API Layer" {
+    class RouteController <<RestController>> {
+        + getRouteHistory(id: String): ResponseEntity<CollectionModel<EntityModel<RouteHistoryDTO>>>
+    }
+}
+
 package "Application Layer" {
-    class RouteService {
-        + updateRouteStatus(id: String, status: String): void
+    class RouteService <<Service>> {
+        + getRouteHistory(routeId: String): List<RouteHistoryDTO>
+    }
+    class RouteHistoryDTO <<DTO>> {
+        + routeId: String
+        + action: String
+        + startDate: LocalDateTime
+        + endDate: LocalDateTime
     }
 }
 
 package "Domain Layer" {
-    class Route <<Entity>> <<Root>> {
-        + deactivate(): void
-    }
-
-    class RouteHistory <<Value Object>> {
-        - startDate: Date
-        - endDate: Date
-        + closeHistory(endDate: Date): void
+    class RouteHistory <<Entity>> {
+        - routeId: String
+        - action: String
+        - startDate: LocalDateTime
+        - endDate: LocalDateTime
+        + closeHistory(endDate: LocalDateTime): void
     }
 }
 
-RouteService .down.> Route : updates
-Route *-- "1" RouteHistory
+package "Infrastructure Layer" {
+    interface RouteHistoryRepository <<Repository>> {
+        + findByRouteIdOrderByStartDateDesc(routeId: String): List<RouteHistory>
+    }
+}
+
+RouteController .down.> RouteService : calls >
+RouteController .down.> RouteHistoryDTO : uses >
+
+RouteService .down.> RouteHistoryRepository : uses >
+RouteService .down.> RouteHistory : reads >
+RouteService .down.> RouteHistoryDTO : creates >
+
+RouteHistoryRepository .down.> RouteHistory : returns >
 
 @enduml

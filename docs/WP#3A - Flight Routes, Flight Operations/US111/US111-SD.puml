@@ -1,51 +1,35 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC" as User
-participant "RouteController" as Ctrl
-participant "RouteService" as Svc
-participant "RouteRepository" as Repo
-participant "Route" as Route
-participant "RouteHistory" as Hist
 
-title SD - US111 (Track History during Route Deactivation)
+actor "ATCC" as ATCC
+participant "RouteController" as Controller
+participant "RouteService" as Service
+participant "RouteHistoryRepository" as Repo
+participant "RouteHistoryDTO" as DTO
 
-User -> Ctrl : PATCH /api/routes/{id} (UpdateRouteDTO)
-activate Ctrl
+title SD - US111 (Keep track of route history)
 
-Ctrl -> Svc : updateRouteStatus(id, dto.status)
-activate Svc
+ATCC -> Controller : GET /api/routes/{id}/history
+activate Controller
 
+Controller -> Service : getRouteHistory(id)
+activate Service
 
-Svc -> Repo : findByRouteId(id)
+Service -> Repo : findByRouteIdOrderByStartDateDesc(id)
 activate Repo
-Repo --> Svc : route
+Repo --> Service : List<RouteHistory>
 deactivate Repo
 
+Service -> DTO ** : mapToDTOs(List<RouteHistory>)
+activate DTO
+DTO --> Service : List<RouteHistoryDTO>
+deactivate DTO
 
-Svc -> Route : deactivate()
-activate Route
+Service --> Controller : List<RouteHistoryDTO>
+deactivate Service
 
-
-Route -> Hist : closeHistory(currentDate)
-activate Hist
-
-Hist --> Route
-deactivate Hist
-
-Route --> Svc
-deactivate Route
-
-
-Svc -> Repo : save(route)
-activate Repo
-Repo --> Svc : savedRoute
-deactivate Repo
-
-Svc --> Ctrl : RouteViewDTO
-deactivate Svc
-
-Ctrl --> User : 200 OK (RouteViewDTO)
-deactivate Ctrl
+Controller --> ATCC : 200 OK (CollectionModel<RouteHistoryDTO>)
+deactivate Controller
 
 @enduml

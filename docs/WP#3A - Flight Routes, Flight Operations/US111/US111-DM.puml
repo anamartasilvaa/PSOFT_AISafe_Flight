@@ -2,15 +2,13 @@
 skinparam style strictuml
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-title Domain Model - Route Aggregate
+title Domain Model - US111
 hide empty members
 
 package "Route Aggregate" {
     class Route <<Entity>> <<Root>> {
-        - estimatedFlightTime: Integer
-        - minimumRange: Double
-        - minimumCapacity: Integer
-        - distance: Double
+        - pk: Long
+        - version: Long
     }
 
     class RouteId <<Value Object>> {
@@ -22,22 +20,19 @@ package "Route Aggregate" {
         INACTIVE
     }
 
+    Route "1" *-- "1" RouteId : identified by >
+    Route "1" --> "1" RouteStatus : has >
+}
+
+package "History Tracking" {
     class RouteHistory <<Value Object>> {
+        - routeId: String
+        - action: String
         - startDate: Date
         - endDate: Date
     }
-
-    Route "1" *-- "1" RouteId : identified by >
-    Route "1" *-- "1" RouteStatus : has >
-    Route "1" *-- "1" RouteHistory : has >
 }
 
-package "Airport Aggregate" {
-    class Airport <<Entity>> <<Root>>
-}
-
-Route "*" --> "1" Airport : departs from (Origin) >
-Route "*" --> "1" Airport : arrives at (Destination) >
-
+Route "1" *-- "*" RouteHistory : tracks history of >
 
 @enduml
