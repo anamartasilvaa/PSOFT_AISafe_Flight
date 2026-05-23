@@ -1,0 +1,48 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceRecordService" as Svc
+participant "MaintenanceRecordRepository" as Repo
+participant "MaintenanceRecord" as Record
+participant "MaintenanceRecordViewDTO" as DTO
+
+title SD - US119
+
+Tech -> Ctrl : PATCH /api/maintenance-records/{id}/complete \n(CompleteMaintenanceRecordDTO)
+activate Ctrl
+
+Ctrl -> Svc : completeRecord(id, dto)
+activate Svc
+
+
+Svc -> Repo : findById(id)
+activate Repo
+Repo --> Svc : Optional<MaintenanceRecord> (record)
+deactivate Repo
+
+
+Svc -> Record : markAsCompleted(dto.completionNotes, now())
+activate Record
+Record --> Svc : (void)
+deactivate Record
+
+
+Svc -> Repo : save(record)
+activate Repo
+Repo --> Svc : updatedRecord
+deactivate Repo
+
+
+Svc -> DTO ** : create(updatedRecord)
+activate DTO
+DTO --> Svc : recordViewDTO
+deactivate DTO
+
+Svc --> Ctrl : recordViewDTO
+deactivate Svc
+
+Ctrl --> Tech : 200 OK (EntityModel<MaintenanceRecordViewDTO>)
+deactivate Ctrl
+@enduml

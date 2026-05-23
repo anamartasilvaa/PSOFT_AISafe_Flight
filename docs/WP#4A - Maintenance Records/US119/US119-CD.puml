@@ -1,0 +1,61 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US119
+
+package "API Layer" {
+    class MaintenanceRecordController <<RestController>> {
+        + completeRecord(id: String, dto: CompleteMaintenanceRecordDTO): ResponseEntity<EntityModel<MaintenanceRecordViewDTO>>
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceRecordService <<Service>> {
+        + completeRecord(id: String, dto: CompleteMaintenanceRecordDTO): MaintenanceRecordViewDTO
+    }
+    class CompleteMaintenanceRecordDTO <<DTO>> {
+        + completionNotes: String
+    }
+    class MaintenanceRecordViewDTO <<DTO>> {
+        + recordId: String
+        + aircraftRegistration: String
+        + status: String
+        + completionNotes: String
+        + completionDate: LocalDateTime
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenanceRecordRepository <<Repository>> {
+        + findById(id: String): Optional<MaintenanceRecord>
+        + save(record: MaintenanceRecord): MaintenanceRecord
+    }
+}
+
+package "Domain Layer" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - version: Long
+        - description: String
+        - completionNotes: String
+        - completionDate: LocalDateTime
+        + markAsCompleted(notes: String, date: LocalDateTime): void
+    }
+    enum MaintenanceStatus <<Enumeration>> {
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+    }
+}
+
+' Layer Dependencies
+MaintenanceRecordController .down.> MaintenanceRecordService : delegates to >
+MaintenanceRecordController .down.> CompleteMaintenanceRecordDTO : consumes >
+MaintenanceRecordController .down.> MaintenanceRecordViewDTO : produces >
+
+MaintenanceRecordService .down.> MaintenanceRecordRepository : uses >
+MaintenanceRecordService .down.> MaintenanceRecord : updates >
+MaintenanceRecordService .down.> MaintenanceRecordViewDTO : creates >
+
+MaintenanceRecordRepository .down.> MaintenanceRecord : reads/saves >
+MaintenanceRecord "1" --> "1" MaintenanceStatus : uses >
+@enduml

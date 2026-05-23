@@ -1,0 +1,48 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US117
+
+package "API Layer" {
+    class MaintenanceRecordController <<RestController>> {
+        + getTotalFleetMaintenanceHours(): ResponseEntity<TotalMaintenanceHoursDTO>
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceRecordService <<Service>> {
+        + getTotalFleetMaintenanceHours(): TotalMaintenanceHoursDTO
+    }
+    class TotalMaintenanceHoursDTO <<DTO>> {
+        + totalHours: Long
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenanceRecordRepository <<Repository>> {
+        + sumExpectedDuration(): Long
+    }
+}
+
+package "Domain Layer" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+}
+
+' Layer Dependencies
+MaintenanceRecordController .down.> MaintenanceRecordService : delegates to >
+MaintenanceRecordController .down.> TotalMaintenanceHoursDTO : produces >
+
+MaintenanceRecordService .down.> MaintenanceRecordRepository : uses >
+MaintenanceRecordService .down.> TotalMaintenanceHoursDTO : creates >
+
+MaintenanceRecordRepository .down.> MaintenanceRecord : reads >
+MaintenanceRecord *-- "1" MaintenanceRecordId : identified by >
+@enduml

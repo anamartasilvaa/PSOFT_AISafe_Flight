@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as ATCC
+participant "AISafe API" as Sys
+
+title SSD - US117
+
+ATCC -> Sys : GET /api/maintenance-records/fleet/total-hours
+activate Sys
+
+Sys --> ATCC : 200 OK \n(TotalMaintenanceHoursDTO)
+deactivate Sys
+@enduml

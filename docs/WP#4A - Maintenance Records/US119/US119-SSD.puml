@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "AISafe API" as Sys
+
+title SSD - US119
+
+Tech -> Sys : PATCH /api/maintenance-records/{id}/complete \n(CompleteMaintenanceRecordDTO)
+activate Sys
+
+Sys --> Tech : 200 OK \n(Updated Record Details + HATEOAS Links)
+deactivate Sys
+@enduml

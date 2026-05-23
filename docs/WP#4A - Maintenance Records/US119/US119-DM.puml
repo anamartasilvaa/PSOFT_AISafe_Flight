@@ -1,0 +1,45 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+title Domain Model - US119
+hide empty members
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+        - completionNotes: String
+        - completionDate: LocalDateTime
+        + markAsCompleted(notes: String, date: LocalDateTime): void
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+    enum MaintenanceStatus <<Enumeration>> {
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    MaintenanceRecord "1" *-- "1" MaintenanceRecordId : identified by >
+    MaintenanceRecord "1" --> "1" MaintenanceStatus : has >
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+    }
+    class Registration <<Value Object>> {
+        - tailNumber: String
+    }
+
+    Aircraft "1" *-- "1" Registration : identified by >
+}
+
+MaintenanceRecord "*" --> "1" Aircraft : pertains to >
+@enduml

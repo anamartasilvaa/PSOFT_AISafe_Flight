@@ -1,0 +1,34 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "ATCC" as ATCC
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceRecordService" as Svc
+participant "MaintenanceRecordRepository" as Repo
+participant "TotalMaintenanceHoursDTO" as DTO
+
+title SD - US117
+
+ATCC -> Ctrl : GET /api/maintenance-records/fleet/total-hours
+activate Ctrl
+
+Ctrl -> Svc : getTotalFleetMaintenanceHours()
+activate Svc
+
+' Optimised Database Query
+Svc -> Repo : sumExpectedDuration()
+activate Repo
+Repo --> Svc : Long (totalHours)
+deactivate Repo
+
+Svc -> DTO ** : create(totalHours)
+activate DTO
+DTO --> Svc : TotalMaintenanceHoursDTO
+deactivate DTO
+
+Svc --> Ctrl : TotalMaintenanceHoursDTO
+deactivate Svc
+
+Ctrl --> ATCC : 200 OK (TotalMaintenanceHoursDTO)
+deactivate Ctrl
+@enduml
