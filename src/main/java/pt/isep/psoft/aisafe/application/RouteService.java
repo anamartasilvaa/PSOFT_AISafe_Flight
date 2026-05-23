@@ -103,7 +103,7 @@ public class RouteService {
 
     // --- US111: Ver Histórico da Rota  ---
     public List<RouteHistory> getRouteHistory(String routeId) {
-        return routeHistoryRepository.findByRouteIdOrderByTimestampDesc(routeId);
+        return routeHistoryRepository.findByRouteIdOrderByStartDateDesc(routeId);
     }
 
     private RouteViewDTO convertToDTO(Route route) {

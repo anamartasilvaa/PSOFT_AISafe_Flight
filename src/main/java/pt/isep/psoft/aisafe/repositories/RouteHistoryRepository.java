@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface RouteHistoryRepository extends JpaRepository<RouteHistory, Long> {
-    List<RouteHistory> findByRouteIdOrderByTimestampDesc(String routeId);
+    List<RouteHistory> findByRouteIdOrderByStartDateDesc(String routeId);
 }

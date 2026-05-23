@@ -29,13 +29,13 @@ class RouteHistoryTest {
         RouteHistory mockHistory1 = mock(RouteHistory.class);
         RouteHistory mockHistory2 = mock(RouteHistory.class);
 
-        when(routeHistoryRepository.findByRouteIdOrderByTimestampDesc(routeId))
+        when(routeHistoryRepository.findByRouteIdOrderByStartDateDesc(routeId))
                 .thenReturn(List.of(mockHistory1, mockHistory2));
 
         List<RouteHistory> history = routeService.getRouteHistory(routeId);
 
         assertNotNull(history);
         assertEquals(2, history.size());
-        verify(routeHistoryRepository, times(1)).findByRouteIdOrderByTimestampDesc(routeId);
+        verify(routeHistoryRepository, times(1)).findByRouteIdOrderByStartDateDesc(routeId);
     }
 }
