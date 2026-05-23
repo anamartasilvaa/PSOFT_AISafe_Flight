@@ -1,0 +1,59 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+title Domain Model - US115
+hide empty members
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+    class RecordChecklistItem <<Entity>> {
+        - taskDescription: String
+        - isCompleted: Boolean
+    }
+
+    MaintenanceRecord "1" *-- "1" MaintenanceRecordId : identified by >
+    MaintenanceRecord "1" *-- "*" RecordChecklistItem : contains >
+}
+
+package "Maintenance Template Aggregate" {
+    class MaintenanceTemplate <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+    }
+    class MaintenanceType <<Value Object>> {
+        - type: String
+    }
+    class TemplateChecklistItem <<Value Object>> {
+        - taskDescription: String
+    }
+
+    MaintenanceTemplate "1" *-- "1" MaintenanceType : identified by >
+    MaintenanceTemplate "1" *-- "*" TemplateChecklistItem : defines >
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+    }
+    class Registration <<Value Object>> {
+        - tailNumber: String
+    }
+
+    Aircraft "1" *-- "1" Registration : identified by >
+}
+
+MaintenanceRecord "*" --> "1" Aircraft : pertains to >
+MaintenanceRecord "*" --> "1" MaintenanceTemplate : based on >
+
+@enduml

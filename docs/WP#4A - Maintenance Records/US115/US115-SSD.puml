@@ -1,0 +1,14 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "AISafe API" as Sys
+
+title SSD - US115
+
+Tech -> Sys : POST /api/maintenance-records \n(CreateMaintenanceRecordDTO)
+activate Sys
+Sys --> Tech : 201 Created \n(Maintenance Record Details + HATEOAS Links)
+deactivate Sys
+
+@enduml

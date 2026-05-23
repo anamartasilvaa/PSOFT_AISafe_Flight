@@ -1,0 +1,55 @@
+@startuml
+skinparam style strictuml
+autonumber
+actor "Maintenance Technician" as Tech
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceRecordService" as Svc
+participant "AircraftRepository" as AirRepo
+participant "MaintenanceTemplateRepository" as TempRepo
+participant "MaintenanceRecord" as Record
+participant "MaintenanceRecordRepository" as RecordRepo
+participant "MaintenanceRecordViewDTO" as DTO
+
+title SD - US115
+
+Tech -> Ctrl : POST /api/maintenance-records (CreateMaintenanceRecordDTO)
+activate Ctrl
+
+Ctrl -> Svc : createRecord(dto)
+activate Svc
+
+
+Svc -> AirRepo : findByRegistration(dto.aircraftRegistration)
+activate AirRepo
+AirRepo --> Svc : Optional<Aircraft> (aircraft)
+deactivate AirRepo
+
+Svc -> TempRepo : findByType(dto.maintenanceType)
+activate TempRepo
+TempRepo --> Svc : Optional<MaintenanceTemplate> (template)
+deactivate TempRepo
+
+Svc -> Record ** : create(aircraft, template, dto.description, dto.startDate, ...)
+activate Record
+Record --> Svc : maintenanceRecord
+deactivate Record
+
+' Save to DB
+Svc -> RecordRepo : save(maintenanceRecord)
+activate RecordRepo
+RecordRepo --> Svc : savedRecord
+deactivate RecordRepo
+
+' Create DTO
+Svc -> DTO ** : create(savedRecord)
+activate DTO
+DTO --> Svc : recordViewDTO
+deactivate DTO
+
+Svc --> Ctrl : recordViewDTO
+deactivate Svc
+
+Ctrl --> Tech : 201 Created (EntityModel)
+deactivate Ctrl
+
+@enduml

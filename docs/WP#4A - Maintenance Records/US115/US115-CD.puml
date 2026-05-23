@@ -1,0 +1,66 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title Class Diagram - US115
+
+package "API Layer" {
+    class MaintenanceRecordController {
+        + createRecord(dto: CreateMaintenanceRecordDTO): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceRecordService {
+        + createRecord(dto: CreateMaintenanceRecordDTO): MaintenanceRecordViewDTO
+    }
+    class CreateMaintenanceRecordDTO <<DTO>> {
+        + aircraftRegistration: String
+        + maintenanceType: String
+        + description: String
+        + startDate: LocalDateTime
+        + expectedDuration: Integer
+    }
+    class MaintenanceRecordViewDTO <<DTO>> {
+        + recordId: String
+        + aircraftRegistration: String
+        + status: String
+    }
+}
+
+package "Domain Layer" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - version: Long
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+    class MaintenanceRecordId <<Value Object>> {
+        - id: String
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenanceRecordRepository <<Repository>> {
+        + save(record: MaintenanceRecord): MaintenanceRecord
+    }
+    interface AircraftRepository <<Repository>> {
+        + findByRegistration(tailNumber: String): Optional<Aircraft>
+    }
+    interface MaintenanceTemplateRepository <<Repository>> {
+        + findByType(type: String): Optional<MaintenanceTemplate>
+    }
+}
+
+' Links
+MaintenanceRecordController .down.> MaintenanceRecordService : delegates to >
+MaintenanceRecordController .down.> CreateMaintenanceRecordDTO : consumes >
+MaintenanceRecordController .down.> MaintenanceRecordViewDTO : produces >
+
+MaintenanceRecordService .down.> AircraftRepository : uses >
+MaintenanceRecordService .down.> MaintenanceTemplateRepository : uses >
+MaintenanceRecordService .down.> MaintenanceRecordRepository : uses >
+MaintenanceRecordService .down.> MaintenanceRecord : creates >
+MaintenanceRecordService .down.> MaintenanceRecordViewDTO : creates >
+
+MaintenanceRecord *-- "1" MaintenanceRecordId
+@enduml
