@@ -2,8 +2,13 @@ package pt.isep.psoft.aisafe.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,10 +83,9 @@ public class RouteController {
         return ResponseEntity.ok(resource);
     }
 
-    // --- US111: Ver histórico de uma rota--
+    // --- US111: Ver histórico de uma rota ---
     @GetMapping("/{id}/history")
     public ResponseEntity<CollectionModel<EntityModel<RouteHistoryDTO>>> getRouteHistory(@PathVariable String id) {
-
         List<EntityModel<RouteHistoryDTO>> history = routeService.getRouteHistory(id)
                 .stream()
                 .map(dto -> EntityModel.of(dto,
@@ -94,28 +98,34 @@ public class RouteController {
         return ResponseEntity.ok().body(collectionModel);
     }
 
-    // --- US113: Pesquisar Rotas por Aeroporto ---
+    // --- US113: Pesquisar Rotas por Aeroporto  ---
     @GetMapping("/airport/{iata}")
-    @Operation(summary = "Search routes by origin airport")
-    public ResponseEntity<CollectionModel<EntityModel<RouteViewDTO>>> searchRoutesByAirport(@PathVariable String iata) {
-        List<EntityModel<RouteViewDTO>> routes = routeService.searchRoutes(iata, null)
-                .stream()
-                .map(this::addLinksToRoute)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(CollectionModel.of(routes).add(linkTo(methodOn(RouteController.class).searchRoutesByAirport(iata)).withSelfRel()));
+    @Operation(summary = "Search routes by origin airport (Paged)")
+    public ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>> searchRoutesByAirport(
+            @PathVariable String iata,
+            @PageableDefault(size = 10) Pageable pageable,
+            PagedResourcesAssembler<RouteViewDTO> assembler) {
+
+        Page<RouteViewDTO> page = routeService.searchRoutes(iata, null, pageable);
+        PagedModel<EntityModel<RouteViewDTO>> pagedModel = assembler.toModel(page, this::addLinksToRoute);
+
+        return ResponseEntity.ok(pagedModel);
     }
 
-    // --- US113 e US114: Pesquisar Rotas ---
+    // --- US113 e US114: Pesquisar Rotas  ---
     @GetMapping
-    @Operation(summary = "Search routes by origin, destination, or both")
-    public ResponseEntity<CollectionModel<EntityModel<RouteViewDTO>>> searchRoutes(@RequestParam(required = false) String origin, @RequestParam(required = false) String destination) {
-        List<EntityModel<RouteViewDTO>> routes = routeService.searchRoutes(origin, destination)
-                .stream()
-                .map(this::addLinksToRoute)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(CollectionModel.of(routes).add(linkTo(methodOn(RouteController.class).searchRoutes(origin, destination)).withSelfRel()));
-    }
+    @Operation(summary = "Search routes by origin, destination, or both (Paged)")
+    public ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>> searchRoutes(
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) String destination,
+            @PageableDefault(size = 10) Pageable pageable,
+            PagedResourcesAssembler<RouteViewDTO> assembler) {
 
+        Page<RouteViewDTO> page = routeService.searchRoutes(origin, destination, pageable);
+        PagedModel<EntityModel<RouteViewDTO>> pagedModel = assembler.toModel(page, this::addLinksToRoute);
+
+        return ResponseEntity.ok(pagedModel);
+    }
 
     private EntityModel<RouteViewDTO> addLinksToRoute(RouteViewDTO route) {
         EntityModel<RouteViewDTO> em = EntityModel.of(route);

@@ -1,10 +1,12 @@
 package pt.isep.psoft.aisafe.application;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pt.isep.psoft.aisafe.application.DTO.CreateRouteDTO;
 import pt.isep.psoft.aisafe.application.DTO.RouteViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateRouteDTO;
-import pt.isep.psoft.aisafe.application.DTO.RouteHistoryDTO; // <-- ADICIONADO
+import pt.isep.psoft.aisafe.application.DTO.RouteHistoryDTO;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AirportRepository;
 import pt.isep.psoft.aisafe.repositories.RouteRepository;
@@ -42,7 +44,6 @@ public class RouteService {
         Route newRoute = new Route(routeId, origin, destination, dto.estimatedFlightTime(), dto.minimumRange(), dto.minimumCapacity());
 
         Route savedRoute = routeRepository.save(newRoute);
-
         routeHistoryRepository.save(new RouteHistory(savedRoute.getRouteId().id(), "CREATED"));
 
         return convertToDTO(savedRoute);
@@ -51,14 +52,12 @@ public class RouteService {
     // --- US112: Desativar uma rota ---
     public RouteViewDTO deactivateRoute(String id) {
         RouteId routeId = new RouteId(id);
-
         Route route = routeRepository.findByRouteId(routeId)
                 .orElseThrow(() -> new IllegalArgumentException("Route not found: " + id));
 
         route.deactivate();
         Route saved = routeRepository.save(route);
-
-        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "DEACTIVATED"); // <-- CORREÇÃO DA AUDITORIA TEMPORAL
+        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "DEACTIVATED");
 
         return convertToDTO(saved);
     }
@@ -66,15 +65,12 @@ public class RouteService {
     // --- US112: Atualizar uma rota ---
     public RouteViewDTO updateRoute(String id, UpdateRouteDTO dto) {
         RouteId routeId = new RouteId(id);
-
         Route route = routeRepository.findByRouteId(routeId)
                 .orElseThrow(() -> new IllegalArgumentException("Route not found: " + id));
 
         route.updateParameters(dto.estimatedFlightTime(), dto.minimumRange(), dto.minimumCapacity());
-
         Route saved = routeRepository.save(route);
-
-        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "UPDATED"); // <-- CORREÇÃO DA AUDITORIA TEMPORAL
+        closeOldHistoryAndCreateNew(saved.getRouteId().id(), "UPDATED");
 
         return convertToDTO(saved);
     }
@@ -88,27 +84,26 @@ public class RouteService {
         return convertToDTO(route);
     }
 
-    // --- US113 e US114: Pesquisar Rotas ---
-    public List<RouteViewDTO> searchRoutes(String origin, String destination) {
-        List<Route> results;
+    // --- US113 e US114: Pesquisar Rotas  ---
+    public Page<RouteViewDTO> searchRoutes(String origin, String destination, Pageable pageable) {
+        Page<Route> results;
 
         if (origin != null && destination != null) {
-            results = routeRepository.findByOrigin_IataCode_CodeAndDestination_IataCode_Code(origin, destination);
+            results = routeRepository.findByOrigin_IataCode_CodeAndDestination_IataCode_Code(origin, destination, pageable);
         } else if (origin != null) {
-            results = routeRepository.findByOrigin_IataCode_Code(origin);
+            results = routeRepository.findByOrigin_IataCode_Code(origin, pageable);
         } else if (destination != null) {
-            results = routeRepository.findByDestination_IataCode_Code(destination);
+            results = routeRepository.findByDestination_IataCode_Code(destination, pageable);
         } else {
-            results = routeRepository.findAll();
+            results = routeRepository.findAll(pageable);
         }
 
-        return results.stream().map(this::convertToDTO).toList();
+        return results.map(this::convertToDTO);
     }
 
-    // --- US111: Ver Histórico da Rota  ---
+    // --- US111: Ver Histórico da Rota ---
     public List<RouteHistoryDTO> getRouteHistory(String routeId) {
         List<RouteHistory> entities = routeHistoryRepository.findByRouteIdOrderByStartDateDesc(routeId);
-
         return entities.stream().map(entity ->
                 new RouteHistoryDTO(
                         entity.getRouteId(),
@@ -128,16 +123,13 @@ public class RouteService {
         );
     }
 
-
     private void closeOldHistoryAndCreateNew(String routeId, String action) {
         Optional<RouteHistory> activeHistory = routeHistoryRepository.findFirstByRouteIdAndEndDateIsNull(routeId);
-
         if (activeHistory.isPresent()) {
             RouteHistory old = activeHistory.get();
             old.closeHistory(LocalDateTime.now());
             routeHistoryRepository.save(old);
         }
-
         routeHistoryRepository.save(new RouteHistory(routeId, action));
     }
 }
