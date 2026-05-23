@@ -1,13 +1,14 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC" as User
-participant "AI-Safe System" as Sys
+actor "ATCC / Backoffice" as ATCC
+participant "AISafe API" as SYS
 
 title SSD - US110 (Create Route)
 
-User -> Sys : createRoute(originIata, destinationIata, estimatedFlightTime, minimumRange, minimumCapacity, distance)
-activate Sys
-Sys --> User : 201 Created (Route Details)
-deactivate Sys
+ATCC -> SYS : POST /api/routes \n(CreateRouteDTO)
+activate SYS
+SYS --> ATCC : 201 Created \n(EntityModel<RouteViewDTO> + HATEOAS Links)
+deactivate SYS
+
 @enduml

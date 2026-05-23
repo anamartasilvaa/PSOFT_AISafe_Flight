@@ -1,44 +1,62 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC" as User
-participant "RouteController" as Ctrl
-participant "RouteService" as Svc
+
+actor "ATCC" as ATCC
+participant "RouteController" as Controller
+participant "RouteService" as Service
 participant "AirportRepository" as AirportRepo
-participant "newRoute:Route" as Route
-participant "RouteRepository" as RouteRepo
+participant "RouteId" as RouteIdVO
+participant "Route" as Route
+participant "RouteRepository" as Repo
+participant "RouteHistory" as History
+participant "RouteHistoryRepository" as HistoryRepo
+participant "RouteViewDTO" as ViewDTO
 
 title SD - US110 (Create Route)
 
-User -> Ctrl : POST /api/routes (CreateRouteDTO)
-activate Ctrl
+ATCC -> Controller : POST /api/routes (CreateRouteDTO)
+activate Controller
 
-Ctrl -> Svc : createRoute(dto)
-activate Svc
+Controller -> Service : createRoute(dto)
+activate Service
 
-Svc -> AirportRepo : findByIataCode(dto.originIata)
+Service -> AirportRepo : findByIataCodeString(dto.originIata)
 activate AirportRepo
-AirportRepo --> Svc : originAirport
+AirportRepo --> Service : Optional<Airport> (originAirport)
 deactivate AirportRepo
 
-Svc -> AirportRepo : findByIataCode(dto.destinationIata)
+Service -> AirportRepo : findByIataCodeString(dto.destinationIata)
 activate AirportRepo
-AirportRepo --> Svc : destinationAirport
+AirportRepo --> Service : Optional<Airport> (destinationAirport)
 deactivate AirportRepo
 
-Svc -> Route ** : create(originAirport, destinationAirport, dto.estimatedFlightTime, dto.minimumRange, dto.minimumCapacity, dto.distance)
+Service -> RouteIdVO ** : create(dto.routeId)
+Service -> Route ** : create(routeId, originAirport, destinationAirport, ...)
 activate Route
-Route --> Svc : newRoute
+Route --> Service : routeInstance
 deactivate Route
 
-Svc -> RouteRepo : save(newRoute)
-activate RouteRepo
-RouteRepo --> Svc : savedRoute
-deactivate RouteRepo
+Service -> Repo : save(routeInstance)
+activate Repo
+Repo --> Service : savedRoute
+deactivate Repo
 
-Svc --> Ctrl : RouteViewDTO
-deactivate Svc
+Service -> History ** : create(savedRoute.getRouteId().id(), "CREATED")
+Service -> HistoryRepo : save(historyInstance)
+activate HistoryRepo
+HistoryRepo --> Service : savedHistory
+deactivate HistoryRepo
 
-Ctrl --> User : 201 Created (RouteViewDTO)
-deactivate Ctrl
+Service -> ViewDTO ** : create(savedRoute)
+activate ViewDTO
+ViewDTO --> Service : routeViewDTO
+deactivate ViewDTO
+
+Service --> Controller : routeViewDTO
+deactivate Service
+
+Controller --> ATCC : 201 Created (EntityModel<RouteViewDTO>)
+deactivate Controller
+
 @enduml
