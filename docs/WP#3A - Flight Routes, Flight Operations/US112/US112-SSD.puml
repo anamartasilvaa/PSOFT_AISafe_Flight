@@ -1,14 +1,13 @@
 @startuml
 skinparam style strictuml
 autonumber
-actor "ATCC / Backoffice" as User
-participant "AI-Safe System" as Sys
+actor "ATCC/Backoffice" as User
+participant "AISafe API" as Sys
 
-title SSD - US112
+title SSD - US112 (Update/Deactivate Route)
 
-User -> Sys : updateRouteStatus(routeId, newStatus)
+User -> Sys : PATCH /api/routes/{id} (UpdateRouteDTO)
 activate Sys
-Sys --> User : 200 OK (Updated Route Details)
+Sys --> User : 200 OK (RouteViewDTO + Links HATEOAS)
 deactivate Sys
-
 @enduml

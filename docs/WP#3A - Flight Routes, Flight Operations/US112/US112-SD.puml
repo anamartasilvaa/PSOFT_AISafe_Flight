@@ -5,45 +5,61 @@ actor "ATCC / Backoffice" as User
 participant "RouteController" as Ctrl
 participant "RouteService" as Svc
 participant "RouteRepository" as Repo
-participant "Route" as Route
+participant "RouteHistoryRepository" as HistRepo
+participant "RouteHistory" as Hist
+participant "RouteViewDTO" as DTO
 
-title SD - US112
+title SD - US112 (Update/Deactivate Route)
 
 User -> Ctrl : PATCH /api/routes/{id} (UpdateRouteDTO)
 activate Ctrl
-
-Ctrl -> Svc : updateRouteStatus(id, dto.status)
+Ctrl -> Svc : updateRouteStatusOrParameters(id, dto)
 activate Svc
 
+' 1. Lógica de Fecho de Histórico Anterior
+Svc -> HistRepo : findFirstByRouteIdAndEndDateIsNull(id)
+activate HistRepo
+HistRepo --> Svc : Optional<RouteHistory> (oldHistory)
+deactivate HistRepo
 
+Svc -> Hist : closeHistory(now)
+activate Hist
+Hist --> Svc : (void)
+deactivate Hist
+
+Svc -> HistRepo : save(oldHistory)
+activate HistRepo
+HistRepo --> Svc : savedOldHistory
+deactivate HistRepo
+
+' 2. Atualização da Rota
 Svc -> Repo : findByRouteId(id)
 activate Repo
-Repo --> Svc : route
+Repo --> Svc : Optional<Route> (route)
 deactivate Repo
 
-
-alt status == "INACTIVE"
-    Svc -> Route : deactivate()
-    activate Route
-    Route --> Svc
-    deactivate Route
-else status == "ACTIVE"
-    Svc -> Route : activate()
-    activate Route
-    Route --> Svc
-    deactivate Route
-end
-
+Svc -> Svc : route.updateParameters(dto) / route.deactivate()
 
 Svc -> Repo : save(route)
 activate Repo
 Repo --> Svc : updatedRoute
 deactivate Repo
 
-Svc --> Ctrl : RouteViewDTO
+' 3. Registo do novo histórico
+Svc -> HistRepo : save(new RouteHistory(id, "UPDATED/DEACTIVATED"))
+activate HistRepo
+HistRepo --> Svc : newHistory
+deactivate HistRepo
+
+' 4. Criação do DTO e Resposta
+Svc -> DTO ** : create(updatedRoute)
+activate DTO
+DTO --> Svc : routeViewDTO
+deactivate DTO
+
+Svc --> Ctrl : routeViewDTO
 deactivate Svc
 
-Ctrl --> User : 200 OK (RouteViewDTO)
+Ctrl --> User : 200 OK (EntityModel<RouteViewDTO>)
 deactivate Ctrl
-
 @enduml
