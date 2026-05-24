@@ -102,11 +102,13 @@ class MaintenanceControllerTest {
     void shouldReturn200WhenGettingTotalHours() {
         when(maintenanceService.getTotalMaintenanceHours()).thenReturn(450);
 
-        ResponseEntity<EntityModel<Integer>> response = maintenanceController.getTotalHours();
+        ResponseEntity<EntityModel<java.util.Map<String, Integer>>> response = maintenanceController.getTotalHours();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(450, response.getBody().getContent());
+
+        assertEquals(450, response.getBody().getContent().get("totalHours"));
+        assertTrue(response.getBody().hasLinks());
     }
 
     // --- TESTE 5: US119 - Complete Maintenance ---

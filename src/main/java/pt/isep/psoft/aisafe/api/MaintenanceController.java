@@ -67,11 +67,17 @@ public class MaintenanceController {
     }
 
     // US117 - Get Fleet Total Maintenance Hours
+    // US117 - Get Fleet Total Maintenance Hours
     @GetMapping("/records/total-hours")
-    public ResponseEntity<EntityModel<Integer>> getTotalHours() {
+    public ResponseEntity<EntityModel<java.util.Map<String, Integer>>> getTotalHours() {
         Integer total = maintenanceService.getTotalMaintenanceHours();
-        EntityModel<Integer> resource = EntityModel.of(total);
+
+        // Embrulha o número num objeto para o JSON poder receber os _links
+        java.util.Map<String, Integer> responseBody = java.util.Map.of("totalHours", total != null ? total : 0);
+
+        EntityModel<java.util.Map<String, Integer>> resource = EntityModel.of(responseBody);
         resource.add(linkTo(methodOn(MaintenanceController.class).getTotalHours()).withSelfRel());
+
         return ResponseEntity.ok(resource);
     }
 

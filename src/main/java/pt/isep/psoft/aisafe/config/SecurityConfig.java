@@ -54,13 +54,13 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
                     // 4. WP3 - FLIGHT ROUTES
-                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyAuthority("ROLE_" + Role.ATCC.name(), "ROLE_" + Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyAuthority("ROLE_" + Role.ATCC.name(), "ROLE_" + Role.BACKOFFICE.name(), "ROLE_" + Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyAuthority("ROLE_" + Role.ATCC.name(), "ROLE_" + Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.BACKOFFICE.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
 
                     // 5. WP4 - MAINTENANCE RECORDS
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyAuthority("ROLE_" + Role.ATCC.name(), "ROLE_" + Role.ADMIN.name(), "ROLE_" + Role.MAINTENANCE_TECH.name());
-                    auth.requestMatchers("/api/maintenance/**").hasAnyAuthority("ROLE_" + Role.MAINTENANCE_TECH.name(), "ROLE_" + Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
                 })
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
