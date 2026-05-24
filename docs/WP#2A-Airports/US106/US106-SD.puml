@@ -20,7 +20,7 @@ activate Controller
 Controller -> Service : registerAirport(dto)
 activate Service
 
-' Instanciação dos VOs exigidos pelo construtor do Airport
+
 Service -> IATA ** : create(dto.iataCode)
 Service -> EnumType : valueOf(dto.type.toUpperCase())
 activate EnumType

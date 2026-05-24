@@ -42,10 +42,10 @@ public class AircraftBootstrapper implements CommandLineRunner {
                 itemsA.add(new ChecklistItem("Check tire pressure", true));
                 itemsA.add(new ChecklistItem("Inspect fluid levels", true));
 
-                //Create Entity (Checklist) and associate items
+
                 Checklist checklistA = new Checklist("Daily Checklist - Check A", "v1.0", itemsA);
 
-                // Create Aggregate Root (MaintenanceTemplate) and associate Checklist
+
                 MaintenanceTemplate templateA = new MaintenanceTemplate(
                         "Check A",
                         "PREVENTIVE",
