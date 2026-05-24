@@ -1,6 +1,7 @@
 @startuml
 skinparam style strictuml
 skinparam packageStyle rectangle
+title CD-US102
 
 package "API Layer" {
     class AircraftController {
