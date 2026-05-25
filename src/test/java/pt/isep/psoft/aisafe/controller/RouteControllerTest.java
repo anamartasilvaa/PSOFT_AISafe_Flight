@@ -34,7 +34,6 @@ class RouteControllerTest {
 
     @BeforeEach
     void setUp() {
-
         MockHttpServletRequest request = new MockHttpServletRequest();
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
@@ -43,13 +42,12 @@ class RouteControllerTest {
     @Test
     void shouldReturn201CreatedWhenCreatingRoute() {
         CreateRouteDTO requestDto = new CreateRouteDTO("RT-OPOLIS", "OPO", "LIS", 45, 300.0, 150);
-        RouteViewDTO responseDto = new RouteViewDTO("RT-OPOLIS", "OPO", "LIS", "ACTIVE");
+        // ADICIONADO O 150 NO FINAL:
+        RouteViewDTO responseDto = new RouteViewDTO("RT-OPOLIS", "OPO", "LIS", "ACTIVE", 150);
 
         when(routeService.createRoute(any(CreateRouteDTO.class))).thenReturn(responseDto);
 
-
         ResponseEntity<EntityModel<RouteViewDTO>> response = routeController.createRoute(requestDto);
-
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -61,7 +59,8 @@ class RouteControllerTest {
     @Test
     void shouldReturn200OkWhenDeactivatingRoute() {
         String routeId = "RT-OPOLIS";
-        RouteViewDTO responseDto = new RouteViewDTO(routeId, "OPO", "LIS", "INACTIVE");
+        // ADICIONADO O 150 NO FINAL:
+        RouteViewDTO responseDto = new RouteViewDTO(routeId, "OPO", "LIS", "INACTIVE", 150);
 
         when(routeService.deactivateRoute(eq(routeId))).thenReturn(responseDto);
 
@@ -76,7 +75,8 @@ class RouteControllerTest {
     @Test
     void shouldReturn200OkWhenGettingRouteById() {
         String routeId = "RT-OPOLIS";
-        RouteViewDTO responseDto = new RouteViewDTO(routeId, "OPO", "LIS", "ACTIVE");
+
+        RouteViewDTO responseDto = new RouteViewDTO(routeId, "OPO", "LIS", "ACTIVE", 150);
 
         when(routeService.getRoute(eq(routeId))).thenReturn(responseDto);
 
