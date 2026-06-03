@@ -67,7 +67,7 @@ public class AirportService {
                 dto.expiryDate()
         );
 
-        airport.addAirplaneCertification(cert);
+        airport.addOrUpdateAirplaneCertification(cert);
         Airport saved = airportRepository.save(airport);
 
         return mapToDTO(saved);

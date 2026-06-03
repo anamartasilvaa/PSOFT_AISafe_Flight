@@ -78,9 +78,16 @@ public class Airport {
         this.runways.add(runway);
     }
 
-    public void addAirplaneCertification(AirplaneCertification certification) {
-        Assert.notNull(certification, "Certification must not be null.");
-        this.certifications.add(certification);
+    public void addOrUpdateAirplaneCertification(AirplaneCertification newCertification) {
+        Assert.notNull(newCertification, "Certification must not be null.");
+
+        // 1. Remove a certificação antiga se for para o mesmo modelo de avião
+        this.certifications.removeIf(existingCert ->
+                existingCert.getAircraftModel().getModelName().equals(newCertification.getAircraftModel().getModelName())
+        );
+
+        // 2. Adiciona a nova certificação (o JPA trata de apagar a antiga na BD graças ao orphanRemoval)
+        this.certifications.add(newCertification);
     }
 
 
