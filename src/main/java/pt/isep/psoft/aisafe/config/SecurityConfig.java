@@ -61,6 +61,11 @@ public class SecurityConfig {
                     // 5. WP4 - MAINTENANCE RECORDS
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
+
+                    // 6. WP#1B - ENHANCED AIRCRAFT FEATURES
+                    // US201 & US202 - Backoffice atualiza as especificações e imagem do Modelo
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+                    auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {

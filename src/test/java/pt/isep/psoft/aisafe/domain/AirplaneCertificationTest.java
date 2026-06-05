@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class AirplaneCertificationTest {
 
     private AircraftModel createDummyModel() {
-
-        return new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg");
+        ModelName name = new ModelName("B737 MAX");
+        return new AircraftModel(name, Manufacturer.BOEING, 180, 25900.0, 6500.0, 839.0, "http://example.com/photo.jpg", "3-3 Economy", null);
     }
 
     @Test

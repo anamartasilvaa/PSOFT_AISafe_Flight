@@ -26,7 +26,6 @@ class AirportTest {
     void ensureAirportCannotBeCreatedWithoutCoordinates() {
         IATACode iata = new IATACode("OPO");
         assertThrows(IllegalArgumentException.class, () -> {
-
             new Airport(iata, "Francisco Sá Carneiro", "Porto", "Portugal", "GMT+1", AirportType.INTERNATIONAL, null);
         });
     }
@@ -37,9 +36,7 @@ class AirportTest {
         Runway runway = new Runway("17/35", 3480.0, "North-South");
 
         assertDoesNotThrow(() -> airport.addRunway(runway));
-
         assertFalse(airport.getRunways().isEmpty());
-
         assertThrows(IllegalArgumentException.class, () -> airport.addRunway(null));
     }
 
@@ -47,11 +44,12 @@ class AirportTest {
     void ensureCanAddCertificationToAirport() {
         Airport airport = new Airport(new IATACode("OPO"), "Sá Carneiro", "Porto", "Portugal", "GMT+1", AirportType.INTERNATIONAL, createValidCoordinates());
 
-        AircraftModel model = new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg");
+        // CORREÇÃO: Adicionados os dois últimos parâmetros do AircraftModel
+        AircraftModel model = new AircraftModel(new ModelName("A320"), Manufacturer.AIRBUS, 180, 20000.0, 5000.0, 800.0, "http://example.com/photo.jpg", "3-3 Economy", null);
         AirplaneCertification cert = new AirplaneCertification("CERT-123", model, LocalDate.now(), LocalDate.now().plusYears(5));
 
-        assertDoesNotThrow(() -> airport.addAirplaneCertification(cert));
-        assertThrows(IllegalArgumentException.class, () -> airport.addAirplaneCertification(null));
+        assertDoesNotThrow(() -> airport.addOrUpdateAirplaneCertification(cert));
+        assertThrows(IllegalArgumentException.class, () -> airport.addOrUpdateAirplaneCertification(null));
     }
 
     @Test

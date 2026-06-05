@@ -84,4 +84,60 @@ class AircraftControllerTest {
         assertNotNull(response.getBody());
         assertEquals(regNum, response.getBody().getContent().registrationNumber());
     }
+
+    // ==========================================
+    // TESTES DO WP#1B (FASE 2)
+    // ==========================================
+
+    @Test
+    void shouldReturn200OkWhenUpdatingModelSpecifications() { // US201
+        String modelName = "B737 MAX";
+        pt.isep.psoft.aisafe.application.DTO.UpdateAircraftModelSpecsDTO requestDto =
+                new pt.isep.psoft.aisafe.application.DTO.UpdateAircraftModelSpecsDTO(200, 20000.0, 5000.0, 800.0, "3-3", null);
+
+        pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO responseDto =
+                new pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO(modelName, "BOEING", 200, 20000.0, 5000.0, 800.0, "url", "3-3", null);
+
+        when(aircraftService.updateModelSpecifications(eq(modelName), any())).thenReturn(responseDto);
+
+        ResponseEntity<EntityModel<pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO>> response =
+                aircraftController.updateModelSpecifications(modelName, requestDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(modelName, response.getBody().getContent().modelName());
+        assertTrue(response.getBody().hasLinks(), "Response should contain HATEOAS links");
+    }
+
+    @Test
+    void shouldReturn200OkWhenGettingTop5Models() { // US204
+        pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top1 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("A320neo", 15000.0);
+        pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top2 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("B737 MAX", 10000.0);
+
+        when(aircraftService.getTop5UtilizedModels()).thenReturn(java.util.List.of(top1, top2));
+
+        ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO>>> response =
+                aircraftController.getTop5Models();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getContent().size());
+        assertTrue(response.getBody().hasLinks(), "Collection should contain a self link");
+    }
+
+    @Test
+    void shouldReturn200OkWhenGettingCompatibleRoutes() { // US203
+        String regNum = "CS-TPA";
+        pt.isep.psoft.aisafe.application.DTO.RouteViewDTO route1 = new pt.isep.psoft.aisafe.application.DTO.RouteViewDTO("RT-OPOLIS", "OPO", "LIS", "ACTIVE", 100);
+
+        when(aircraftService.getCompatibleRoutesForAircraft(regNum)).thenReturn(java.util.List.of(route1));
+
+        ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>> response =
+                aircraftController.getCompatibleRoutes(regNum);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().getContent().isEmpty());
+        assertTrue(response.getBody().hasLinks(), "Collection should contain a self link");
+    }
 }
