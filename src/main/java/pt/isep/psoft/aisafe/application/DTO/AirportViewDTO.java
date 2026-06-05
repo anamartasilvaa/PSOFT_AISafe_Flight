@@ -11,5 +11,9 @@ public record AirportViewDTO(
         String type,
         String status,
         List<RunwayDTO> runways,
-        List<CertificationViewDTO> certifications
+        List<CertificationViewDTO> certifications,
+
+        List<FacilityDTO> facilities,
+
+        String imageUrl
 ) {}

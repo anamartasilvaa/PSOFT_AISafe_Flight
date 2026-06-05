@@ -37,6 +37,17 @@ public class AirportService {
             );
         }
 
+        // 👇 ADICIONA ESTAS 3 LINHAS (São elas que transferem a imagem do Postman para a Base de Dados) 👇
+        if (dto.imageUrl() != null && !dto.imageUrl().isBlank()) {
+            airport.updateImage(dto.imageUrl());
+        }
+
+        if (dto.facilities() != null) {
+            dto.facilities().forEach(f ->
+                    airport.addFacility(new Facility(f.type(), f.description()))
+            );
+        }
+
         Airport saved = airportRepository.save(airport);
         return mapToDTO(saved);
     }
@@ -108,7 +119,14 @@ public class AirportService {
         }
     }
 
-    private AirportViewDTO mapToDTO(Airport airport) {
+    @Transactional
+    public AirportViewDTO updateAirportImage(String iataCode, String imageUrl) {
+
+        Airport airport = airportRepository.findByIataCodeString(iataCode.toUpperCase())
+                .orElseThrow(() -> new IllegalArgumentException("Airport not found: " + iataCode));
+
+        airport.updateImage(imageUrl);
+        airport = airportRepository.save(airport);
         return new AirportViewDTO(
                 airport.getIataCode().code(),
                 airport.getName(),
@@ -116,7 +134,7 @@ public class AirportService {
                 airport.getCountry(),
                 airport.getTimezone(),
                 airport.getType().toString(),
-                airport.getStatus().toString(), 
+                airport.getStatus().toString(),
                 airport.getRunways().stream()
                         .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
                         .collect(Collectors.toList()),
@@ -125,7 +143,37 @@ public class AirportService {
                                 c.getCertificationNumber(),
                                 c.getAircraftModel().getModelName().name(),
                                 c.getExpiryDate()))
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
+                // Adiciona isto para completar os 11 argumentos:
+                airport.getFacilities().stream()
+                        .map(f -> new FacilityDTO(f.getType(), f.getDescription()))
+                        .collect(Collectors.toList()),
+                airport.getImageUrl()
         );
     }
-}
+
+    private AirportViewDTO mapToDTO(Airport airport) {
+        return new AirportViewDTO(
+                airport.getIataCode().code(),
+                airport.getName(),
+                airport.getCity(),
+                airport.getCountry(),
+                airport.getTimezone(),
+                airport.getType().toString(),
+                airport.getStatus().toString(),
+                airport.getRunways().stream()
+                        .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
+                        .collect(Collectors.toList()),
+                airport.getCertifications().stream()
+                        .map(c -> new CertificationViewDTO(
+                                c.getCertificationNumber(),
+                                c.getAircraftModel().getModelName().name(),
+                                c.getExpiryDate()))
+                        .collect(Collectors.toList()),
+                airport.getFacilities().stream()
+                        .map(f -> new FacilityDTO(f.getType(), f.getDescription()))
+                        .collect(Collectors.toList()),
+                airport.getImageUrl()
+        );
+    }
+    }

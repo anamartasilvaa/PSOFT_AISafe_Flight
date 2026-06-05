@@ -1,5 +1,6 @@
 package pt.isep.psoft.aisafe.api;
 
+import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import pt.isep.psoft.aisafe.application.AirportService;
 import pt.isep.psoft.aisafe.application.DTO.AddCertificationDTO;
 import pt.isep.psoft.aisafe.application.DTO.AirportViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAirportDTO;
+import pt.isep.psoft.aisafe.application.DTO.UpdateAirportImageDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -89,6 +91,21 @@ public class AirportController {
 
         EntityModel<AirportViewDTO> resource = EntityModel.of(updated);
         resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withRel("airport-details"));
+
+        return ResponseEntity.ok(resource);
+    }
+
+    /* US207 - Upload an image or map of the airport */
+    @PatchMapping("/{iataCode}/image")
+    public ResponseEntity<EntityModel<AirportViewDTO>> updateAirportImage(
+            @PathVariable String iataCode,
+            @Valid @RequestBody UpdateAirportImageDTO dto) {
+        AirportViewDTO updatedAirport = service.updateAirportImage(iataCode, dto.imageUrl());
+
+        EntityModel<AirportViewDTO> resource = EntityModel.of(updatedAirport);
+
+        resource.add(linkTo(methodOn(AirportController.class)
+                .updateAirportImage(iataCode, dto)).withSelfRel());
 
         return ResponseEntity.ok(resource);
     }

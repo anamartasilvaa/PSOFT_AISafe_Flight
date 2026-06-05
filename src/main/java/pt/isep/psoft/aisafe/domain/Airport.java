@@ -51,6 +51,17 @@ public class Airport {
     @JoinColumn(name = "airport_pk")
     private List<AirplaneCertification> certifications = new ArrayList<>();
 
+    @Column(nullable = true)
+    private String imageUrl;
+
+    public void updateImage(String newImageUrl) {
+        this.imageUrl = newImageUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
 
     protected Airport() {}
 
@@ -123,4 +134,17 @@ public class Airport {
     }
 
     public AirportStatus getStatus() { return status; }
+
+
+    @ElementCollection
+    private List<Facility> facilities = new ArrayList<>();
+
+    public void addFacility(Facility facility) {
+        Assert.notNull(facility, "Facility cannot be null.");
+        this.facilities.add(facility);
+    }
+
+    public List<Facility> getFacilities() {
+        return facilities;
+    }
 }

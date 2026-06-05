@@ -11,5 +11,8 @@ public record RegisterAirportDTO(
         String type,
         Double latitude,
         Double longitude,
-        List<RunwayDTO> runways
+        List<RunwayDTO> runways,
+        List<FacilityDTO> facilities,
+
+        String imageUrl
 ) {}
