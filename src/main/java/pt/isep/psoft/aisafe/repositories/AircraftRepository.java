@@ -3,6 +3,7 @@ package pt.isep.psoft.aisafe.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO;
 import pt.isep.psoft.aisafe.domain.Aircraft;
 import pt.isep.psoft.aisafe.domain.AircraftStatus;
 import pt.isep.psoft.aisafe.domain.ModelName;
@@ -20,4 +21,8 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
 
     @Query("SELECT a FROM Aircraft a WHERE YEAR(a.manufacturingDate) = :year")
     List<Aircraft> findByManufacturingYear(@Param("year") int year);
+
+    @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.model.modelName.name, SUM(a.totalFlightHours)) " +
+            "FROM Aircraft a GROUP BY a.model.modelName.name ORDER BY SUM(a.totalFlightHours) DESC")
+    List<TopAircraftModelDTO> findTop5UtilizedModels(org.springframework.data.domain.Pageable pageable);
 }

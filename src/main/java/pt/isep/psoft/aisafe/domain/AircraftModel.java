@@ -7,11 +7,12 @@ import java.util.Objects;
 @Entity
 public class AircraftModel {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pk;
 
+    @Version
+    private Long version;
 
     @Embedded
     @AttributeOverride(name = "name", column = @Column(name = "model_name", unique = true, nullable = false))
@@ -42,22 +43,18 @@ public class AircraftModel {
     @Column(nullable = true)
     private String seatingConfiguration;
 
-
     protected AircraftModel() {}
 
-
     public AircraftModel(ModelName modelName, Manufacturer manufacturer, Integer defaultSeatingCapacity,
-                         Double fuelCapacity, Double maximumRange, Double cruisingSpeed, String modelPhotoUrl) {
+                         Double fuelCapacity, Double maximumRange, Double cruisingSpeed, String modelPhotoUrl,
+                         String seatingConfiguration, String operatingHoursRange) {
 
         Assert.notNull(modelName, "The model name is required.");
         Assert.notNull(manufacturer, "The manufacturer is required.");
-
-
         Assert.isTrue(defaultSeatingCapacity != null && defaultSeatingCapacity > 0, "The seating capacity must be greater than 0.");
         Assert.isTrue(fuelCapacity != null && fuelCapacity > 0, "The fuel capacity must be greater than 0.");
         Assert.isTrue(maximumRange != null && maximumRange > 0, "The maximum range must be greater than 0.");
         Assert.isTrue(cruisingSpeed != null && cruisingSpeed > 0, "The cruising speed must be greater than 0.");
-        this.modelPhotoUrl = modelPhotoUrl;
 
         this.modelName = modelName;
         this.manufacturer = manufacturer;
@@ -65,8 +62,39 @@ public class AircraftModel {
         this.fuelCapacity = fuelCapacity;
         this.maximumRange = maximumRange;
         this.cruisingSpeed = cruisingSpeed;
+        this.modelPhotoUrl = modelPhotoUrl;
+        this.seatingConfiguration = seatingConfiguration;
+        this.operatingHoursRange = operatingHoursRange;
     }
 
+    // US201
+    public void updateSpecifications(Integer newSeatingCapacity, Double newFuelCapacity,
+                                     Double newMaximumRange, Double newCruisingSpeed,
+                                     String newSeatingConfiguration, String newOperatingHoursRange) {
+        if (newSeatingCapacity != null) {
+            Assert.isTrue(newSeatingCapacity > 0, "Seating capacity must be greater than 0.");
+            this.defaultSeatingCapacity = newSeatingCapacity;
+        }
+        if (newFuelCapacity != null) {
+            Assert.isTrue(newFuelCapacity > 0, "Fuel capacity must be greater than 0.");
+            this.fuelCapacity = newFuelCapacity;
+        }
+        if (newMaximumRange != null) {
+            Assert.isTrue(newMaximumRange > 0, "Maximum range must be greater than 0.");
+            this.maximumRange = newMaximumRange;
+        }
+        if (newCruisingSpeed != null) {
+            Assert.isTrue(newCruisingSpeed > 0, "Cruising speed must be greater than 0.");
+            this.cruisingSpeed = newCruisingSpeed;
+        }
+        if (newSeatingConfiguration != null) this.seatingConfiguration = newSeatingConfiguration;
+        if (newOperatingHoursRange != null) this.operatingHoursRange = newOperatingHoursRange;
+    }
+
+    // US202
+    public void updateImage(String newImageUrl) {
+        this.modelPhotoUrl = newImageUrl;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -81,11 +109,14 @@ public class AircraftModel {
         return Objects.hash(modelName);
     }
 
-    public ModelName getModelName() {
-        return this.modelName;
-    }
-
-    public String getModelPhotoUrl() {
-        return this.modelPhotoUrl;
-    }
+    // Getters
+    public ModelName getModelName() { return this.modelName; }
+    public Manufacturer getManufacturer() { return this.manufacturer; }
+    public Integer getDefaultSeatingCapacity() { return this.defaultSeatingCapacity; }
+    public Double getFuelCapacity() { return this.fuelCapacity; }
+    public Double getMaximumRange() { return this.maximumRange; }
+    public Double getCruisingSpeed() { return this.cruisingSpeed; }
+    public String getModelPhotoUrl() { return this.modelPhotoUrl; }
+    public String getSeatingConfiguration() { return this.seatingConfiguration; }
+    public String getOperatingHoursRange() { return this.operatingHoursRange; }
 }

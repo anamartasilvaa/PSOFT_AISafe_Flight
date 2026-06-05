@@ -63,6 +63,12 @@ public class Aircraft {
         this.status = newStatus;
     }
 
+    public void addFlightHours(Double hours) {
+        Assert.isTrue(hours != null && hours > 0, "Flight hours to add must be positive.");
+        this.totalFlightHours += hours;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -75,6 +81,8 @@ public class Aircraft {
     public int hashCode() {
         return Objects.hash(registrationNumber);
     }
+
+
     public RegistrationNumber getRegistrationNumber() {
         return this.registrationNumber;
     }
@@ -94,4 +102,6 @@ public class Aircraft {
     public AircraftStatus getStatus() {
         return this.status;
     }
+
+    public Double getTotalFlightHours() { return this.totalFlightHours; }
 }
