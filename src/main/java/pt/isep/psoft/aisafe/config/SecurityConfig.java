@@ -65,6 +65,9 @@ public class SecurityConfig {
                     // 6. WP#1B - ENHANCED AIRCRAFT FEATURES
                     // US201 & US202 - Backoffice atualiza as especificações e imagem do Modelo
                     auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+                    // 7. WP#2B - ENHANCED AIRPORT FEATURES (US207)
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
                     auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex
