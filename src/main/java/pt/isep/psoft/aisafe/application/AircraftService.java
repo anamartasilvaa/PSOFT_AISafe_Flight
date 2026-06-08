@@ -169,7 +169,9 @@ public class AircraftService {
         return aircraftRepository.findTop5UtilizedModels(org.springframework.data.domain.PageRequest.of(0, 5));
     }
 
-    public List<RouteViewDTO> getCompatibleRoutesForAircraft(String regNum) {
+    public org.springframework.data.domain.Page<RouteViewDTO> getCompatibleRoutesForAircraft(
+            String regNum, org.springframework.data.domain.Pageable pageable) {
+
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum.trim().toUpperCase()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
 
@@ -177,18 +179,15 @@ public class AircraftService {
         Integer actualCapacity = aircraft.getActualSeatingCapacity();
 
         org.springframework.data.domain.Page<Route> compatibleRoutes =
-                routeRepository.findCompatibleRoutes(maxRange, actualCapacity, org.springframework.data.domain.PageRequest.of(0, 20));
+                routeRepository.findCompatibleRoutes(maxRange, actualCapacity, pageable);
 
-        // Converter cada Entidade Route para o teu RouteViewDTO
-        return compatibleRoutes.stream()
-                .map(route -> new RouteViewDTO(
-                        route.getRouteId().toString(),
-                        route.getOrigin().getIataCode().toString(), // Ajusta aqui se o teu getIataCode() for diferente
-                        route.getDestination().getIataCode().toString(),
-                        route.getStatus().name(),
-                        route.getMinimumCapacity()
-                ))
-                .toList();
+        return compatibleRoutes.map(route -> new RouteViewDTO(
+                route.getRouteId().toString(),
+                route.getOrigin().getIataCode().toString(),
+                route.getDestination().getIataCode().toString(),
+                route.getStatus().name(),
+                route.getMinimumCapacity()
+        ));
     }
 
     public String getRealTimeAircraftStatus(String regNum) {

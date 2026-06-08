@@ -145,21 +145,17 @@ public class AircraftController {
 
     /* US203 - View compatible routes for a specific aircraft */
     @GetMapping("/instances/{registrationNumber}/compatible-routes")
-    public ResponseEntity<CollectionModel<EntityModel<RouteViewDTO>>> getCompatibleRoutes(
-            @PathVariable String registrationNumber) {
+    public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<RouteViewDTO>>> getCompatibleRoutes(
+            @PathVariable String registrationNumber,
+            org.springframework.data.domain.Pageable pageable,
+            org.springframework.data.web.PagedResourcesAssembler<RouteViewDTO> assembler) {
 
-        List<RouteViewDTO> compatibleRoutes = service.getCompatibleRoutesForAircraft(registrationNumber);
+        org.springframework.data.domain.Page<RouteViewDTO> compatibleRoutes =
+                service.getCompatibleRoutesForAircraft(registrationNumber, pageable);
+        org.springframework.hateoas.PagedModel<EntityModel<RouteViewDTO>> pagedModel =
+                assembler.toModel(compatibleRoutes, dto -> EntityModel.of(dto));
 
-        // 1. Embrulhar cada DTO num EntityModel
-        List<EntityModel<RouteViewDTO>> resources = compatibleRoutes.stream()
-                .map(EntityModel::of)
-                .toList();
-
-        // 2. Embrulhar a coleção e adicionar o self-link
-        CollectionModel<EntityModel<RouteViewDTO>> collection = CollectionModel.of(resources,
-                linkTo(methodOn(AircraftController.class).getCompatibleRoutes(registrationNumber)).withSelfRel());
-
-        return ResponseEntity.ok(collection);
+        return ResponseEntity.ok(pagedModel);
     }
 
     /* US205 - View real-time aircraft availability status */
