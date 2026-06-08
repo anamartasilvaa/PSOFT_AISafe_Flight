@@ -37,7 +37,7 @@ public class AirportService {
             );
         }
 
-        // 👇 ADICIONA ESTAS 3 LINHAS (São elas que transferem a imagem do Postman para a Base de Dados) 👇
+
         if (dto.imageUrl() != null && !dto.imageUrl().isBlank()) {
             airport.updateImage(dto.imageUrl());
         }
@@ -144,11 +144,12 @@ public class AirportService {
                                 c.getAircraftModel().getModelName().name(),
                                 c.getExpiryDate()))
                         .collect(Collectors.toList()),
-                // Adiciona isto para completar os 11 argumentos:
                 airport.getFacilities().stream()
                         .map(f -> new FacilityDTO(f.getType(), f.getDescription()))
                         .collect(Collectors.toList()),
-                airport.getImageUrl()
+                airport.getImageUrl(),
+                airport.getOperationalHours(),
+                airport.getContactInformation()
         );
     }
 
@@ -173,7 +174,20 @@ public class AirportService {
                 airport.getFacilities().stream()
                         .map(f -> new FacilityDTO(f.getType(), f.getDescription()))
                         .collect(Collectors.toList()),
-                airport.getImageUrl()
+                airport.getImageUrl(),
+                airport.getOperationalHours(),
+                airport.getContactInformation()
         );
+    }
+
+    @Transactional
+    public AirportViewDTO updateAirportDetails(String iataCode, UpdateAirportDetailsDTO dto) {
+        Airport airport = airportRepository.findByIataCodeString(iataCode.toUpperCase())
+                .orElseThrow(() -> new IllegalArgumentException("Airport not found: " + iataCode));
+
+        airport.updateDetails(dto.operationalHours(), dto.contactInformation());
+        airport = airportRepository.save(airport);
+
+        return mapToDTO(airport);
     }
     }

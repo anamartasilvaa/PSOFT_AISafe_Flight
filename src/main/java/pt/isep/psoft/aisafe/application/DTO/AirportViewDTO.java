@@ -15,5 +15,7 @@ public record AirportViewDTO(
 
         List<FacilityDTO> facilities,
 
-        String imageUrl
+        String imageUrl,
+        String operationalHours,
+        String contactInformation
 ) {}

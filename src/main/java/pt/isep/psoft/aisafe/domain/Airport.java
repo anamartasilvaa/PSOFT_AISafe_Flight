@@ -54,6 +54,24 @@ public class Airport {
     @Column(nullable = true)
     private String imageUrl;
 
+    @Column(nullable = true)
+    private String operationalHours;
+
+    @Column(nullable = true)
+    private String contactInformation;
+
+    public void updateDetails(String operationalHours, String contactInformation) {
+        if (operationalHours != null && !operationalHours.isBlank()) {
+            this.operationalHours = operationalHours;
+        }
+        if (contactInformation != null && !contactInformation.isBlank()) {
+            this.contactInformation = contactInformation;
+        }
+    }
+    public String getOperationalHours() { return operationalHours; }
+    public String getContactInformation() { return contactInformation; }
+
+
     public void updateImage(String newImageUrl) {
         this.imageUrl = newImageUrl;
     }

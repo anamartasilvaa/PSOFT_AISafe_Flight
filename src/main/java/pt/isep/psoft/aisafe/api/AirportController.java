@@ -7,10 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.isep.psoft.aisafe.application.AirportService;
-import pt.isep.psoft.aisafe.application.DTO.AddCertificationDTO;
-import pt.isep.psoft.aisafe.application.DTO.AirportViewDTO;
-import pt.isep.psoft.aisafe.application.DTO.RegisterAirportDTO;
-import pt.isep.psoft.aisafe.application.DTO.UpdateAirportImageDTO;
+import pt.isep.psoft.aisafe.application.DTO.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,6 +103,21 @@ public class AirportController {
 
         resource.add(linkTo(methodOn(AirportController.class)
                 .updateAirportImage(iataCode, dto)).withSelfRel());
+
+        return ResponseEntity.ok(resource);
+    }
+
+    /* US208 - Update airport details (operational hours and contact) */
+    @PatchMapping("/{iataCode}/details")
+    public ResponseEntity<EntityModel<AirportViewDTO>> updateAirportDetails(
+            @PathVariable String iataCode,
+            @RequestBody UpdateAirportDetailsDTO dto) {
+
+        AirportViewDTO updatedAirport = service.updateAirportDetails(iataCode, dto);
+
+        EntityModel<AirportViewDTO> resource = EntityModel.of(updatedAirport);
+        resource.add(linkTo(methodOn(AirportController.class).getAirport(iataCode)).withRel("airport-details"));
+        resource.add(linkTo(methodOn(AirportController.class).updateAirportDetails(iataCode, dto)).withSelfRel());
 
         return ResponseEntity.ok(resource);
     }
