@@ -141,6 +141,21 @@ public class AircraftController {
         return ResponseEntity.ok(resource);
     }
 
+    /* US206 - Calculate the total operational hours for ALL aircraft (Fleet paginated) */
+    @GetMapping("/instances/operational-hours")
+    public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<OperationalHoursDTO>>> getAllOperationalHours(
+            org.springframework.data.domain.Pageable pageable,
+            org.springframework.data.web.PagedResourcesAssembler<OperationalHoursDTO> assembler) {
+
+        org.springframework.data.domain.Page<OperationalHoursDTO> page = service.getAllAircraftOperationalHours(pageable);
+
+        org.springframework.hateoas.PagedModel<EntityModel<OperationalHoursDTO>> pagedModel =
+                assembler.toModel(page, dto -> EntityModel.of(dto,
+                        linkTo(methodOn(AircraftController.class).getOperationalHours(dto.registrationNumber())).withSelfRel()));
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
     /* US203 - View compatible routes for a specific aircraft */
     @GetMapping("/instances/{registrationNumber}/compatible-routes")
     public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<RouteViewDTO>>> getCompatibleRoutes(
@@ -158,15 +173,14 @@ public class AircraftController {
 
     /* US205 - View real-time aircraft availability status */
     @GetMapping("/instances/{registrationNumber}/real-time-status")
-    public ResponseEntity<EntityModel<java.util.Map<String, String>>> getRealTimeStatus(@PathVariable String registrationNumber) {
+    public ResponseEntity<EntityModel<RealTimeStatusDTO>> getRealTimeStatus(@PathVariable String registrationNumber) {
+
         String status = service.getRealTimeAircraftStatus(registrationNumber);
 
-        java.util.Map<String, String> response = new java.util.HashMap<>();
-        response.put("registrationNumber", registrationNumber);
-        response.put("realTimeStatus", status);
+        RealTimeStatusDTO responseDto = new RealTimeStatusDTO(registrationNumber, status);
 
-        // Adicionado o HATEOAS
-        EntityModel<java.util.Map<String, String>> resource = EntityModel.of(response);
+        // HATEOAS
+        EntityModel<RealTimeStatusDTO> resource = EntityModel.of(responseDto);
         resource.add(linkTo(methodOn(AircraftController.class).getRealTimeStatus(registrationNumber)).withSelfRel());
 
         return ResponseEntity.ok(resource);

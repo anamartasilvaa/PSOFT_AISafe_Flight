@@ -164,6 +164,18 @@ public class AircraftService {
         );
     }
 
+    // US206 - Obter as horas operacionais de TODOS os aviões (com paginação)
+    public org.springframework.data.domain.Page<OperationalHoursDTO> getAllAircraftOperationalHours(
+            org.springframework.data.domain.Pageable pageable) {
+
+        // Vai buscar todos os aviões paginados e converte-os no DTO
+        return aircraftRepository.findAll(pageable)
+                .map(aircraft -> new OperationalHoursDTO(
+                        aircraft.getRegistrationNumber().number(),
+                        aircraft.getTotalFlightHours()
+                ));
+    }
+
     // US204 - Top 5 Utilized Models (Hours OR Assignments)
     public List<TopAircraftModelDTO> getTop5UtilizedModels(String sortBy) {
         org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 5);
