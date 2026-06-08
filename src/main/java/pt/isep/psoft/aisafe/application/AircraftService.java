@@ -164,9 +164,16 @@ public class AircraftService {
         );
     }
 
-    public List<TopAircraftModelDTO> getTop5UtilizedModels() {
-        // Pede a página 0 com o limite de 5 resultados
-        return aircraftRepository.findTop5UtilizedModels(org.springframework.data.domain.PageRequest.of(0, 5));
+    // US204 - Top 5 Utilized Models (Hours OR Assignments)
+    public List<TopAircraftModelDTO> getTop5UtilizedModels(String sortBy) {
+        org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 5);
+
+        if ("assignments".equalsIgnoreCase(sortBy)) {
+            return aircraftRepository.findTop5ModelsByAssignments(pageRequest);
+        }
+
+        // Por defeito, devolve por horas de voo
+        return aircraftRepository.findTop5ModelsByFlightHours(pageRequest);
     }
 
     public org.springframework.data.domain.Page<RouteViewDTO> getCompatibleRoutesForAircraft(

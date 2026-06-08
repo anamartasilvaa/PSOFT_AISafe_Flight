@@ -109,22 +109,20 @@ public class AircraftController {
         return ResponseEntity.ok(resource);
     }
 
-    /* US204 - Top 5 most utilized aircraft models based on total flight hours */
+    /* US204 - Top 5 most utilized aircraft models based on total flight hours or assignments */
+    @io.swagger.v3.oas.annotations.Operation(summary = "Get Top 5 Aircraft Models", description = "Get the top 5 most utilized aircraft models based on total flight hours or number of assignments.")
     @GetMapping("/models/top5")
-    public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5Models() {
+    public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5Models(
+            @RequestParam(defaultValue = "hours") String sortBy) { // Aceita ?sortBy=hours ou ?sortBy=assignments
 
-        List<TopAircraftModelDTO> top5 = service.getTop5UtilizedModels();
+        List<TopAircraftModelDTO> top5 = service.getTop5UtilizedModels(sortBy);
 
-        // 1. Embrulhar cada item da lista num EntityModel (podemos adicionar um link para o próprio modelo)
         List<EntityModel<TopAircraftModelDTO>> resources = top5.stream()
-                .map(dto -> EntityModel.of(dto,
-                        // Link fictício para o detalhe do modelo, se o tivéssemos
-                        linkTo(methodOn(AircraftController.class).getTop5Models()).withRel("model-details")))
+                .map(EntityModel::of)
                 .toList();
 
-        // 2. Embrulhar a lista toda num CollectionModel com o link "self" para a própria pesquisa
         CollectionModel<EntityModel<TopAircraftModelDTO>> collection = CollectionModel.of(resources,
-                linkTo(methodOn(AircraftController.class).getTop5Models()).withSelfRel());
+                linkTo(methodOn(AircraftController.class).getTop5Models(sortBy)).withSelfRel());
 
         return ResponseEntity.ok(collection);
     }
