@@ -134,4 +134,17 @@ public class RouteController {
         em.add(linkTo(methodOn(RouteController.class).getRouteHistory(route.routeId())).withRel("route-history"));
         return em;
     }
+
+    /* US209 - View all routes that depart from or arrive at a specific airport */
+    @GetMapping("/involving/{iataCode}")
+    public ResponseEntity<List<RouteViewDTO>> getRoutesByAirport(@PathVariable String iataCode) {
+
+        List<RouteViewDTO> routes = routeService.getRoutesByAirport(iataCode);
+
+        if (routes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(routes);
+    }
 }

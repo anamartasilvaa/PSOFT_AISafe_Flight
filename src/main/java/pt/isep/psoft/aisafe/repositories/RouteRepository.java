@@ -4,10 +4,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pt.isep.psoft.aisafe.domain.Route;
 import pt.isep.psoft.aisafe.domain.RouteId;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -30,4 +32,8 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
             @org.springframework.data.repository.query.Param("maxRange") Double maxRange,
             @org.springframework.data.repository.query.Param("actualCapacity") Integer actualCapacity,
             Pageable pageable);
+
+    // US209
+    @Query("SELECT r FROM Route r WHERE r.origin.iataCode.code = :iataCode OR r.destination.iataCode.code = :iataCode")
+    List<Route> findRoutesByAirport(@Param("iataCode") String iataCode);
 }

@@ -114,6 +114,17 @@ public class RouteService {
         ).collect(Collectors.toList());
     }
 
+    //US209
+    public List<RouteViewDTO> getRoutesByAirport(String iataCode) {
+        String code = iataCode.toUpperCase();
+
+        List<Route> routes = routeRepository.findRoutesByAirport(code);
+
+        return routes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     private RouteViewDTO convertToDTO(Route route) {
         return new RouteViewDTO(
                 route.getRouteId().id(),
