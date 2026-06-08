@@ -53,6 +53,8 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/airports/*/certifications").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
+                    // 9. WP#2B/3 - STATISTICS (US210)
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/busiest-airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
                     // 4. WP3 - FLIGHT ROUTES
                     auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.BACKOFFICE.name(), Role.ADMIN.name());
@@ -68,6 +70,10 @@ public class SecurityConfig {
 
                     // 7. WP#2B - ENHANCED AIRPORT FEATURES (US207)
                     auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+                    // 8. WP#2B - ENHANCED AIRPORT FEATURES (US208)
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/details").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
                     auth.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex
