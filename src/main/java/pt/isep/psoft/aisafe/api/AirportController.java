@@ -10,6 +10,7 @@ import pt.isep.psoft.aisafe.application.AirportService;
 import pt.isep.psoft.aisafe.application.DTO.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -120,5 +121,19 @@ public class AirportController {
         resource.add(linkTo(methodOn(AirportController.class).updateAirportDetails(iataCode, dto)).withSelfRel());
 
         return ResponseEntity.ok(resource);
+    }
+
+    /* US211 - View airports grouped by region, country, or both */
+    @GetMapping("/grouped")
+    public ResponseEntity<Object> getAirportsGrouped(
+            @RequestParam(defaultValue = "country") String by) {
+
+        Object groupedAirports = service.getAirportsGrouped(by);
+
+        if (((java.util.Map<?, ?>) groupedAirports).isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(groupedAirports);
     }
 }

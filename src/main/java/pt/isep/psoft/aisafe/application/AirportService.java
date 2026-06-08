@@ -7,6 +7,7 @@ import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AirportRepository;
 import pt.isep.psoft.aisafe.repositories.AircraftModelRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -189,5 +190,40 @@ public class AirportService {
         airport = airportRepository.save(airport);
 
         return mapToDTO(airport);
+    }
+
+    //  US211: View airports grouped by region or country
+    @Transactional(readOnly = true)
+    public Object getAirportsGrouped(String groupBy) {
+        List<Airport> airports = airportRepository.findAll();
+
+        // 1. Se pedir os DOIS
+        if ("both".equalsIgnoreCase(groupBy)) {
+            return airports.stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.groupingBy(
+                            this::extractRegion,
+                            Collectors.groupingBy(dto -> dto.country() != null ? dto.country() : "Unknown Country")
+                    ));
+        }
+
+        // 2. Se pedir SÓ REGIÃO
+        if ("region".equalsIgnoreCase(groupBy)) {
+            return airports.stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.groupingBy(this::extractRegion));
+        }
+
+        // 3. Se pedir SÓ PAÍS
+        return airports.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.groupingBy(dto -> dto.country() != null ? dto.country() : "Unknown Country"));
+    }
+
+    private String extractRegion(AirportViewDTO dto) {
+        if (dto.timezone() != null && dto.timezone().contains("/")) {
+            return dto.timezone().split("/")[0];
+        }
+        return "Unknown Region";
     }
     }
