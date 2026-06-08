@@ -147,4 +147,17 @@ public class RouteController {
 
         return ResponseEntity.ok(routes);
     }
+
+    /* US210 - Generate statistics on the busiest airports by number of routes */
+    @GetMapping("/statistics/busiest-airports")
+    public ResponseEntity<List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> getBusiestAirports() {
+
+        List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO> stats = routeService.getBusiestAirports();
+
+        if (stats.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(stats);
+    }
 }

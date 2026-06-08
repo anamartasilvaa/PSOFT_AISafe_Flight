@@ -125,6 +125,20 @@ public class RouteService {
                 .collect(Collectors.toList());
     }
 
+    // US210
+    public List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO> getBusiestAirports() {
+        List<Airport> airports = airportRepository.findAll();
+
+        return airports.stream()
+                .map(airport -> {
+                    String iata = airport.getIataCode().code();
+                    long count = routeRepository.countRoutesForAirport(iata);
+                    return new pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO(iata, airport.getName(), count);
+                })
+                .sorted((a1, a2) -> Long.compare(a2.routeCount(), a1.routeCount()))
+                .collect(Collectors.toList());
+    }
+
     private RouteViewDTO convertToDTO(Route route) {
         return new RouteViewDTO(
                 route.getRouteId().id(),
