@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import pt.isep.psoft.aisafe.api.AircraftController;
 import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
+import pt.isep.psoft.aisafe.application.DTO.OperationalHoursDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftDTO;
 import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -114,10 +117,12 @@ class AircraftControllerTest {
         pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top1 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("A320neo", 15000.0);
         pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top2 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("B737 MAX", 10000.0);
 
-        when(aircraftService.getTop5UtilizedModels()).thenReturn(java.util.List.of(top1, top2));
+        // Agora dizemos ao mock que vamos pedir ordenado por "hours"
+        when(aircraftService.getTop5UtilizedModels("hours")).thenReturn(java.util.List.of(top1, top2));
 
+        // Passamos "hours" para o Controller
         ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO>>> response =
-                aircraftController.getTop5Models();
+                aircraftController.getTop5Models("hours");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -126,18 +131,84 @@ class AircraftControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shouldReturn200OkWhenGettingCompatibleRoutes() { // US203
         String regNum = "CS-TPA";
         pt.isep.psoft.aisafe.application.DTO.RouteViewDTO route1 = new pt.isep.psoft.aisafe.application.DTO.RouteViewDTO("RT-OPOLIS", "OPO", "LIS", "ACTIVE", 100);
 
-        when(aircraftService.getCompatibleRoutesForAircraft(regNum)).thenReturn(java.util.List.of(route1));
+        // 1. Simular a Página
+        org.springframework.data.domain.Page<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO> mockPage =
+                new org.springframework.data.domain.PageImpl<>(java.util.List.of(route1));
 
-        ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>> response =
-                aircraftController.getCompatibleRoutes(regNum);
+        when(aircraftService.getCompatibleRoutesForAircraft(eq(regNum), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(mockPage);
 
+        // 2. Mock do Assembler
+        org.springframework.data.web.PagedResourcesAssembler assemblerMock =
+                org.mockito.Mockito.mock(org.springframework.data.web.PagedResourcesAssembler.class);
+
+        // 3. Simular o PagedModel final
+        org.springframework.hateoas.PagedModel pagedModel = org.springframework.hateoas.PagedModel.of(
+                java.util.List.of(EntityModel.of(route1)),
+                new org.springframework.hateoas.PagedModel.PageMetadata(1, 0, 1)
+        );
+
+        // 4. A MAGIA AQUI: Dizer explicitamente que o segundo 'any' é um RepresentationModelAssembler!
+        when(assemblerMock.toModel(
+                any(org.springframework.data.domain.Page.class),
+                any(org.springframework.hateoas.server.RepresentationModelAssembler.class)
+        )).thenReturn(pagedModel);
+
+        // 5. Executar o teste
+        ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>> response =
+                (ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>>) (ResponseEntity<?>)
+                        aircraftController.getCompatibleRoutes(regNum, org.springframework.data.domain.PageRequest.of(0, 5), assemblerMock);
+
+        // 6. Validações
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertFalse(response.getBody().getContent().isEmpty());
-        assertTrue(response.getBody().hasLinks(), "Collection should contain a self link");
+    }
+
+    @Test
+    void shouldReturn200OkWhenGettingRealTimeStatus() { // US205
+        String regNum = "CS-TPA";
+
+        // Ensinar o Mock a devolver "in-flight"
+        when(aircraftService.getRealTimeAircraftStatus(eq(regNum))).thenReturn("in-flight");
+
+        // Chamar o Controller
+        ResponseEntity<EntityModel<pt.isep.psoft.aisafe.application.DTO.RealTimeStatusDTO>> response =
+                aircraftController.getRealTimeStatus(regNum);
+
+        // Validações
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("in-flight", response.getBody().getContent().realTimeStatus());
+        assertEquals(regNum, response.getBody().getContent().registrationNumber());
+        assertTrue(response.getBody().hasLinks(), "Response should contain HATEOAS links");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldReturn200OkWhenGettingAllOperationalHours() { // US206 (Frota Completa)
+        OperationalHoursDTO dto = new OperationalHoursDTO("CS-TPA", 12500.5);
+
+        org.springframework.data.domain.Page<OperationalHoursDTO> mockPage = new org.springframework.data.domain.PageImpl<>(List.of(dto));
+        when(aircraftService.getAllAircraftOperationalHours(any(org.springframework.data.domain.Pageable.class))).thenReturn(mockPage);
+
+        org.springframework.data.web.PagedResourcesAssembler assemblerMock = Mockito.mock(org.springframework.data.web.PagedResourcesAssembler.class);
+        org.springframework.hateoas.PagedModel pagedModel = org.springframework.hateoas.PagedModel.of(
+                List.of(EntityModel.of(dto)), new org.springframework.hateoas.PagedModel.PageMetadata(1, 0, 1)
+        );
+
+        when(assemblerMock.toModel(any(org.springframework.data.domain.Page.class), any(org.springframework.hateoas.server.RepresentationModelAssembler.class))).thenReturn(pagedModel);
+
+        ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<OperationalHoursDTO>>> response =
+                (ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<OperationalHoursDTO>>>) (ResponseEntity<?>)
+                        aircraftController.getAllOperationalHours(org.springframework.data.domain.PageRequest.of(0, 10), assemblerMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 }

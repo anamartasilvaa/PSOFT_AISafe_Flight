@@ -28,12 +28,13 @@ class AirportServiceTest {
     @Test
     void shouldRegisterAirportSuccessfully() {
 
+        // O construtor foi atualizado com List.of() para facilities e null para a imagem
         RegisterAirportDTO dto = new RegisterAirportDTO(
-                "OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", 41.23, -8.67, List.of()
+                "OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL",
+                41.23, -8.67, List.of(), List.of(), null
         );
 
         Airport mockAirport = mock(Airport.class);
-
 
         when(mockAirport.getIataCode()).thenReturn(new IATACode("OPO"));
         when(mockAirport.getName()).thenReturn("Sá Carneiro");
@@ -41,19 +42,18 @@ class AirportServiceTest {
         when(mockAirport.getCountry()).thenReturn("Portugal");
         when(mockAirport.getTimezone()).thenReturn("Europe/Lisbon");
 
-
         when(mockAirport.getType()).thenReturn(AirportType.INTERNATIONAL);
         when(mockAirport.getStatus()).thenReturn(AirportStatus.OPERATIONAL);
-
 
         when(mockAirport.getRunways()).thenReturn(List.of());
         when(mockAirport.getCertifications()).thenReturn(List.of());
 
+        // Mock the new lists to prevent null pointers during DTO mapping in the service
+        when(mockAirport.getFacilities()).thenReturn(List.of());
+
         when(airportRepository.save(any(Airport.class))).thenReturn(mockAirport);
 
-
         AirportViewDTO result = airportService.registerAirport(dto);
-
 
         assertNotNull(result);
         assertEquals("OPO", result.iataCode());

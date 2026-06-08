@@ -42,9 +42,11 @@ class AirportControllerTest {
 
     @Test
     void shouldReturn201CreatedWhenCreatingAirport() {
-        // Arrange
-        RegisterAirportDTO requestDto = new RegisterAirportDTO("OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", 41.23, -8.67, List.of());
-        AirportViewDTO responseDto = new AirportViewDTO("OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL", List.of(), List.of());
+        // Arrange (Adicionados List.of(), null para as facilities e imageUrl)
+        RegisterAirportDTO requestDto = new RegisterAirportDTO("OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", 41.23, -8.67, List.of(), List.of(), null);
+
+        // AirportViewDTO agora tem 13 parâmetros
+        AirportViewDTO responseDto = new AirportViewDTO("OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL", List.of(), List.of(), List.of(), null, null, null);
 
         when(airportService.registerAirport(any(RegisterAirportDTO.class))).thenReturn(responseDto);
 
@@ -62,7 +64,8 @@ class AirportControllerTest {
     void shouldReturn200OkWhenGettingAirport() {
         // Arrange
         String iataCode = "OPO";
-        AirportViewDTO responseDto = new AirportViewDTO(iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL", List.of(), List.of());
+        // AirportViewDTO com 13 parâmetros
+        AirportViewDTO responseDto = new AirportViewDTO(iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL", List.of(), List.of(), List.of(), null, null, null);
 
         when(airportService.getAirportByIataCode(eq(iataCode))).thenReturn(responseDto);
 
@@ -80,7 +83,8 @@ class AirportControllerTest {
         // Arrange
         String iataCode = "OPO";
         String newStatus = "CLOSED";
-        AirportViewDTO responseDto = new AirportViewDTO(iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "CLOSED", List.of(), List.of());
+        // AirportViewDTO com 13 parâmetros
+        AirportViewDTO responseDto = new AirportViewDTO(iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "CLOSED", List.of(), List.of(), List.of(), null, null, null);
 
         when(airportService.updateAirportStatus(eq(iataCode), eq(newStatus))).thenReturn(responseDto);
 
