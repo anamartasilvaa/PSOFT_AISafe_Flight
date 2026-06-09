@@ -86,4 +86,57 @@ class RouteControllerTest {
         assertNotNull(response.getBody());
         assertEquals(routeId, response.getBody().getContent().routeId());
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldReturn200OkWhenGettingRoutesInvolvingAirport() { // US209
+        String iataCode = "OPO";
+        pt.isep.psoft.aisafe.application.DTO.RouteViewDTO routeDTO =
+                new pt.isep.psoft.aisafe.application.DTO.RouteViewDTO("RT-OPOLIS", "OPO", "LIS", "ACTIVE", 150);
+
+        org.springframework.data.domain.Page<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO> mockPage =
+                new org.springframework.data.domain.PageImpl<>(java.util.List.of(routeDTO));
+
+        when(routeService.getRoutesByAirport(eq(iataCode), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(mockPage);
+
+        org.springframework.data.web.PagedResourcesAssembler assemblerMock =
+                org.mockito.Mockito.mock(org.springframework.data.web.PagedResourcesAssembler.class);
+
+        org.springframework.hateoas.PagedModel pagedModel = org.springframework.hateoas.PagedModel.of(
+                java.util.List.of(EntityModel.of(routeDTO)),
+                new org.springframework.hateoas.PagedModel.PageMetadata(1, 0, 1)
+        );
+
+        when(assemblerMock.toModel(
+                any(org.springframework.data.domain.Page.class),
+                any(org.springframework.hateoas.server.RepresentationModelAssembler.class)
+        )).thenReturn(pagedModel);
+
+        ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>> response =
+                (ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO>>>) (ResponseEntity<?>)
+                        routeController.getRoutesInvolvingAirport(iataCode, org.springframework.data.domain.PageRequest.of(0, 10), assemblerMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().getContent().isEmpty());
+    }
+
+    @Test
+    void shouldReturn200OkWhenGettingBusiestAirports() { // US210
+        pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO stats1 =
+                new pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO("LHR", "Heathrow", 500);
+        pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO stats2 =
+                new pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO("JFK", "John F Kennedy", 450);
+
+        when(routeService.getBusiestAirports()).thenReturn(java.util.List.of(stats1, stats2));
+
+        ResponseEntity<java.util.List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> response =
+                routeController.getBusiestAirports();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().size());
+        assertEquals("LHR", response.getBody().get(0).iataCode());
+    }
 }

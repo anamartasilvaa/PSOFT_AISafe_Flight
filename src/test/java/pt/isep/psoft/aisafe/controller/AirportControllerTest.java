@@ -16,6 +16,7 @@ import pt.isep.psoft.aisafe.api.AirportController;
 import pt.isep.psoft.aisafe.application.AirportService;
 import pt.isep.psoft.aisafe.application.DTO.AirportViewDTO;
 import pt.isep.psoft.aisafe.application.DTO.RegisterAirportDTO;
+import pt.isep.psoft.aisafe.application.DTO.UpdateAirportDetailsDTO;
 
 import java.util.List;
 
@@ -95,5 +96,48 @@ class AirportControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("CLOSED", response.getBody().getContent().status());
+    }
+
+    @Test
+    void shouldReturn200OkWhenUpdatingAirportDetails() { // US208
+        // Arrange
+        String iataCode = "OPO";
+        UpdateAirportDetailsDTO requestDto = new UpdateAirportDetailsDTO("24/7", "info@aeroportoporto.pt");
+
+        AirportViewDTO responseDto = new AirportViewDTO(
+                iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL",
+                List.of(), List.of(), List.of(), "imageUrl", "24/7", "info@aeroportoporto.pt"
+        );
+
+        when(airportService.updateAirportDetails(eq(iataCode), any(UpdateAirportDetailsDTO.class))).thenReturn(responseDto);
+
+        // Act
+        ResponseEntity<EntityModel<AirportViewDTO>> response = airportController.updateAirportDetails(iataCode, requestDto);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("24/7", response.getBody().getContent().operationalHours());
+        assertEquals("info@aeroportoporto.pt", response.getBody().getContent().contactInformation());
+        assertTrue(response.getBody().hasLinks(), "Response should contain HATEOAS links");
+    }
+
+    @Test
+    void shouldReturn200OkWhenGettingAirportsGrouped() { // US211
+        java.util.Map<String, java.util.List<pt.isep.psoft.aisafe.application.DTO.AirportViewDTO>> mockResponse = new java.util.HashMap<>();
+
+        pt.isep.psoft.aisafe.application.DTO.AirportViewDTO airport = new pt.isep.psoft.aisafe.application.DTO.AirportViewDTO(
+                "OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL",
+                java.util.List.of(), java.util.List.of(), java.util.List.of(), null, null, null
+        );
+
+        mockResponse.put("Portugal", java.util.List.of(airport));
+
+        when(airportService.getAirportsGrouped("country")).thenReturn(mockResponse);
+
+        ResponseEntity<Object> response = airportController.getAirportsGrouped("country");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 }
