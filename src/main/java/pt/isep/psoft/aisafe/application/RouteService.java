@@ -115,14 +115,10 @@ public class RouteService {
     }
 
     //US209
-    public List<RouteViewDTO> getRoutesByAirport(String iataCode) {
+    public Page<RouteViewDTO> getRoutesByAirport(String iataCode, Pageable pageable) {
         String code = iataCode.toUpperCase();
-
-        List<Route> routes = routeRepository.findRoutesByAirport(code);
-
-        return routes.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        Page<Route> routes = routeRepository.findRoutesByAirport(code, pageable);
+        return routes.map(this::convertToDTO);
     }
 
     // US210

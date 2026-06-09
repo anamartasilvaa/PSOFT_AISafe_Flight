@@ -35,7 +35,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     // US209
     @Query("SELECT r FROM Route r WHERE r.origin.iataCode.code = :iataCode OR r.destination.iataCode.code = :iataCode")
-    List<Route> findRoutesByAirport(@Param("iataCode") String iataCode);
+    Page<Route> findRoutesByAirport(@Param("iataCode") String iataCode, Pageable pageable);
 
     //US210
     @Query("SELECT COUNT(r) FROM Route r WHERE r.origin.iataCode.code = :iataCode OR r.destination.iataCode.code = :iataCode")

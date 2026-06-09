@@ -137,15 +137,15 @@ public class RouteController {
 
     /* US209 - View all routes that depart from or arrive at a specific airport */
     @GetMapping("/involving/{iataCode}")
-    public ResponseEntity<List<RouteViewDTO>> getRoutesByAirport(@PathVariable String iataCode) {
+    @Operation(summary = "View all routes that depart from or arrive at a specific airport (Paged)")
+    public ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>> getRoutesInvolvingAirport(
+            @PathVariable String iataCode,
+            @PageableDefault(size = 10) Pageable pageable,
+            PagedResourcesAssembler<RouteViewDTO> assembler) {
+        Page<RouteViewDTO> page = routeService.getRoutesByAirport(iataCode, pageable);
+        PagedModel<EntityModel<RouteViewDTO>> pagedModel = assembler.toModel(page, this::addLinksToRoute);
 
-        List<RouteViewDTO> routes = routeService.getRoutesByAirport(iataCode);
-
-        if (routes.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok(routes);
+        return ResponseEntity.ok(pagedModel);
     }
 
     /* US210 - Generate statistics on the busiest airports by number of routes */

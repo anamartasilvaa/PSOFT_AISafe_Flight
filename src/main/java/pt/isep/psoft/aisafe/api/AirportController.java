@@ -112,7 +112,7 @@ public class AirportController {
     @PatchMapping("/{iataCode}/details")
     public ResponseEntity<EntityModel<AirportViewDTO>> updateAirportDetails(
             @PathVariable String iataCode,
-            @RequestBody UpdateAirportDetailsDTO dto) {
+            @Valid @RequestBody UpdateAirportDetailsDTO dto) {
 
         AirportViewDTO updatedAirport = service.updateAirportDetails(iataCode, dto);
 
