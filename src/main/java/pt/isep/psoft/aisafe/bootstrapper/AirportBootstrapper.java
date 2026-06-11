@@ -79,6 +79,34 @@ public class AirportBootstrapper implements CommandLineRunner {
 
             System.out.println("BOOTSTRAP: 3 Airports (OPO, LIS, JFK) with runways and certifications successfully added!");
 
+            // 3. WP2B
+            System.out.println("BOOTSTRAP WP2B: Adding new airports with facilities and updating existing ones...");
+
+
+            airportService.updateAirportDetails("OPO", new pt.isep.psoft.aisafe.application.DTO.UpdateAirportDetailsDTO(
+                    "24/7 Operations",
+                    "Phone: +351 229 432 400 | Email: porto@ana.pt"
+            ));
+
+            airportService.registerAirport(new RegisterAirportDTO(
+                    "CDG", "Aéroport de Paris-Charles de Gaulle", "Paris", "France", "Europe/Paris",
+                    "INTERNATIONAL", 49.0097, 2.5479,
+                    List.of(new RunwayDTO("09L/27R", 4200.0, "East-West")),
+                    List.of(
+                            new pt.isep.psoft.aisafe.application.DTO.FacilityDTO("Terminal", "Terminal 1 - Star Alliance"),
+                            new pt.isep.psoft.aisafe.application.DTO.FacilityDTO("Lounge", "Air France VIP Lounge")
+                    ),
+                    "https://images.unsplash.com/photo-1542273917-6d6014e08c84"
+            ));
+
+            airportService.registerAirport(new RegisterAirportDTO(
+                    "LHR", "Heathrow Airport", "London", "UK", "Europe/London",
+                    "INTERNATIONAL", 51.4700, -0.4543,
+                    List.of(new RunwayDTO("09L/27R", 3902.0, "East-West")),
+                    List.of(new pt.isep.psoft.aisafe.application.DTO.FacilityDTO("Terminal", "Terminal 5")),
+                    "https://images.unsplash.com/photo-1576883600124-64c5aa295b28"
+            ));
+
         } catch (Exception e) {
             System.out.println("Note: Airports/Certifications might already exist or: " + e.getMessage());
         }
