@@ -1,0 +1,13 @@
+@startuml
+title US209 - SSD
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests routes involving a specific airport (iataCode, pageable parameters)
+activate Sys
+Sys --> Operator : Returns a paginated list of routes with HATEOAS links (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

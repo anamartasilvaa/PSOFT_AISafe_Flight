@@ -1,0 +1,49 @@
+@startuml
+title US209 - CD
+skinparam classAttributeIconSize 0
+
+class RouteController {
+    + getRoutesInvolvingAirport(iataCode: String, pageable: Pageable, assembler: PagedResourcesAssembler): ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>>
+    - addLinksToRoute(route: RouteViewDTO): EntityModel<RouteViewDTO>
+}
+
+class RouteService {
+    + getRoutesByAirport(iataCode: String, pageable: Pageable): Page<RouteViewDTO>
+    - convertToDTO(route: Route): RouteViewDTO
+}
+
+interface RouteRepository <<Repository>> {
+    + findRoutesByAirport(iataCode: String, pageable: Pageable): Page<Route>
+}
+
+class Route <<Entity>> <<Root>> {
+    - minimumCapacity: Integer
+    - status: RouteStatus
+    + getRouteId(): RouteId
+    + getOrigin(): Airport
+    + getDestination(): Airport
+}
+
+class Airport <<Entity>> <<Root>> {
+    + getIataCode(): IATACode
+}
+
+class RouteViewDTO <<DTO>> {
+    + routeId: String
+    + originIata: String
+    + destinationIata: String
+    + status: String
+    + minimumCapacity: Integer
+}
+
+RouteController ..> RouteViewDTO : produces >
+RouteController --> RouteService : uses >
+
+RouteService ..> RouteViewDTO : creates >
+RouteService --> RouteRepository : uses >
+
+RouteRepository --> Route : queries >
+
+Route "*" --> "1" Airport : origin >
+Route "*" --> "1" Airport : destination >
+@enduml

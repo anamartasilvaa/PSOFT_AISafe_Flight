@@ -1,0 +1,33 @@
+@startuml
+title US209 - DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    Airport "1" *-- "1" IATACode : identified by >
+}
+
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - minimumCapacity: Integer
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+    enum RouteStatus <<Enumeration>> {
+        ACTIVE
+        INACTIVE
+    }
+
+    Route "1" *-- "1" RouteId : identified by >
+    Route "1" --> "1" RouteStatus : has >
+    Route "*" --> "1" Airport : departs from (Origin) >
+    Route "*" --> "1" Airport : arrives at (Destination) >
+}
+
+@enduml
