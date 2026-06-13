@@ -1,0 +1,46 @@
+@startuml
+title US211 - SD
+autonumber
+actor "ATCC" as Operator
+participant ":AirportController" as Ctrl
+participant ":AirportService" as Service
+participant ":AirportRepository" as Repo
+participant "airports\n:List<Airport>" as ListEntity
+
+activate Operator
+Operator -> Ctrl : GET /api/airports/grouped?by={criteria}
+activate Ctrl
+
+Ctrl -> Service : getAirportsGrouped(by)
+activate Service
+
+Service -> Repo : findAll()
+activate Repo
+Repo --> Service : List<Airport>
+deactivate Repo
+
+Service -> ListEntity : stream().map(this::mapToDTO).collect(...)
+activate ListEntity
+
+alt by == "both"
+    ListEntity --> Service : Map<String, Map<String, List<AirportViewDTO>>>
+else by == "region"
+    ListEntity --> Service : Map<String, List<AirportViewDTO>>
+else default (country)
+    ListEntity --> Service : Map<String, List<AirportViewDTO>>
+end
+
+deactivate ListEntity
+
+Service --> Ctrl : groupedAirports (Object)
+deactivate Service
+
+alt groupedAirports.isEmpty()
+    Ctrl --> Operator : 204 No Content
+else has data
+    Ctrl --> Operator : 200 OK (groupedAirports)
+end
+
+deactivate Ctrl
+deactivate Operator
+@enduml

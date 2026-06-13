@@ -1,0 +1,19 @@
+@startuml
+title US211 - DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - country: String
+        - timezone: String
+    }
+
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+
+    Airport "1" *-- "1" IATACode : identified by >
+}
+
+@enduml
