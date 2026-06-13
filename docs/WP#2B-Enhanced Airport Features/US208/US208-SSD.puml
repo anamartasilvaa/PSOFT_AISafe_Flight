@@ -1,0 +1,13 @@
+@startuml
+title US208 - SSD
+autonumber
+actor "Backoffice Operator" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests to update airport details (iataCode, operationalHours, contactInformation)
+activate Sys
+Sys --> Operator : Updates the details and returns the updated airport information (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

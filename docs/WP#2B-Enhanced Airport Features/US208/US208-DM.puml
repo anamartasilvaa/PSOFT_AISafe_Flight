@@ -1,0 +1,19 @@
+@startuml
+title US208 -DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - operationalHours: String
+        - contactInformation: String
+        + updateDetails(operationalHours: String, contactInformation: String)
+    }
+
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+
+    Airport "1" *-- "1" IATACode : identified by >
+}
+@enduml

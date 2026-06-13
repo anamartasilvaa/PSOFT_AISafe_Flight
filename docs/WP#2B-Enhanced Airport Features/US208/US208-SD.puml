@@ -1,0 +1,51 @@
+@startuml
+title US208 - SD
+autonumber
+actor "Backoffice Operator" as Operator
+participant ":AirportController" as Ctrl
+participant "dto\n:UpdateAirportDetailsDTO" as DTO
+participant ":AirportService" as Service
+participant ":AirportRepository" as Repo
+participant "airport\n:Airport" as Entity
+
+activate Operator
+Operator -> Ctrl : PATCH /api/airports/{iataCode}/details\n(UpdateAirportDetailsDTO)
+activate Ctrl
+
+Ctrl -> Service : updateAirportDetails(iataCode, dto)
+activate Service
+
+Service -> Repo : findByIataCodeString(iataCode)
+activate Repo
+Repo --> Service : Optional<Airport>
+deactivate Repo
+
+Service -> DTO : operationalHours()
+activate DTO
+DTO --> Service : operationalHours
+deactivate DTO
+
+Service -> DTO : contactInformation()
+activate DTO
+DTO --> Service : contactInfo
+deactivate DTO
+
+Service -> Entity : updateDetails(operationalHours, contactInfo)
+activate Entity
+Entity --> Service : success
+deactivate Entity
+
+Service -> Repo : save(airport)
+activate Repo
+Repo --> Service : savedAirport
+deactivate Repo
+
+Service -> Service : mapToDTO(savedAirport)
+Service --> Ctrl : AirportViewDTO
+deactivate Service
+
+Ctrl -> Ctrl : wrap in EntityModel & add HATEOAS links
+Ctrl --> Operator : 200 OK (EntityModel<AirportViewDTO>)
+deactivate Ctrl
+deactivate Operator
+@enduml

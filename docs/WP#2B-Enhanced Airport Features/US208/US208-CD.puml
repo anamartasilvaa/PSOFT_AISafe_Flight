@@ -1,0 +1,47 @@
+@startuml
+title US208 -CD
+skinparam classAttributeIconSize 0
+
+class AirportController {
+    + updateAirportDetails(iataCode: String, dto: UpdateAirportDetailsDTO): ResponseEntity<EntityModel<AirportViewDTO>>
+}
+
+class AirportService {
+    + updateAirportDetails(iataCode: String, dto: UpdateAirportDetailsDTO): AirportViewDTO
+    - mapToDTO(airport: Airport): AirportViewDTO
+}
+
+interface AirportRepository <<Repository>> {
+    + findByIataCodeString(iataCode: String): Optional<Airport>
+    + save(airport: Airport): Airport
+}
+
+class Airport <<Entity>> <<Root>> {
+    - operationalHours: String
+    - contactInformation: String
+    + updateDetails(operationalHours: String, contactInformation: String)
+}
+
+class UpdateAirportDetailsDTO <<DTO>> {
+    + operationalHours(): String
+    + contactInformation(): String
+}
+
+class AirportViewDTO <<DTO>> {
+    + iataCode: String
+    + name: String
+    + operationalHours: String
+    + contactInformation: String
+}
+
+AirportController ..> UpdateAirportDetailsDTO : consumes >
+AirportController ..> AirportViewDTO : produces >
+AirportController --> AirportService : uses >
+
+AirportService ..> UpdateAirportDetailsDTO : uses >
+AirportService ..> AirportViewDTO : creates >
+AirportService --> AirportRepository : uses >
+AirportService --> Airport : updates >
+
+AirportRepository --> Airport : persists >
+@enduml
