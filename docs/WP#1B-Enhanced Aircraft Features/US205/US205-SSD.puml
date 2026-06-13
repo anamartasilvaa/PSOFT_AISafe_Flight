@@ -1,0 +1,13 @@
+@startuml
+title US205-SSD
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests real-time availability status of an aircraft (registrationNumber)
+activate Sys
+Sys --> Operator : Returns the real-time status (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

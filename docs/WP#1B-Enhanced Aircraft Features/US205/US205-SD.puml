@@ -1,0 +1,47 @@
+@startuml
+title US205-SD
+autonumber
+actor "ATCC" as Operator
+participant ":AircraftController" as Ctrl
+participant ":AircraftService" as Service
+participant ":AircraftRepository" as AcftRepo
+participant "aircraft\n:Aircraft" as Entity
+participant ":ScheduledFlightRepository" as FlightRepo
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/instances/{registrationNumber}/real-time-status
+activate Ctrl
+
+Ctrl -> Service : getRealTimeAircraftStatus(registrationNumber)
+activate Service
+
+Service -> AcftRepo : findByRegistrationNumber(registrationNumber)
+activate AcftRepo
+AcftRepo --> Service : Optional<Aircraft>
+deactivate AcftRepo
+
+Service -> Entity : getStatus()
+activate Entity
+Entity --> Service : baseStatus
+deactivate Entity
+
+alt baseStatus == UNDER_MAINTENANCE or INACTIVE
+    Service --> Ctrl : status string ("under maintenance" / "inactive")
+else baseStatus == ACTIVE
+    Service -> FlightRepo : existsByAircraftAndStatus(aircraft, IN_FLIGHT)
+    activate FlightRepo
+    FlightRepo --> Service : boolean (isFlying)
+    deactivate FlightRepo
+
+    alt isFlying == true
+        Service --> Ctrl : "in-flight"
+    else isFlying == false
+        Service --> Ctrl : "available"
+    end
+end
+
+Ctrl -> Ctrl : create RealTimeStatusDTO and add HATEOAS link
+Ctrl --> Operator : 200 OK (EntityModel<RealTimeStatusDTO>)
+deactivate Ctrl
+deactivate Operator
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+title US205-DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - status: AircraftStatus
+    }
+
+    enum AircraftStatus <<Enumeration>> {
+        ACTIVE
+        INACTIVE
+        UNDER_MAINTENANCE
+    }
+
+    Aircraft "1" --> "1" AircraftStatus : has >
+}
+
+package "Flight Operations Aggregate" {
+    class ScheduledFlight <<Entity>> <<Root>> {
+        - status: FlightStatus
+    }
+
+    enum FlightStatus <<Enumeration>> {
+        SCHEDULED
+        DELAYED
+        IN_FLIGHT
+        COMPLETED
+        CANCELED
+    }
+
+    ScheduledFlight "*" --> "1" Aircraft : assigned to >
+    ScheduledFlight "1" --> "1" FlightStatus : has >
+}
+
+@enduml

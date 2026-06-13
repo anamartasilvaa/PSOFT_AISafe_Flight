@@ -1,0 +1,45 @@
+@startuml
+title US205-CD
+skinparam classAttributeIconSize 0
+
+class AircraftController {
+    + getRealTimeStatus(registrationNumber: String): ResponseEntity<EntityModel<RealTimeStatusDTO>>
+}
+
+class AircraftService {
+    + getRealTimeAircraftStatus(regNum: String): String
+}
+
+interface AircraftRepository <<Repository>> {
+    + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
+}
+
+interface ScheduledFlightRepository <<Repository>> {
+    + existsByAircraftAndStatus(aircraft: Aircraft, status: FlightStatus): boolean
+}
+
+class Aircraft <<Entity>> <<Root>> {
+    - status: AircraftStatus
+    + getStatus(): AircraftStatus
+}
+
+class ScheduledFlight <<Entity>> <<Root>> {
+    - status: FlightStatus
+}
+
+class RealTimeStatusDTO <<DTO>> {
+    + registrationNumber: String
+    + status: String
+}
+
+AircraftController ..> RealTimeStatusDTO : produces >
+AircraftController --> AircraftService : uses >
+
+AircraftService --> AircraftRepository : uses >
+AircraftService --> ScheduledFlightRepository : uses >
+
+AircraftRepository --> Aircraft : queries >
+ScheduledFlightRepository --> ScheduledFlight : queries >
+
+ScheduledFlight "*" --> "1" Aircraft : assigned to >
+@enduml
