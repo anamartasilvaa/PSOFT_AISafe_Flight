@@ -164,11 +164,11 @@ public class AircraftService {
         );
     }
 
-    // US206 - Obter as horas operacionais de TODOS os aviões (com paginação)
+    // US206
     public org.springframework.data.domain.Page<OperationalHoursDTO> getAllAircraftOperationalHours(
             org.springframework.data.domain.Pageable pageable) {
 
-        // Vai buscar todos os aviões paginados e converte-os no DTO
+
         return aircraftRepository.findAll(pageable)
                 .map(aircraft -> new OperationalHoursDTO(
                         aircraft.getRegistrationNumber().number(),
@@ -176,7 +176,7 @@ public class AircraftService {
                 ));
     }
 
-    // US204 - Top 5 Utilized Models (Hours OR Assignments)
+    // US204
     public List<TopAircraftModelDTO> getTop5UtilizedModels(String sortBy) {
         org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 5);
 
@@ -184,7 +184,7 @@ public class AircraftService {
             return aircraftRepository.findTop5ModelsByAssignments(pageRequest);
         }
 
-        // Por defeito, devolve por horas de voo
+
         return aircraftRepository.findTop5ModelsByFlightHours(pageRequest);
     }
 
@@ -213,7 +213,7 @@ public class AircraftService {
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum.trim().toUpperCase()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
 
-        // 1. Verificar o estado base do avião
+
         if (aircraft.getStatus() == AircraftStatus.UNDER_MAINTENANCE) {
             return "under maintenance";
         }
@@ -221,14 +221,14 @@ public class AircraftService {
             return "inactive";
         }
 
-        // 2. Se está ACTIVE, vamos ver se tem algum voo a decorrer AGORA
+
         boolean isFlying = scheduledFlightRepository.existsByAircraftAndStatus(aircraft, FlightStatus.IN_FLIGHT);
 
         if (isFlying) {
             return "in-flight";
         }
 
-        // 3. Se está ACTIVE e não está a voar, então está disponível!
+
         return "available";
     }
 }

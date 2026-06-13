@@ -80,7 +80,7 @@ public class AircraftController {
     }
 
 
-    /* US201 - Update an aircraft model's specifications */
+    /* US201  */
     @PatchMapping("/models/{modelName}/specifications")
     public ResponseEntity<EntityModel<AircraftModelViewDTO>> updateModelSpecifications(
             @PathVariable String modelName,
@@ -94,7 +94,7 @@ public class AircraftController {
         return ResponseEntity.ok(resource);
     }
 
-    /* US202 - Register an aircraft model with an optional image or technical diagram */
+    /* US202 -*/
     @PatchMapping("/models/{modelName}/image")
     public ResponseEntity<EntityModel<AircraftModelViewDTO>> updateModelImage(
             @PathVariable String modelName,
@@ -102,14 +102,14 @@ public class AircraftController {
 
         AircraftModelViewDTO updatedModel = service.updateModelImage(modelName, dto.imageUrl());
 
-        // Adicionado o HATEOAS
+
         EntityModel<AircraftModelViewDTO> resource = EntityModel.of(updatedModel);
         resource.add(linkTo(methodOn(AircraftController.class).updateModelImage(modelName, dto)).withSelfRel());
 
         return ResponseEntity.ok(resource);
     }
 
-    /* US204 - Top 5 most utilized aircraft models based on total flight hours or assignments */
+    /* US204 */
     @io.swagger.v3.oas.annotations.Operation(summary = "Get Top 5 Aircraft Models", description = "Get the top 5 most utilized aircraft models based on total flight hours or number of assignments.")
     @GetMapping("/models/top5")
     public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5Models(
@@ -127,21 +127,20 @@ public class AircraftController {
         return ResponseEntity.ok(collection);
     }
 
-    /* US206 - Calculate the total operational hours for each aircraft */
+    /* US206  */
     @GetMapping("/instances/{registrationNumber}/operational-hours")
     public ResponseEntity<EntityModel<OperationalHoursDTO>> getOperationalHours(
             @PathVariable String registrationNumber) {
 
         OperationalHoursDTO dto = service.getAircraftOperationalHours(registrationNumber);
 
-        // Adicionado o HATEOAS
         EntityModel<OperationalHoursDTO> resource = EntityModel.of(dto);
         resource.add(linkTo(methodOn(AircraftController.class).getOperationalHours(registrationNumber)).withSelfRel());
 
         return ResponseEntity.ok(resource);
     }
 
-    /* US206 - Calculate the total operational hours for ALL aircraft (Fleet paginated) */
+    /* US206  */
     @GetMapping("/instances/operational-hours")
     public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<OperationalHoursDTO>>> getAllOperationalHours(
             org.springframework.data.domain.Pageable pageable,
@@ -156,7 +155,7 @@ public class AircraftController {
         return ResponseEntity.ok(pagedModel);
     }
 
-    /* US203 - View compatible routes for a specific aircraft */
+    /* US203*/
     @GetMapping("/instances/{registrationNumber}/compatible-routes")
     public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<RouteViewDTO>>> getCompatibleRoutes(
             @PathVariable String registrationNumber,
@@ -171,7 +170,7 @@ public class AircraftController {
         return ResponseEntity.ok(pagedModel);
     }
 
-    /* US205 - View real-time aircraft availability status */
+    // US205
     @GetMapping("/instances/{registrationNumber}/real-time-status")
     public ResponseEntity<EntityModel<RealTimeStatusDTO>> getRealTimeStatus(@PathVariable String registrationNumber) {
 
