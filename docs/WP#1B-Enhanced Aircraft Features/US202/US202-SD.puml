@@ -1,0 +1,45 @@
+@startuml
+autonumber
+title US202-SD
+
+actor "Backoffice Operator" as Operator
+participant ":AircraftModelController" as Ctrl
+participant "dto\n:UpdateModelImageDTO" as DTO
+participant ":AircraftModelService" as Service
+participant ":AircraftModelRepository" as Repo
+participant "model\n:AircraftModel" as Entity
+
+activate Operator
+Operator -> Ctrl : PATCH /api/aircraft-models/models/{modelName}/image\n(UpdateModelImageDTO)
+activate Ctrl
+
+Ctrl -> Service : updateModelImage(modelName, dto)
+activate Service
+
+Service -> Repo : findByModelName_Name(modelName)
+activate Repo
+Repo --> Service : Optional<AircraftModel>
+deactivate Repo
+
+Service -> DTO : extract imageUrl
+activate DTO
+DTO --> Service : newImageUrl
+deactivate DTO
+
+Service -> Entity : updateImage(newImageUrl)
+activate Entity
+Entity --> Service : success
+deactivate Entity
+
+Service -> Repo : save(model)
+activate Repo
+Repo --> Service : savedModel
+deactivate Repo
+
+Service --> Ctrl : AircraftModelViewDTO
+deactivate Service
+
+Ctrl --> Operator : 200 OK (AircraftModelViewDTO)
+deactivate Ctrl
+deactivate Operator
+@enduml

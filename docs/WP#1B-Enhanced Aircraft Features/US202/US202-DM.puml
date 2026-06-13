@@ -1,0 +1,18 @@
+@startuml
+title US202-DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - modelPhotoUrl: String
+        + updateImage(newImageUrl: String)
+    }
+
+    class ModelName <<Value Object>> {
+        - name: String
+    }
+
+    AircraftModel "1" *-- "1" ModelName : identified by >
+}
+@enduml
