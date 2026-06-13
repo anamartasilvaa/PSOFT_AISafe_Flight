@@ -40,39 +40,61 @@ public class SecurityConfig {
                     if (h2ConsoleEnabled) {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
+// WP1 & WP1B
 
-                    // 2. WP1 - AIRCRAFT MANAGEMENT
+// US201 & US202
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+// US204
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+// US203, US205, US206
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/compatible-routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/real-time-status").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/operational-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/operational-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+//(WP1)
                     auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models/instances").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/instances/*/status").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
-                    // 3. WP2 - AIRPORT MANAGEMENT
+
+// WP2 & WP2B - AIRPORT MANAGEMENT
+
+// US207
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+// US208
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/details").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
+// US211
+                    auth.requestMatchers(HttpMethod.GET, "/api/airports/grouped").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+//(WP2)
                     auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/status").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.POST, "/api/airports/*/certifications").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
-                    // 9. WP#2B/3 - STATISTICS (US210)
+
+// WP3 & WP2B - FLIGHT ROUTES & STATISTICS
+
+// US210
                     auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/busiest-airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-                    // 4. WP3 - FLIGHT ROUTES
+
+// US209
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/involving/*").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+// (WP3)
                     auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.BACKOFFICE.name(), Role.ADMIN.name());
                     auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
 
-                    // 5. WP4 - MAINTENANCE RECORDS
+// WP4 - MAINTENANCE RECORDS
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
                     auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
-
-                    // 6. WP#1B - ENHANCED AIRCRAFT FEATURES
-                    // US201 & US202 - Backoffice atualiza as especificações e imagem do Modelo
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-                    // 7. WP#2B - ENHANCED AIRPORT FEATURES (US207)
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-                    // 8. WP#2B - ENHANCED AIRPORT FEATURES (US208)
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/details").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
 
                     auth.anyRequest().authenticated();
                 })
