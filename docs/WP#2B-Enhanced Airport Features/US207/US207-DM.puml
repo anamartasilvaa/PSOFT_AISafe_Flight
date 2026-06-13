@@ -1,0 +1,25 @@
+@startuml
+title US207-DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - imageUrl: String
+        + updateImage(newImageUrl: String)
+        + addFacility(facility: Facility)
+    }
+
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+
+    class Facility <<Value Object>> {
+        - type: String
+        - description: String
+    }
+
+    Airport "1" *-- "1" IATACode : identified by >
+    Airport "1" *-- "*" Facility : has >
+}
+@enduml

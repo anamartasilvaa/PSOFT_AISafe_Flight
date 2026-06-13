@@ -1,0 +1,13 @@
+@startuml
+title US207-SSD
+autonumber
+actor "Backoffice Operator" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests to update the image of an airport (iataCode, imageUrl)
+activate Sys
+Sys --> Operator : Updates the image and returns the updated airport details (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml
