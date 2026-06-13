@@ -1,0 +1,58 @@
+@startuml
+title US203-SD
+autonumber
+actor "ATCC" as Operator
+participant ":AircraftController" as Ctrl
+participant ":AircraftService" as Service
+participant ":AircraftRepository" as AcftRepo
+participant "aircraft\n:Aircraft" as Entity
+participant "model\n:AircraftModel" as ModelEntity
+participant ":RouteRepository" as RouteRepo
+participant "compatibleRoutes\n:Page<Route>" as PageRoute
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/instances/{registrationNumber}/compatible-routes?page=0&size=10
+activate Ctrl
+
+Ctrl -> Service : getCompatibleRoutesForAircraft(registrationNumber, pageable)
+activate Service
+
+Service -> AcftRepo : findByRegistrationNumber(new RegistrationNumber(registrationNumber))
+activate AcftRepo
+AcftRepo --> Service : Optional<Aircraft>
+deactivate AcftRepo
+
+Service -> Entity : getAircraftModel()
+activate Entity
+Entity --> Service : model
+deactivate Entity
+
+Service -> ModelEntity : getMaximumRange()
+activate ModelEntity
+ModelEntity --> Service : maxRange
+deactivate ModelEntity
+
+Service -> Entity : getActualSeatingCapacity()
+activate Entity
+Entity --> Service : actualCapacity
+deactivate Entity
+
+Service -> RouteRepo : findCompatibleRoutes(maxRange, actualCapacity, pageable)
+activate RouteRepo
+
+RouteRepo --> Service : Page<Route>
+deactivate RouteRepo
+
+Service -> PageRoute : map(route -> new RouteViewDTO(...))
+activate PageRoute
+PageRoute --> Service : Page<RouteViewDTO>
+deactivate PageRoute
+
+Service --> Ctrl : Page<RouteViewDTO>
+deactivate Service
+
+Ctrl -> Ctrl : assemble PagedModel with HATEOAS links
+Ctrl --> Operator : 200 OK (PagedModel<EntityModel<RouteViewDTO>>)
+deactivate Ctrl
+deactivate Operator
+@enduml

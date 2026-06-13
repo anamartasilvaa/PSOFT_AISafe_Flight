@@ -1,0 +1,13 @@
+@startuml
+title US203-SSD
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests compatible routes for a specific aircraft (registrationNumber, page parameters)
+activate Sys
+Sys --> Operator : Returns a paginated list of compatible routes (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

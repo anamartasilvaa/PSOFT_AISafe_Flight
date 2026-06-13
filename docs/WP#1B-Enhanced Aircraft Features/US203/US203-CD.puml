@@ -1,0 +1,50 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US203-CD
+class AircraftController {
+    + getCompatibleRoutes(registrationNumber: String, pageable: Pageable, assembler: PagedResourcesAssembler): ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>>
+}
+
+class AircraftService {
+    + getCompatibleRoutesForAircraft(regNum: String, pageable: Pageable): Page<RouteViewDTO>
+}
+
+interface AircraftRepository <<Repository>> {
+    + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
+}
+
+interface RouteRepository <<Repository>> {
+    + findCompatibleRoutes(maxRange: Double, actualCapacity: Integer, pageable: Pageable): Page<Route>
+}
+
+class Aircraft <<Entity>> <<Root>> {
+    - actualSeatingCapacity: Integer
+    + getActualSeatingCapacity(): Integer
+    + getAircraftModel(): AircraftModel
+}
+
+class AircraftModel <<Entity>> <<Root>> {
+    - maximumRange: Double
+    + getMaximumRange(): Double
+}
+
+class RouteViewDTO <<DTO>> {
+    + routeId: String
+    + originIata: String
+    + destinationIata: String
+    + status: String
+    + minimumCapacity: Integer
+}
+
+AircraftController ..> RouteViewDTO : produces >
+AircraftController --> AircraftService : uses >
+
+AircraftService --> AircraftRepository : uses >
+AircraftService --> RouteRepository : uses >
+AircraftService ..> RouteViewDTO : creates >
+
+AircraftRepository --> Aircraft : queries >
+RouteRepository ..> RouteViewDTO : projects >
+
+Aircraft --> AircraftModel : references >
+@enduml

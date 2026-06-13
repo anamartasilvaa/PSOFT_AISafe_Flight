@@ -1,0 +1,37 @@
+@startuml
+title US203-DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - actualSeatingCapacity: Integer
+    }
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+    Aircraft "1" *-- "1" RegistrationNumber : identified by >
+}
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - maximumRange: Double
+    }
+    Aircraft "*" --> "1" AircraftModel : is of type >
+}
+
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - minimumRange: Double
+        - minimumCapacity: Integer
+        - status: RouteStatus
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+    Route "1" *-- "1" RouteId : identified by >
+}
+
+
+
+@enduml
