@@ -1,0 +1,38 @@
+@startuml
+title US206-CD
+skinparam classAttributeIconSize 0
+
+class AircraftController {
+    + getAllOperationalHours(pageable: Pageable, assembler: PagedResourcesAssembler): ResponseEntity<PagedModel<EntityModel<OperationalHoursDTO>>>
+    + getOperationalHours(registrationNumber: String): ResponseEntity<EntityModel<OperationalHoursDTO>>
+}
+
+class AircraftService {
+    + getAllAircraftOperationalHours(pageable: Pageable): Page<OperationalHoursDTO>
+    + getAircraftOperationalHours(regNum: String): OperationalHoursDTO
+}
+
+interface AircraftRepository <<Repository>> {
+    + findAll(pageable: Pageable): Page<Aircraft>
+    + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
+}
+
+class Aircraft <<Entity>> <<Root>> {
+    - totalFlightHours: Double
+    + getTotalFlightHours(): Double
+    + getRegistrationNumber(): RegistrationNumber
+}
+
+class OperationalHoursDTO <<DTO>> {
+    + registrationNumber: String
+    + totalFlightHours: Double
+}
+
+AircraftController ..> OperationalHoursDTO : produces >
+AircraftController --> AircraftService : uses >
+
+AircraftService ..> OperationalHoursDTO : creates >
+AircraftService --> AircraftRepository : uses >
+
+AircraftRepository --> Aircraft : queries >
+@enduml

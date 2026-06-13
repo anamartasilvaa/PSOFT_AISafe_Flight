@@ -1,0 +1,18 @@
+@startuml
+title US206-DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - totalFlightHours: Double
+        + getTotalFlightHours(): Double
+    }
+
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+
+    Aircraft "1" *-- "1" RegistrationNumber : identified by >
+}
+@enduml

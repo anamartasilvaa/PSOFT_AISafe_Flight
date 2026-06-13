@@ -1,0 +1,34 @@
+@startuml
+title US206-SD
+autonumber
+actor "ATCC" as Operator
+participant ":AircraftController" as Ctrl
+participant ":AircraftService" as Service
+participant ":AircraftRepository" as Repo
+participant "page\n:Page<Aircraft>" as PageAcft
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/instances/operational-hours?page=0&size=10
+activate Ctrl
+
+Ctrl -> Service : getAllAircraftOperationalHours(pageable)
+activate Service
+
+Service -> Repo : findAll(pageable)
+activate Repo
+Repo --> Service : Page<Aircraft>
+deactivate Repo
+
+Service -> PageAcft : map(aircraft -> new OperationalHoursDTO(...))
+activate PageAcft
+PageAcft --> Service : Page<OperationalHoursDTO>
+deactivate PageAcft
+
+Service --> Ctrl : Page<OperationalHoursDTO>
+deactivate Service
+
+Ctrl -> Ctrl : transform Page to PagedModel (using PagedResourcesAssembler)
+Ctrl --> Operator : 200 OK (PagedModel<EntityModel<OperationalHoursDTO>>)
+deactivate Ctrl
+deactivate Operator
+@enduml
