@@ -1,0 +1,54 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US201-CD
+
+class AircraftModelController {
+    + updateSpecifications(modelName: String, dto: UpdateAircraftModelDTO): ResponseEntity<AircraftModelViewDTO>
+}
+
+class AircraftModelService {
+    + updateSpecifications(modelName: String, dto: UpdateAircraftModelDTO): AircraftModelViewDTO
+}
+
+interface AircraftModelRepository <<Repository>> {
+    + findByModelName_Name(modelName: String): Optional<AircraftModel>
+    + save(model: AircraftModel): AircraftModel
+}
+
+class AircraftModel <<Entity>> <<Root>> {
+    - defaultSeatingCapacity: Integer
+    - fuelCapacity: Double
+    - maximumRange: Double
+    - cruisingSpeed: Double
+    - seatingConfiguration: String
+    - operatingHoursRange: String
+    + updateSpecifications(...)
+}
+
+class UpdateAircraftModelDTO <<DTO>> {
+    + seatingCapacity: Integer
+    + fuelCapacity: Double
+    + maximumRange: Double
+    + cruisingSpeed: Double
+    + seatingConfiguration: String
+    + operatingHoursRange: String
+}
+
+class AircraftModelViewDTO <<DTO>> {
+    + modelName: String
+    + manufacturer: String
+    + defaultSeatingCapacity: Integer
+    ...
+}
+
+AircraftModelController ..> UpdateAircraftModelDTO : consumes >
+AircraftModelController ..> AircraftModelViewDTO : produces >
+AircraftModelController --> AircraftModelService : uses >
+
+AircraftModelService ..> UpdateAircraftModelDTO : uses >
+AircraftModelService ..> AircraftModelViewDTO : creates >
+AircraftModelService --> AircraftModelRepository : uses >
+AircraftModelService --> AircraftModel : updates >
+
+AircraftModelRepository --> AircraftModel : persists >
+@enduml

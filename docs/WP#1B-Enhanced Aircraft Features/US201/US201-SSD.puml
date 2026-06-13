@@ -1,0 +1,14 @@
+@startuml
+title US201-SSD
+
+autonumber
+actor "Backoffice Operator" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests to update the specifications of an Aircraft Model (modelName, new data)
+activate Sys
+Sys --> Operator : Updates the specifications and returns the updated Aircraft Model details (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

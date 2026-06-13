@@ -1,0 +1,45 @@
+@startuml
+title US201-SD
+
+autonumber
+actor "Backoffice Operator" as Operator
+participant ":AircraftModelController" as Ctrl
+participant "dto\n:UpdateAircraftModelDTO" as DTO
+participant ":AircraftModelService" as Service
+participant ":AircraftModelRepository" as Repo
+participant "model\n:AircraftModel" as Entity
+
+activate Operator
+Operator -> Ctrl : PATCH /api/aircraft-models/models/{modelName}\n(UpdateAircraftModelDTO)
+activate Ctrl
+
+Ctrl -> Service : updateSpecifications(modelName, dto)
+activate Service
+
+Service -> Repo : findByModelName_Name(modelName)
+activate Repo
+Repo --> Service : Optional<AircraftModel>
+deactivate Repo
+
+Service -> DTO : extract parameters (capacity, fuel, range, speed, etc.)
+activate DTO
+DTO --> Service : parameters
+deactivate DTO
+
+Service -> Entity : updateSpecifications(newCapacity, newFuel, newRange, newSpeed, newConfig, newHours)
+activate Entity
+Entity --> Service : success
+deactivate Entity
+
+Service -> Repo : save(model)
+activate Repo
+Repo --> Service : savedModel
+deactivate Repo
+
+Service --> Ctrl : AircraftModelViewDTO
+deactivate Service
+
+Ctrl --> Operator : 200 OK (AircraftModelViewDTO)
+deactivate Ctrl
+deactivate Operator
+@enduml

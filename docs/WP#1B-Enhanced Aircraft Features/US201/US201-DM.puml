@@ -1,0 +1,33 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+title US201-DM
+
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - defaultSeatingCapacity: Integer
+        - fuelCapacity: Double
+        - maximumRange: Double
+        - cruisingSpeed: Double
+        - seatingConfiguration: String
+        - operatingHoursRange: String
+        + updateSpecifications(newSeatingCapacity, newFuelCapacity, newMaximumRange, newCruisingSpeed, newSeatingConfiguration, newOperatingHoursRange)
+    }
+
+    class ModelName <<Value Object>> {
+        - name: String
+    }
+
+    enum Manufacturer <<Enumeration>> {
+        BOEING
+        AIRBUS
+        EMBRAER
+        BOMBARDIER
+        ATR
+    }
+
+    AircraftModel "1" *-- "1" ModelName : identified by >
+    AircraftModel "1" --> "1" Manufacturer : built by >
+}
+@enduml
