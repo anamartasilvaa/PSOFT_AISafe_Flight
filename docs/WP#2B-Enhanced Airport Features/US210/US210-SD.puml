@@ -1,0 +1,54 @@
+@startuml
+title US210 - SD
+autonumber
+actor "Backoffice Operator" as Operator
+participant ":RouteController" as Ctrl
+participant ":RouteService" as Service
+participant ":AirportRepository" as AirportRepo
+participant ":RouteRepository" as RouteRepo
+participant "airport\n:Airport" as Entity
+
+activate Operator
+Operator -> Ctrl : GET /api/routes/statistics/busiest-airports
+activate Ctrl
+
+Ctrl -> Service : getBusiestAirports()
+activate Service
+
+Service -> AirportRepo : findAll()
+activate AirportRepo
+AirportRepo --> Service : List<Airport>
+deactivate AirportRepo
+
+loop stream().map(airport -> ...)
+    Service -> Entity : getIataCode().code()
+    activate Entity
+    Entity --> Service : iata
+    deactivate Entity
+
+    Service -> Entity : getName()
+    activate Entity
+    Entity --> Service : name
+    deactivate Entity
+
+    Service -> RouteRepo : countRoutesForAirport(iata)
+    activate RouteRepo
+    RouteRepo --> Service : count
+    deactivate RouteRepo
+
+    Service -> Service : create BusiestAirportDTO(iata, name, count)
+end
+
+Service -> Service : sorted((a1, a2) -> Long.compare(a2.routeCount(), a1.routeCount()))
+Service --> Ctrl : stats (List<BusiestAirportDTO>)
+deactivate Service
+
+alt stats is empty
+    Ctrl --> Operator : 204 No Content
+else stats has data
+    Ctrl --> Operator : 200 OK (List<BusiestAirportDTO>)
+end
+
+deactivate Ctrl
+deactivate Operator
+@enduml

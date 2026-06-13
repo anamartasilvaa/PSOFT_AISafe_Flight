@@ -1,0 +1,13 @@
+@startuml
+title US210 - SSD
+autonumber
+actor "Backoffice Operator" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests statistics on the busiest airports by number of routes
+activate Sys
+Sys --> Operator : Returns the sorted list of busiest airports (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

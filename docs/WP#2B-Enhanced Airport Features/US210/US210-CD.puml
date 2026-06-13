@@ -1,0 +1,41 @@
+@startuml
+title US210 - CD
+skinparam classAttributeIconSize 0
+
+class RouteController {
+    + getBusiestAirports(): ResponseEntity<List<BusiestAirportDTO>>
+}
+
+class RouteService {
+    + getBusiestAirports(): List<BusiestAirportDTO>
+}
+
+interface AirportRepository <<Repository>> {
+    + findAll(): List<Airport>
+}
+
+interface RouteRepository <<Repository>> {
+    + countRoutesForAirport(iata: String): long
+}
+
+class Airport <<Entity>> <<Root>> {
+    - name: String
+    + getIataCode(): IATACode
+    + getName(): String
+}
+
+class BusiestAirportDTO <<DTO>> {
+    + iataCode: String
+    + name: String
+    + routeCount: long
+}
+
+RouteController ..> BusiestAirportDTO : produces >
+RouteController --> RouteService : uses >
+
+RouteService ..> BusiestAirportDTO : creates >
+RouteService --> AirportRepository : uses >
+RouteService --> RouteRepository : uses >
+
+AirportRepository --> Airport : queries >
+@enduml

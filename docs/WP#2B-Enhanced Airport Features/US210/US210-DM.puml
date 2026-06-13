@@ -1,0 +1,24 @@
+@startuml
+title US210 - DM
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - name: String
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    Airport "1" *-- "1" IATACode : identified by >
+}
+
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+    }
+
+    Route "*" --> "1" Airport : departs from (Origin) >
+    Route "*" --> "1" Airport : arrives at (Destination) >
+}
+
+@enduml
