@@ -1,0 +1,38 @@
+@startuml
+title US204-SD
+autonumber
+actor "Backoffice Operator" as Operator
+participant ":AircraftController" as Ctrl
+participant ":AircraftService" as Service
+participant ":AircraftRepository" as Repo
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/models/top5?sortBy={criteria}
+activate Ctrl
+
+Ctrl -> Service : getTop5UtilizedModels(sortBy)
+activate Service
+
+Service -> Service : create PageRequest.of(0, 5)
+
+alt sortBy == "assignments"
+    Service -> Repo : findTop5ModelsByAssignments(pageRequest)
+    activate Repo
+    Repo --> Service : List<TopAircraftModelDTO>
+    deactivate Repo
+else default (hours)
+    Service -> Repo : findTop5ModelsByFlightHours(pageRequest)
+    activate Repo
+
+    Repo --> Service : List<TopAircraftModelDTO>
+    deactivate Repo
+end
+
+Service --> Ctrl : top5 (List<TopAircraftModelDTO>)
+deactivate Service
+
+Ctrl -> Ctrl : wrap in EntityModel & CollectionModel (HATEOAS)
+Ctrl --> Operator : 200 OK (CollectionModel<TopAircraftModelDTO>)
+deactivate Ctrl
+deactivate Operator
+@enduml

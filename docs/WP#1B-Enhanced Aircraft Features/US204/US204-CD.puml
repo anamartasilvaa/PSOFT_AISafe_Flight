@@ -1,0 +1,47 @@
+@startuml
+title US204-CD
+skinparam classAttributeIconSize 0
+
+class AircraftController {
+    + getTop5Models(sortBy: String): ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>>
+}
+
+class AircraftService {
+    + getTop5UtilizedModels(sortBy: String): List<TopAircraftModelDTO>
+}
+
+interface AircraftRepository <<Repository>> {
+    + findTop5ModelsByFlightHours(pageable: Pageable): List<TopAircraftModelDTO>
+    + findTop5ModelsByAssignments(pageable: Pageable): List<TopAircraftModelDTO>
+}
+
+class Aircraft <<Entity>> <<Root>> {
+    - totalFlightHours: Double
+}
+
+class AircraftModel <<Entity>> <<Root>> {
+    - modelName: ModelName
+}
+
+class ScheduledFlight <<Entity>> <<Root>> {
+    - aircraft: Aircraft
+}
+
+class TopAircraftModelDTO <<DTO>> {
+    + modelName: String
+    + utilizationValue: Double
+}
+
+AircraftController ..> TopAircraftModelDTO : produces >
+AircraftController --> AircraftService : uses >
+
+AircraftService ..> TopAircraftModelDTO : fetches >
+AircraftService --> AircraftRepository : uses >
+
+AircraftRepository --> Aircraft : queries >
+AircraftRepository --> ScheduledFlight : queries >
+AircraftRepository ..> TopAircraftModelDTO : projects into >
+
+Aircraft --> AircraftModel : references >
+ScheduledFlight --> Aircraft : references >
+@enduml

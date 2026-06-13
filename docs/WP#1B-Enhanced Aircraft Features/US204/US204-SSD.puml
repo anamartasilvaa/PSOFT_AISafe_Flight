@@ -1,0 +1,13 @@
+@startuml
+title US204-SSD
+autonumber
+actor "Backoffice Operator" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : Requests the top 5 most utilized aircraft models (sortBy parameter)
+activate Sys
+Sys --> Operator : Returns the list of top 5 models with their aggregated statistics (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml
