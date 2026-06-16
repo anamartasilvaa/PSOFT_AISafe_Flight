@@ -150,7 +150,7 @@ public class RouteController {
 
     /* US210 - Generate statistics on the busiest airports by number of routes */
     @GetMapping("/statistics/busiest-airports")
-    public ResponseEntity<List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> getBusiestAirports() {
+    public ResponseEntity<CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>>> getBusiestAirports() {
 
         List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO> stats = routeService.getBusiestAirports();
 
@@ -158,6 +158,13 @@ public class RouteController {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(stats);
+        List<EntityModel<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> resources = stats.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(RouteController.class).getBusiestAirports()).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
     }
 }

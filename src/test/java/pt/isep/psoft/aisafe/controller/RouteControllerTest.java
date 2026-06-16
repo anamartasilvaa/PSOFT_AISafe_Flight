@@ -131,12 +131,18 @@ class RouteControllerTest {
 
         when(routeService.getBusiestAirports()).thenReturn(java.util.List.of(stats1, stats2));
 
-        ResponseEntity<java.util.List<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> response =
-                routeController.getBusiestAirports();
 
+        ResponseEntity<org.springframework.hateoas.CollectionModel<org.springframework.hateoas.EntityModel<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>>> response =
+                routeController.getBusiestAirports();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
-        assertEquals("LHR", response.getBody().get(0).iataCode());
+
+        java.util.Collection<org.springframework.hateoas.EntityModel<pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO>> content = response.getBody().getContent();
+        assertEquals(2, content.size());
+
+        pt.isep.psoft.aisafe.application.DTO.BusiestAirportDTO firstItem = content.iterator().next().getContent();
+        assertEquals("LHR", firstItem.iataCode());
+
+        assertTrue(response.getBody().hasLinks(), "A resposta deve conter links HATEOAS");
     }
 }
