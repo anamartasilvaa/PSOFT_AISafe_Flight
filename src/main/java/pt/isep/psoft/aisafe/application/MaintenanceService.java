@@ -155,4 +155,63 @@ public class MaintenanceService {
                 })
                 .collect(Collectors.toList());
     }
+
+    // --- US222: Gerar Alertas de Manutenção ---
+    public List<MaintenanceAlertDTO> generateMaintenanceAlerts() {
+        List<MaintenanceAlertDTO> alerts = new java.util.ArrayList<>();
+
+        // 1. Ir buscar todos os aviões à base de dados
+        List<Aircraft> allAircraft = aircraftRepository.findAll();
+
+        for (Aircraft aircraft : allAircraft) {
+            // Ignorar aviões que já estejam em manutenção ou aterrados
+            if (aircraft.getStatus() != AircraftStatus.ACTIVE) continue;
+
+            // 2. Descobrir os templates de manutenção aplicáveis ao modelo deste avião
+            List<MaintenanceTemplate> templates = templateRepository.findByModelsContaining(aircraft.getAircraftModel());
+
+            for (MaintenanceTemplate template : templates) {
+
+                // VERIFICAÇÃO A: Limite de Horas de Voo
+                if (template.getFlightHoursInterval() != null) {
+                    if (aircraft.getTotalFlightHours() >= template.getFlightHoursInterval()) {
+                        alerts.add(new MaintenanceAlertDTO(
+                                aircraft.getRegistrationNumber().toString(), // CORRIGIDO AQUI
+                                "FLIGHT_HOURS",
+                                "O avião atingiu " + aircraft.getTotalFlightHours() + " horas. Limite do template: " + template.getFlightHoursInterval()
+                        ));
+                        continue; // Evita duplicar alertas para o mesmo template
+                    }
+                }
+
+                // VERIFICAÇÃO B: Limite de Dias de Calendário
+                if (template.getCalendarDaysInterval() != null) {
+                    // Descobrir a data da última manutenção concluída deste avião
+                    java.util.Optional<MaintenanceRecord> lastRecord = recordRepository.findTopByAircraftAndStatusOrderByCompletionDateDesc(
+                            aircraft, MaintenanceRecordStatus.COMPLETED
+                    );
+
+                    java.time.LocalDate referenceDate;
+                    if (lastRecord.isPresent() && lastRecord.get().getCompletionDate() != null) {
+                        // Conta a partir da conclusão da última manutenção
+                        referenceDate = lastRecord.get().getCompletionDate().toLocalDate();
+                    } else {
+                        // Se nunca teve manutenção, conta a partir da data de fabrico
+                        referenceDate = aircraft.getManufacturingDate();
+                    }
+
+                    long daysPassed = java.time.temporal.ChronoUnit.DAYS.between(referenceDate, java.time.LocalDate.now());
+
+                    if (daysPassed >= template.getCalendarDaysInterval()) {
+                        alerts.add(new MaintenanceAlertDTO(
+                                aircraft.getRegistrationNumber().toString(), // CORRIGIDO AQUI
+                                "CALENDAR_DAYS",
+                                "Passaram " + daysPassed + " dias sem manutenção. Limite: " + template.getCalendarDaysInterval()
+                        ));
+                    }
+                }
+            }
+        }
+        return alerts;
+    }
 }

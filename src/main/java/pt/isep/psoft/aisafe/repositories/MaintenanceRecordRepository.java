@@ -11,6 +11,7 @@ import pt.isep.psoft.aisafe.domain.MaintenanceRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MaintenanceRecordRepository extends JpaRepository<MaintenanceRecord, Long> {
@@ -35,4 +36,10 @@ public interface MaintenanceRecordRepository extends JpaRepository<MaintenanceRe
     // US220 - Soma de custos por avião (Retorna pares de [String, Double])
     @Query("SELECT m.aircraft.registrationNumber.number, SUM(m.cost) FROM MaintenanceRecord m GROUP BY m.aircraft")
     List<Object[]> getMaintenanceCostsByAircraft();
+
+    // US222 - Encontra o último registo de manutenção concluído para um avião específico
+    Optional<MaintenanceRecord> findTopByAircraftAndStatusOrderByCompletionDateDesc(
+            pt.isep.psoft.aisafe.domain.Aircraft aircraft,
+            pt.isep.psoft.aisafe.domain.MaintenanceRecordStatus status
+    );
 }

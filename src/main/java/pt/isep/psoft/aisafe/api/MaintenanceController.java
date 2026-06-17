@@ -91,7 +91,6 @@ public class MaintenanceController {
         return ResponseEntity.ok(resource);
     }
 
-
     @GetMapping("/records/search")
     public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<MaintenanceRecord>>> searchRecords(
             @RequestParam(required = false) String registrationNumber,
@@ -171,6 +170,28 @@ public class MaintenanceController {
 
         CollectionModel<EntityModel<TurnaroundTimeDTO>> collectionModel = CollectionModel.of(resources,
                 linkTo(methodOn(MaintenanceController.class).getTurnaroundTime()).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
+
+    // US222 - Receber alertas para manutenções programadas (Horas de voo ou Dias de calendário)
+    @GetMapping("/alerts")
+    public ResponseEntity<CollectionModel<EntityModel<MaintenanceAlertDTO>>> getMaintenanceAlerts() {
+
+        List<MaintenanceAlertDTO> alerts = maintenanceService.generateMaintenanceAlerts();
+
+        // Se a frota estiver toda em dia, devolvemos 204 No Content
+        if (alerts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        // Embrulhamos cada alerta num EntityModel para suportar HATEOAS
+        List<EntityModel<MaintenanceAlertDTO>> resources = alerts.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<MaintenanceAlertDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(MaintenanceController.class).getMaintenanceAlerts()).withSelfRel());
 
         return ResponseEntity.ok(collectionModel);
     }
