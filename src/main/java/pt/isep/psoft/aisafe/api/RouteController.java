@@ -167,4 +167,17 @@ public class RouteController {
 
         return ResponseEntity.ok(collectionModel);
     }
+
+    /* US215 - Total Network Distance */
+    @GetMapping("/statistics/total-distance")
+    public ResponseEntity<EntityModel<java.util.Map<String, Double>>> getTotalDistance() {
+        Double total = routeService.getTotalNetworkDistance();
+
+        java.util.Map<String, Double> response = java.util.Map.of("totalDistance", total);
+
+        EntityModel<java.util.Map<String, Double>> resource = EntityModel.of(response);
+        resource.add(linkTo(methodOn(RouteController.class).getTotalDistance()).withSelfRel());
+
+        return ResponseEntity.ok(resource);
+    }
 }

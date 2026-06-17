@@ -3,10 +3,7 @@ package pt.isep.psoft.aisafe.application;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import pt.isep.psoft.aisafe.application.DTO.CreateRouteDTO;
-import pt.isep.psoft.aisafe.application.DTO.RouteViewDTO;
-import pt.isep.psoft.aisafe.application.DTO.UpdateRouteDTO;
-import pt.isep.psoft.aisafe.application.DTO.RouteHistoryDTO;
+import pt.isep.psoft.aisafe.application.DTO.*;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AirportRepository;
 import pt.isep.psoft.aisafe.repositories.RouteRepository;
@@ -133,6 +130,12 @@ public class RouteService {
                 })
                 .sorted((a1, a2) -> Long.compare(a2.routeCount(), a1.routeCount()))
                 .collect(Collectors.toList());
+    }
+
+    // --- US215: Distância total da rede ---
+    public Double getTotalNetworkDistance() {
+        Double total = routeRepository.calculateTotalNetworkDistance();
+        return (total != null) ? total : 0.0;
     }
 
     private RouteViewDTO convertToDTO(Route route) {
