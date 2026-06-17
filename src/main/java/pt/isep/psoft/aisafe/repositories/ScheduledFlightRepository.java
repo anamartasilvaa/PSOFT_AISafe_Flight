@@ -5,9 +5,13 @@ import org.springframework.stereotype.Repository;
 import pt.isep.psoft.aisafe.domain.Aircraft;
 import pt.isep.psoft.aisafe.domain.FlightStatus;
 import pt.isep.psoft.aisafe.domain.ScheduledFlight;
+import pt.isep.psoft.aisafe.domain.RegistrationNumber; // Não te esqueças deste import!
+import java.util.List; // E deste!
 
 @Repository
 public interface ScheduledFlightRepository extends JpaRepository<ScheduledFlight, Long> {
-    // O Spring Boot escreve o SQL sozinho só por lermos o nome do método!
+
     boolean existsByAircraftAndStatus(Aircraft aircraft, FlightStatus status);
+
+    List<ScheduledFlight> findByAircraft_RegistrationNumber(RegistrationNumber registrationNumber);
 }
