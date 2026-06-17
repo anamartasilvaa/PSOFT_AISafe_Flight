@@ -138,6 +138,23 @@ public class RouteService {
         return (total != null) ? total : 0.0;
     }
 
+    // --- US214: Listar rotas ativas ordenadas por popularidade ou distância ---
+    public Page<RouteViewDTO> getActiveRoutesSorted(String sortBy, Pageable pageable) {
+        Page<Route> routes;
+
+        // Decide a ordenação baseada no parâmetro recebido
+        if ("popularity".equalsIgnoreCase(sortBy)) {
+            routes = routeRepository.findAllActiveRoutesSortedByPopularity(pageable);
+        } else {
+            routes = routeRepository.findAllActiveRoutesSortedByDistance(pageable);
+        }
+
+        // Usa o teu próprio método convertToDTO em vez de criar um DTO novo à mão!
+        return routes.map(this::convertToDTO);
+    }
+
+    // --- Métodos Privados Auxiliares ---
+
     private RouteViewDTO convertToDTO(Route route) {
         return new RouteViewDTO(
                 route.getRouteId().id(),

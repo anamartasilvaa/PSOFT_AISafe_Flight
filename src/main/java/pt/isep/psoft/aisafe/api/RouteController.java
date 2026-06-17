@@ -180,4 +180,18 @@ public class RouteController {
 
         return ResponseEntity.ok(resource);
     }
+
+    // --- US214: List all active routes sorted by popularity or distance ---
+    @GetMapping("/active/sorted")
+    @Operation(summary = "List all active routes sorted by popularity or distance")
+    public ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>> getActiveRoutesSorted(
+            @RequestParam(defaultValue = "distance") String sortBy,
+            @PageableDefault(size = 10) Pageable pageable,
+            PagedResourcesAssembler<RouteViewDTO> assembler) {
+
+        Page<RouteViewDTO> page = routeService.getActiveRoutesSorted(sortBy, pageable);
+        PagedModel<EntityModel<RouteViewDTO>> pagedModel = assembler.toModel(page, this::addLinksToRoute);
+
+        return ResponseEntity.ok(pagedModel);
+    }
 }
