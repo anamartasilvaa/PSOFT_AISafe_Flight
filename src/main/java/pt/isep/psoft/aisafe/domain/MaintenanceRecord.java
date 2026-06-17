@@ -2,7 +2,7 @@ package pt.isep.psoft.aisafe.domain;
 
 import jakarta.persistence.*;
 import org.springframework.util.Assert;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class MaintenanceRecord {
@@ -18,7 +18,7 @@ public class MaintenanceRecord {
     private String description;
 
     @Column(nullable = false)
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @Column(nullable = false)
     private Integer expectedDuration;
@@ -26,7 +26,10 @@ public class MaintenanceRecord {
     private String completionNotes;
 
     @Column(nullable = false)
-    private Double cost; // Novo campo para US220
+    private Double cost;
+
+    @Column
+    private LocalDateTime completionDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,7 +51,7 @@ public class MaintenanceRecord {
 
     public MaintenanceRecord(Aircraft aircraft, MaintenanceTemplate template, String description,
                              Integer expectedDuration, ComponentCategory componentCategory,
-                             LocalDate startDate, Double cost) { // Adicionado cost
+                             LocalDateTime startDate, Double cost) {
         Assert.notNull(aircraft, "Aircraft is required.");
         Assert.notNull(template, "Template is required.");
         Assert.hasText(description, "Description is required.");
@@ -72,15 +75,17 @@ public class MaintenanceRecord {
         Assert.hasText(completionNotes, "Completion notes are required.");
         this.status = MaintenanceRecordStatus.COMPLETED;
         this.completionNotes = completionNotes;
+        this.completionDate = LocalDateTime.now();
     }
 
     public Long getPk() { return pk; }
     public Long getVersion() { return version; }
     public String getDescription() { return description; }
-    public LocalDate getStartDate() { return startDate; }
+    public LocalDateTime getStartDate() { return startDate; }
     public Integer getExpectedDuration() { return expectedDuration; }
     public String getCompletionNotes() { return completionNotes; }
-    public Double getCost() { return cost; } // Novo getter
+    public Double getCost() { return cost; }
+    public LocalDateTime getCompletionDate() { return completionDate; }
 
     public MaintenanceRecordStatus getStatus() { return status; }
     public ComponentCategory getComponentCategory() { return componentCategory; }

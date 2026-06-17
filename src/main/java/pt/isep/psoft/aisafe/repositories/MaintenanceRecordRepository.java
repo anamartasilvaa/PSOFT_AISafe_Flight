@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import pt.isep.psoft.aisafe.domain.ComponentCategory;
 import pt.isep.psoft.aisafe.domain.MaintenanceRecord;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -26,8 +26,8 @@ public interface MaintenanceRecordRepository extends JpaRepository<MaintenanceRe
             "(:category IS NULL OR m.componentCategory = :category)")
     Page<MaintenanceRecord> searchRecords(
             @Param("reg") String registrationNumber,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("category") ComponentCategory category,
             Pageable pageable
     );

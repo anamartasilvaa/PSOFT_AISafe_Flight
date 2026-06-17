@@ -32,9 +32,15 @@ class RegisterMaintenanceTest {
     private MaintenanceService maintenanceService;
 
     @Test
-    void shouldRegisterMaintenanceSuccessfully() {
+    void shouldRegisterMaintenanceSuccessfully() { // <-- A linha que tinha desaparecido!
         RegisterMaintenanceDTO dto = new RegisterMaintenanceDTO(
-                "CS-TPA", 1L, "Inspeção", 120, ComponentCategory.ENGINE, "2026-05-22"
+                "CS-TPA",
+                1L,
+                "Inspeção",
+                120,
+                ComponentCategory.ENGINE,
+                "2026-10-25T10:00:00",
+                500.0 // <-- Custo adicionado
         );
 
         when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.of(mock(Aircraft.class)));
@@ -51,8 +57,15 @@ class RegisterMaintenanceTest {
 
     @Test
     void shouldThrowExceptionWhenAircraftNotFound() {
+        // Atualizado com a data no formato LocalDateTime e com o custo no final
         RegisterMaintenanceDTO dto = new RegisterMaintenanceDTO(
-                "CS-FAKE", 1L, "Inspeção", 120, ComponentCategory.ENGINE, "2026-05-22"
+                "CS-FAKE",
+                1L,
+                "Inspeção",
+                120,
+                ComponentCategory.ENGINE,
+                "2026-05-22T10:00:00",
+                500.0
         );
 
         when(aircraftRepository.findByRegistrationNumber(any(RegistrationNumber.class))).thenReturn(Optional.empty());

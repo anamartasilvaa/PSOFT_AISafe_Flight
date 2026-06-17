@@ -25,5 +25,9 @@ public record RegisterMaintenanceDTO(
         ComponentCategory componentCategory,
 
         @NotBlank(message = "Start date is required.")
-        String startDate
+        String startDate,
+
+        @NotNull(message = "Cost is required.")
+        @Min(value = 0, message = "Cost cannot be negative.")
+        Double cost
 ) {}

@@ -67,7 +67,6 @@ public class MaintenanceController {
     }
 
     // US117 - Get Fleet Total Maintenance Hours
-    // US117 - Get Fleet Total Maintenance Hours
     @GetMapping("/records/total-hours")
     public ResponseEntity<EntityModel<java.util.Map<String, Integer>>> getTotalHours() {
         Integer total = maintenanceService.getTotalMaintenanceHours();
@@ -100,7 +99,7 @@ public class MaintenanceController {
             @RequestParam(required = false) String toDate,
             @RequestParam(required = false) String category,
             org.springframework.data.domain.Pageable pageable,
-            org.springframework.data.web.PagedResourcesAssembler<MaintenanceRecord> assembler) { // <-- Caminho completo forçado aqui!
+            org.springframework.data.web.PagedResourcesAssembler<MaintenanceRecord> assembler) {
 
         org.springframework.data.domain.Page<MaintenanceRecord> page =
                 maintenanceService.searchMaintenanceRecords(registrationNumber, fromDate, toDate, category, pageable);
@@ -136,5 +135,43 @@ public class MaintenanceController {
         return ResponseEntity.ok(collection);
     }
 
+    //  US220 - Obter custos de manutenção por aeronave
+    @GetMapping("/statistics/costs")
+    public ResponseEntity<CollectionModel<EntityModel<MaintenanceCostDTO>>> getMaintenanceCosts() {
 
+        List<MaintenanceCostDTO> costs = maintenanceService.getMaintenanceCostsPerAircraft();
+
+        if (costs.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<MaintenanceCostDTO>> resources = costs.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<MaintenanceCostDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(MaintenanceController.class).getMaintenanceCosts()).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
+
+    //  US221 - Obter tempo médio de turnaround por modelo de aeronave
+    @GetMapping("/statistics/turnaround")
+    public ResponseEntity<CollectionModel<EntityModel<TurnaroundTimeDTO>>> getTurnaroundTime() {
+
+        List<TurnaroundTimeDTO> turnaroundStats = maintenanceService.getTurnaroundTimePerAircraftModel();
+
+        if (turnaroundStats.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<TurnaroundTimeDTO>> resources = turnaroundStats.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<TurnaroundTimeDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(MaintenanceController.class).getTurnaroundTime()).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
 }

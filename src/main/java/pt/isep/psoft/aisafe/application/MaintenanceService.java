@@ -6,6 +6,7 @@ import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MaintenanceService {
@@ -60,17 +61,18 @@ public class MaintenanceService {
         MaintenanceTemplate template = templateRepository.findById(dto.templateId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance template not found with ID: " + dto.templateId()));
 
-        // 1. Convertemos a String da data que o teu Postman enviou para o formato LocalDate do Java
-        java.time.LocalDate startDate = java.time.LocalDate.parse(dto.startDate());
+        // 1. Convertemos a String com a hora (formato ISO ex: "2026-10-25T14:30:00") enviada pelo Postman
+        java.time.LocalDateTime startDate = java.time.LocalDateTime.parse(dto.startDate());
 
-        // 2. Passamos essa data para o registo!
+        // 2. Passamos essa data para o registo
         MaintenanceRecord record = new MaintenanceRecord(
                 aircraft,
                 template,
                 dto.description(),
                 dto.expectedDuration(),
                 dto.componentCategory(),
-                startDate
+                startDate,
+                dto.cost()
         );
         return recordRepository.save(record);
     }
@@ -98,12 +100,12 @@ public class MaintenanceService {
         return recordRepository.save(record);
     }
 
-
     public org.springframework.data.domain.Page<MaintenanceRecord> searchMaintenanceRecords(
             String registrationNumber, String fromDate, String toDate, String category, org.springframework.data.domain.Pageable pageable) {
 
-        java.time.LocalDate start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate) : null;
-        java.time.LocalDate end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate) : null;
+        // Adaptado para aceitar pesquisa por datas simples e convertê-las para o início e fim do dia em LocalDateTime
+        java.time.LocalDateTime start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate).atStartOfDay() : null;
+        java.time.LocalDateTime end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59) : null;
 
         ComponentCategory cat = null;
         if (category != null && !category.isBlank()) {
@@ -116,5 +118,41 @@ public class MaintenanceService {
     // US219 - View ongoing maintenance activities
     public List<MaintenanceRecord> getOngoingMaintenances() {
         return recordRepository.findByStatus(MaintenanceRecordStatus.SCHEDULED);
+    }
+
+    // US220: Gerar relatório de custos de manutenção por aeronave
+    public List<MaintenanceCostDTO> getMaintenanceCostsPerAircraft() {
+        List<Object[]> results = recordRepository.getMaintenanceCostsByAircraft();
+
+        return results.stream()
+                .map(row -> new MaintenanceCostDTO(
+                        (String) row[0], // A matrícula vem na primeira posição
+                        (Double) row[1]  // O somatório do custo vem na segunda
+                ))
+                .collect(Collectors.toList());
+    }
+
+    //  US221: Tempo médio de turnaround por modelo de aeronave
+    public List<TurnaroundTimeDTO> getTurnaroundTimePerAircraftModel() {
+        List<MaintenanceRecord> completedRecords = recordRepository.findByStatus(MaintenanceRecordStatus.COMPLETED);
+
+        // Agrupa os registos pelo Nome do Modelo do Avião
+        java.util.Map<String, List<MaintenanceRecord>> recordsByModel = completedRecords.stream()
+                .filter(r -> r.getCompletionDate() != null)
+                .collect(Collectors.groupingBy(r -> r.getAircraft().getAircraftModel().getModelName().toString()));
+        return recordsByModel.entrySet().stream()
+                .map(entry -> {
+                    String modelName = entry.getKey();
+                    List<MaintenanceRecord> records = entry.getValue();
+
+                    // Calculado em HORAS em vez de DIAS
+                    double averageHours = records.stream()
+                            .mapToLong(r -> java.time.temporal.ChronoUnit.HOURS.between(r.getStartDate(), r.getCompletionDate()))
+                            .average()
+                            .orElse(0.0);
+
+                    return new TurnaroundTimeDTO(modelName, averageHours);
+                })
+                .collect(Collectors.toList());
     }
 }
