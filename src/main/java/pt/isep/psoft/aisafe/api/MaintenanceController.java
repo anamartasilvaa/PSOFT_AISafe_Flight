@@ -91,4 +91,50 @@ public class MaintenanceController {
         resource.add(linkTo(methodOn(MaintenanceController.class).getTotalHours()).withRel("view-fleet-total-hours"));
         return ResponseEntity.ok(resource);
     }
+
+
+    @GetMapping("/records/search")
+    public ResponseEntity<org.springframework.hateoas.PagedModel<EntityModel<MaintenanceRecord>>> searchRecords(
+            @RequestParam(required = false) String registrationNumber,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam(required = false) String category,
+            org.springframework.data.domain.Pageable pageable,
+            org.springframework.data.web.PagedResourcesAssembler<MaintenanceRecord> assembler) { // <-- Caminho completo forçado aqui!
+
+        org.springframework.data.domain.Page<MaintenanceRecord> page =
+                maintenanceService.searchMaintenanceRecords(registrationNumber, fromDate, toDate, category, pageable);
+
+        org.springframework.hateoas.PagedModel<EntityModel<MaintenanceRecord>> pagedModel = assembler.toModel(page, record -> {
+            EntityModel<MaintenanceRecord> em = EntityModel.of(record);
+            if (record.getStatus() == MaintenanceRecordStatus.SCHEDULED) {
+                em.add(linkTo(methodOn(MaintenanceController.class).completeMaintenance(record.getPk(), null)).withRel("complete-this-record"));
+            }
+            return em;
+        });
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
+    // US219 - View ongoing maintenance activities across the fleet
+    @GetMapping("/records/ongoing")
+    public ResponseEntity<CollectionModel<EntityModel<MaintenanceRecord>>> getOngoingMaintenances() {
+
+        List<EntityModel<MaintenanceRecord>> records = maintenanceService.getOngoingMaintenances()
+                .stream()
+                .map(record -> {
+                    EntityModel<MaintenanceRecord> em = EntityModel.of(record);
+                    // Adiciona o link para poder concluir a manutenção diretamente daqui
+                    em.add(linkTo(methodOn(MaintenanceController.class).completeMaintenance(record.getPk(), null)).withRel("complete-this-record"));
+                    return em;
+                })
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<MaintenanceRecord>> collection = CollectionModel.of(records);
+        collection.add(linkTo(methodOn(MaintenanceController.class).getOngoingMaintenances()).withSelfRel());
+
+        return ResponseEntity.ok(collection);
+    }
+
+
 }

@@ -97,4 +97,24 @@ public class MaintenanceService {
         record.complete(dto.completionNotes());
         return recordRepository.save(record);
     }
+
+
+    public org.springframework.data.domain.Page<MaintenanceRecord> searchMaintenanceRecords(
+            String registrationNumber, String fromDate, String toDate, String category, org.springframework.data.domain.Pageable pageable) {
+
+        java.time.LocalDate start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate) : null;
+        java.time.LocalDate end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate) : null;
+
+        ComponentCategory cat = null;
+        if (category != null && !category.isBlank()) {
+            cat = ComponentCategory.valueOf(category.toUpperCase());
+        }
+
+        return recordRepository.searchRecords(registrationNumber, start, end, cat, pageable);
+    }
+
+    // US219 - View ongoing maintenance activities
+    public List<MaintenanceRecord> getOngoingMaintenances() {
+        return recordRepository.findByStatus(MaintenanceRecordStatus.SCHEDULED);
+    }
 }

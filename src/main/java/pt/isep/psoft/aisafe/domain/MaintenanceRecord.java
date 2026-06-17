@@ -25,6 +25,9 @@ public class MaintenanceRecord {
 
     private String completionNotes;
 
+    @Column(nullable = false)
+    private Double cost; // Novo campo para US220
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MaintenanceRecordStatus status;
@@ -43,13 +46,17 @@ public class MaintenanceRecord {
 
     protected MaintenanceRecord() {}
 
-    public MaintenanceRecord(Aircraft aircraft, MaintenanceTemplate template, String description, Integer expectedDuration, ComponentCategory componentCategory, LocalDate startDate) {
+    public MaintenanceRecord(Aircraft aircraft, MaintenanceTemplate template, String description,
+                             Integer expectedDuration, ComponentCategory componentCategory,
+                             LocalDate startDate, Double cost) { // Adicionado cost
         Assert.notNull(aircraft, "Aircraft is required.");
         Assert.notNull(template, "Template is required.");
         Assert.hasText(description, "Description is required.");
         Assert.notNull(expectedDuration, "Expected duration is required.");
         Assert.notNull(componentCategory, "Component category is required.");
         Assert.notNull(startDate, "Start date is required.");
+        Assert.notNull(cost, "Cost is required.");
+        Assert.isTrue(cost >= 0, "Cost cannot be negative.");
 
         this.aircraft = aircraft;
         this.template = template;
@@ -57,6 +64,7 @@ public class MaintenanceRecord {
         this.expectedDuration = expectedDuration;
         this.componentCategory = componentCategory;
         this.startDate = startDate;
+        this.cost = cost;
         this.status = MaintenanceRecordStatus.SCHEDULED;
     }
 
@@ -72,6 +80,7 @@ public class MaintenanceRecord {
     public LocalDate getStartDate() { return startDate; }
     public Integer getExpectedDuration() { return expectedDuration; }
     public String getCompletionNotes() { return completionNotes; }
+    public Double getCost() { return cost; } // Novo getter
 
     public MaintenanceRecordStatus getStatus() { return status; }
     public ComponentCategory getComponentCategory() { return componentCategory; }
