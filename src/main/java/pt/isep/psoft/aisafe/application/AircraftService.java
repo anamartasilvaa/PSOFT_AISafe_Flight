@@ -2,6 +2,7 @@ package pt.isep.psoft.aisafe.application;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import pt.isep.psoft.aisafe.application.DTO.*;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AircraftModelRepository;
@@ -9,8 +10,13 @@ import pt.isep.psoft.aisafe.repositories.AircraftRepository;
 import pt.isep.psoft.aisafe.repositories.RouteRepository;
 import pt.isep.psoft.aisafe.repositories.ScheduledFlightRepository;
 
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.io.IOException;
 
 @Service
 public class AircraftService {
@@ -31,6 +37,26 @@ public class AircraftService {
         this.aircraftRepository = aircraftRepository;
         this.routeRepository = routeRepository;
         this.scheduledFlightRepository = scheduledFlightRepository;
+    }
+
+    private String saveImageLocally(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        try {
+            Path uploadPath = Paths.get("uploads/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving image " + e.getMessage());
+        }
     }
 
     @Transactional
@@ -128,11 +154,16 @@ public class AircraftService {
     }
 
     @Transactional
-    public AircraftModelViewDTO updateModelImage(String modelName, String imageUrl) {
+    public AircraftModelViewDTO updateModelImage(String modelName, MultipartFile file) {
         AircraftModel model = modelRepository.findByModelName(new ModelName(modelName.trim().toUpperCase()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft model not found: " + modelName));
 
-        model.updateImage(imageUrl);
+        String savedImagePath = saveImageLocally(file);
+        if (savedImagePath == null) {
+            throw new IllegalArgumentException("The image file cannot be empty");
+        }
+
+        model.updateImage(savedImagePath);
         AircraftModel savedModel = modelRepository.save(model);
 
         return new AircraftModelViewDTO(

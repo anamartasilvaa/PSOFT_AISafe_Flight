@@ -4,38 +4,32 @@ title US202-CD
 skinparam classAttributeIconSize 0
 
 class AircraftModelController {
-    + updateModelImage(modelName: String, dto: UpdateModelImageDTO): ResponseEntity<AircraftModelViewDTO>
+    + updateModelImage(modelName: String, file: MultipartFile): ResponseEntity<EntityModel<AircraftModelViewDTO>>
 }
 
 class AircraftModelService {
-    + updateModelImage(modelName: String, dto: UpdateModelImageDTO): AircraftModelViewDTO
+    - saveImageLocally(file: MultipartFile): String
+    + updateModelImage(modelName: String, file: MultipartFile): AircraftModelViewDTO
 }
 
 interface AircraftModelRepository <<Repository>> {
-    + findByModelName_Name(modelName: String): Optional<AircraftModel>
+    + findByModelName(modelName: ModelName): Optional<AircraftModel>
     + save(model: AircraftModel): AircraftModel
 }
 
 class AircraftModel <<Entity>> <<Root>> {
     - modelPhotoUrl: String
-    + updateImage(newImageUrl: String)
-}
-
-class UpdateModelImageDTO <<DTO>> {
-    + imageUrl: String
+    + updateImage(newImagePath: String)
 }
 
 class AircraftModelViewDTO <<DTO>> {
     + modelName: String
     + modelPhotoUrl: String
-    ...
 }
 
-AircraftModelController ..> UpdateModelImageDTO : consumes >
 AircraftModelController ..> AircraftModelViewDTO : produces >
 AircraftModelController --> AircraftModelService : uses >
 
-AircraftModelService ..> UpdateModelImageDTO : uses >
 AircraftModelService ..> AircraftModelViewDTO : creates >
 AircraftModelService --> AircraftModelRepository : uses >
 AircraftModelService --> AircraftModel : updates >

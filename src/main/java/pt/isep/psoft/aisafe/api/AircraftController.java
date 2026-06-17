@@ -6,6 +6,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.*;
 
@@ -95,16 +96,15 @@ public class AircraftController {
     }
 
     /* US202 -*/
-    @PatchMapping("/models/{modelName}/image")
+    @PatchMapping(value = "/models/{modelName}/image", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EntityModel<AircraftModelViewDTO>> updateModelImage(
             @PathVariable String modelName,
-            @Valid @RequestBody UpdateAircraftModelImageDTO dto) {
-
-        AircraftModelViewDTO updatedModel = service.updateModelImage(modelName, dto.imageUrl());
-
+            @RequestPart("image") MultipartFile file) {
+        AircraftModelViewDTO updatedModel = service.updateModelImage(modelName, file);
 
         EntityModel<AircraftModelViewDTO> resource = EntityModel.of(updatedModel);
-        resource.add(linkTo(methodOn(AircraftController.class).updateModelImage(modelName, dto)).withSelfRel());
+
+        resource.add(linkTo(methodOn(AircraftController.class).updateModelImage(modelName, null)).withSelfRel());
 
         return ResponseEntity.ok(resource);
     }
@@ -113,7 +113,7 @@ public class AircraftController {
     @io.swagger.v3.oas.annotations.Operation(summary = "Get Top 5 Aircraft Models", description = "Get the top 5 most utilized aircraft models based on total flight hours or number of assignments.")
     @GetMapping("/models/top5")
     public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5Models(
-            @RequestParam(defaultValue = "hours") String sortBy) { // Aceita ?sortBy=hours ou ?sortBy=assignments
+            @RequestParam(defaultValue = "hours") String sortBy) {
 
         List<TopAircraftModelDTO> top5 = service.getTop5UtilizedModels(sortBy);
 

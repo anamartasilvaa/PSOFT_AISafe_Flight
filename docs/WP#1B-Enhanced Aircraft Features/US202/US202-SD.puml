@@ -4,29 +4,28 @@ title US202-SD
 
 actor "Backoffice Operator" as Operator
 participant ":AircraftModelController" as Ctrl
-participant "dto\n:UpdateModelImageDTO" as DTO
 participant ":AircraftModelService" as Service
 participant ":AircraftModelRepository" as Repo
 participant "model\n:AircraftModel" as Entity
 
 activate Operator
-Operator -> Ctrl : PATCH /api/aircraft-models/models/{modelName}/image\n(UpdateModelImageDTO)
+Operator -> Ctrl : PATCH /api/aircraft-models/models/{modelName}/image\n(MultipartFile file)
 activate Ctrl
 
-Ctrl -> Service : updateModelImage(modelName, dto)
+Ctrl -> Service : updateModelImage(modelName, file)
 activate Service
 
-Service -> Repo : findByModelName_Name(modelName)
+Service -> Repo : findByModelName(new ModelName(modelName))
 activate Repo
 Repo --> Service : Optional<AircraftModel>
 deactivate Repo
 
-Service -> DTO : extract imageUrl
-activate DTO
-DTO --> Service : newImageUrl
-deactivate DTO
+Service -> Service : saveImageLocally(file)
+activate Service
+Service --> Service : savedImagePath
+deactivate Service
 
-Service -> Entity : updateImage(newImageUrl)
+Service -> Entity : updateImage(savedImagePath)
 activate Entity
 Entity --> Service : success
 deactivate Entity

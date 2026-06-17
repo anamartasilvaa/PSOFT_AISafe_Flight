@@ -1,12 +1,11 @@
 @startuml
-
 title US202-SSD
 autonumber
 actor "Backoffice Operator" as Operator
 participant "System" as Sys
 
 activate Operator
-Operator -> Sys : Requests to update the image of an Aircraft Model (modelName, newImageUrl)
+Operator -> Sys : Requests to update the image of an Aircraft Model (modelName, imageFile)
 activate Sys
 Sys --> Operator : Updates the image and returns the updated details (200 OK)
 deactivate Sys
