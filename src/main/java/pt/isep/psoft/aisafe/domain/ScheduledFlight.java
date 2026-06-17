@@ -49,6 +49,10 @@ public class ScheduledFlight {
         this.status = FlightStatus.SCHEDULED;
     }
 
+    public void updateStatus(FlightStatus newStatus) {
+        this.status = newStatus;
+    }
+
     // --- GETTERS ---
     public Long getPk() { return pk; }
     public Route getRoute() { return route; }
