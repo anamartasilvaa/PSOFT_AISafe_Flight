@@ -61,10 +61,10 @@ public class MaintenanceService {
         MaintenanceTemplate template = templateRepository.findById(dto.templateId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance template not found with ID: " + dto.templateId()));
 
-        // 1. Convertemos a String com a hora (formato ISO ex: "2026-10-25T14:30:00") enviada pelo Postman
+        // 1. Convertemos a String com a hora (formato ISO)
         java.time.LocalDateTime startDate = java.time.LocalDateTime.parse(dto.startDate());
 
-        // 2. Passamos essa data para o registo
+        // 2. Passamos os 7 parâmetros corretos para o registo!
         MaintenanceRecord record = new MaintenanceRecord(
                 aircraft,
                 template,
