@@ -121,37 +121,34 @@ public class AirportService {
     }
 
     @Transactional
-    public AirportViewDTO updateAirportImage(String iataCode, String imageUrl) {
+    public AirportViewDTO updateAirportImage(String iataCode, org.springframework.web.multipart.MultipartFile file) {
 
         Airport airport = airportRepository.findByIataCodeString(iataCode.toUpperCase())
                 .orElseThrow(() -> new IllegalArgumentException("Airport not found: " + iataCode));
 
-        airport.updateImage(imageUrl);
-        airport = airportRepository.save(airport);
-        return new AirportViewDTO(
-                airport.getIataCode().code(),
-                airport.getName(),
-                airport.getCity(),
-                airport.getCountry(),
-                airport.getTimezone(),
-                airport.getType().toString(),
-                airport.getStatus().toString(),
-                airport.getRunways().stream()
-                        .map(r -> new RunwayDTO(r.getName(), r.getLength(), r.getOrientation()))
-                        .collect(Collectors.toList()),
-                airport.getCertifications().stream()
-                        .map(c -> new CertificationViewDTO(
-                                c.getCertificationNumber(),
-                                c.getAircraftModel().getModelName().name(),
-                                c.getExpiryDate()))
-                        .collect(Collectors.toList()),
-                airport.getFacilities().stream()
-                        .map(f -> new FacilityDTO(f.getType(), f.getDescription()))
-                        .collect(Collectors.toList()),
-                airport.getImageUrl(),
-                airport.getOperationalHours(),
-                airport.getContactInformation()
-        );
+        try {
+            String projectDirectory = System.getProperty("user.dir");
+            java.nio.file.Path uploadPath = java.nio.file.Paths.get(projectDirectory, "uploads");
+
+            if (!java.nio.file.Files.exists(uploadPath)) {
+                java.nio.file.Files.createDirectories(uploadPath);
+            }
+
+            String fileName = iataCode.toUpperCase() + "_" + file.getOriginalFilename();
+            java.nio.file.Path filePath = uploadPath.resolve(fileName);
+
+            java.nio.file.Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = "/uploads/" + fileName;
+            airport.updateImage(fileUrl);
+
+            airport = airportRepository.save(airport);
+
+            return mapToDTO(airport);
+
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to save airport image: " + e.getMessage());
+        }
     }
 
     private AirportViewDTO mapToDTO(Airport airport) {

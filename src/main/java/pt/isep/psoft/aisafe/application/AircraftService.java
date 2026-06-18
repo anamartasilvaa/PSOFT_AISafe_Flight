@@ -233,8 +233,8 @@ public class AircraftService {
 
         return compatibleRoutes.map(route -> new RouteViewDTO(
                 route.getRouteId().toString(),
-                route.getOrigin().getIataCode().toString(),
-                route.getDestination().getIataCode().toString(),
+                route.getOrigin().getIataCode().code(),
+                route.getDestination().getIataCode().code(),
                 route.getStatus().name(),
                 route.getMinimumCapacity()
         ));
