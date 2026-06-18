@@ -20,19 +20,14 @@ public class RouteBootstrapper implements CommandLineRunner {
     public void run(String... args) throws Exception {
         try {
             // Rota 1: Porto -> Lisboa (Curta duração)
-            routeService.createRoute(new CreateRouteDTO(
-                    "RT-OPOLIS", "OPO", "LIS", 45, 250.0, 100
-            ));
+            routeService.createRoute(new CreateRouteDTO("RT-OPOLIS", "OPO", "LIS", 45, 250.0, 100));
 
             // Rota 2: Lisboa -> Nova Iorque (Longa duração)
-            routeService.createRoute(new CreateRouteDTO(
-                    "RT-LISJFK", "LIS", "JFK", 480, 5000.0, 150
-            )
-            );
+            routeService.createRoute(new CreateRouteDTO("RT-LISJFK", "LIS", "JFK", 480, 5000.0, 150));
 
             System.out.println("BOOTSTRAP: 2 Routes (OPO-LIS, LIS-JFK) successfully added!");
 
-            // --- WP2B:
+            // --- WP2B: Expandir rede base ---
             System.out.println("BOOTSTRAP WP2B: Expanding route network for statistics...");
 
             routeService.createRoute(new CreateRouteDTO("RT-LISOPO", "LIS", "OPO", 45, 250.0, 100));
@@ -46,6 +41,21 @@ public class RouteBootstrapper implements CommandLineRunner {
 
             routeService.createRoute(new CreateRouteDTO("RT-LHRJFK", "LHR", "JFK", 460, 5540.0, 250));
             routeService.createRoute(new CreateRouteDTO("RT-CDGJFK", "CDG", "JFK", 490, 5830.0, 250));
+
+            // --- WP3: Rotas de Teste para o Algoritmo (2 Escalas) ---
+            System.out.println("BOOTSTRAP WP3: Adding complex multi-leg routes (HND, DXB, FRA, MAD)...");
+
+            // Ligações pela Europa
+            routeService.createRoute(new CreateRouteDTO("RT-OPOFRA", "OPO", "FRA", 160, 1650.0, 150));
+            routeService.createRoute(new CreateRouteDTO("RT-LISMAD", "LIS", "MAD", 75, 500.0, 100));
+            routeService.createRoute(new CreateRouteDTO("RT-MADFRA", "MAD", "FRA", 150, 1400.0, 150));
+
+            // Ligações Médio Oriente
+            routeService.createRoute(new CreateRouteDTO("RT-FRADXB", "FRA", "DXB", 360, 4600.0, 250));
+            routeService.createRoute(new CreateRouteDTO("RT-LHRDXB", "LHR", "DXB", 420, 5500.0, 250));
+
+            // A grande ligação final para Tóquio
+            routeService.createRoute(new CreateRouteDTO("RT-DXBHND", "DXB", "HND", 580, 8000.0, 300));
 
         } catch (Exception e) {
             System.out.println("Note: Routes might already exist or: " + e.getMessage());
