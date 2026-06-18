@@ -15,10 +15,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pt.isep.psoft.aisafe.api.AircraftController;
 import pt.isep.psoft.aisafe.application.AircraftService;
-import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
-import pt.isep.psoft.aisafe.application.DTO.OperationalHoursDTO;
-import pt.isep.psoft.aisafe.application.DTO.RegisterAircraftDTO;
-import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
+import pt.isep.psoft.aisafe.application.DTO.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -113,14 +110,38 @@ class AircraftControllerTest {
     }
 
     @Test
+    void shouldReturn200OkWhenUpdatingModelImage() throws Exception { // US202
+        String modelName = "B737 MAX";
+
+        org.springframework.mock.web.MockMultipartFile mockFile =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "file", "plane.png", "image/png", "dummy image content".getBytes()
+                );
+
+        pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO responseDto =
+                new pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO(
+                        modelName, "BOEING", 200, 20000.0, 5000.0, 800.0, "/uploads/plane.png", "3-3", null
+                );
+
+        when(aircraftService.updateModelImage(eq(modelName), any(org.springframework.web.multipart.MultipartFile.class)))
+                .thenReturn(responseDto);
+
+        ResponseEntity<EntityModel<pt.isep.psoft.aisafe.application.DTO.AircraftModelViewDTO>> response =
+                aircraftController.updateModelImage(modelName, mockFile);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("/uploads/plane.png", response.getBody().getContent().modelPhotoUrl());
+        assertTrue(response.getBody().hasLinks(), "Response should contain HATEOAS links");
+    }
+
+    @Test
     void shouldReturn200OkWhenGettingTop5Models() { // US204
         pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top1 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("A320neo", 15000.0);
         pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO top2 = new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("B737 MAX", 10000.0);
 
-        // Agora dizemos ao mock que vamos pedir ordenado por "hours"
         when(aircraftService.getTop5UtilizedModels("hours")).thenReturn(java.util.List.of(top1, top2));
 
-        // Passamos "hours" para o Controller
         ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO>>> response =
                 aircraftController.getTop5Models("hours");
 

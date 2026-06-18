@@ -99,6 +99,30 @@ class AirportControllerTest {
     }
 
     @Test
+    void shouldReturn200OkWhenUpdatingAirportImage() throws Exception { // US207a
+        String iataCode = "OPO";
+
+        org.springframework.mock.web.MockMultipartFile mockFile =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "file", "airport.jpg", "image/jpeg", "fake image bytes".getBytes()
+                );
+
+        AirportViewDTO responseDto = new AirportViewDTO(
+                iataCode, "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL",
+                java.util.List.of(), java.util.List.of(), java.util.List.of(), "/uploads/OPO_airport.jpg", null, null
+        );
+
+        when(airportService.updateAirportImage(eq(iataCode), any(org.springframework.web.multipart.MultipartFile.class)))
+                .thenReturn(responseDto);
+
+        ResponseEntity<EntityModel<AirportViewDTO>> response = airportController.updateAirportImage(iataCode, mockFile);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("/uploads/OPO_airport.jpg", response.getBody().getContent().imageUrl());
+    }
+
+    @Test
     void shouldReturn200OkWhenUpdatingAirportDetails() { // US208
         // Arrange
         String iataCode = "OPO";
