@@ -2,8 +2,8 @@ package pt.isep.psoft.aisafe.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import pt.isep.psoft.aisafe.domain.MaintenanceTemplate;
 import pt.isep.psoft.aisafe.domain.AircraftModel;
+import pt.isep.psoft.aisafe.domain.MaintenanceTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,8 +11,9 @@ import java.util.Optional;
 @Repository
 public interface MaintenanceTemplateRepository extends JpaRepository<MaintenanceTemplate, Long> {
 
+    // Se precisares de procurar templates pelo nome
     Optional<MaintenanceTemplate> findByTemplateName(String templateName);
 
-    // Encontra todos os templates que se aplicam a um determinado modelo de avião
-    List<MaintenanceTemplate> findByModelsContaining(AircraftModel model);
+    List<MaintenanceTemplate> findByAppliesToContaining(AircraftModel model);
+
 }

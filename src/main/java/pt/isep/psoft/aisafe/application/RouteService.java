@@ -20,13 +20,16 @@ public class RouteService {
     private final RouteRepository routeRepository;
     private final AirportRepository airportRepository;
     private final RouteHistoryRepository routeHistoryRepository;
+    private final RouteSearchStrategy routeSearchStrategy; // <-- A Estratégia adicionada aqui
 
     public RouteService(RouteRepository routeRepository,
                         AirportRepository airportRepository,
-                        RouteHistoryRepository routeHistoryRepository) {
+                        RouteHistoryRepository routeHistoryRepository,
+                        RouteSearchStrategy routeSearchStrategy) { // <-- E aqui no construtor
         this.routeRepository = routeRepository;
         this.airportRepository = airportRepository;
         this.routeHistoryRepository = routeHistoryRepository;
+        this.routeSearchStrategy = routeSearchStrategy;
     }
 
     // --- US110: Criar uma Rota ---
@@ -151,6 +154,11 @@ public class RouteService {
 
         // Usa o teu próprio método convertToDTO em vez de criar um DTO novo à mão!
         return routes.map(this::convertToDTO);
+    }
+
+    // --- US216: Procurar rotas alternativas ---
+    public List<AlternativeRouteDTO> findAlternativeRoutes(String originIata, String destinationIata) {
+        return routeSearchStrategy.findAlternatives(originIata, destinationIata);
     }
 
     // --- Métodos Privados Auxiliares ---

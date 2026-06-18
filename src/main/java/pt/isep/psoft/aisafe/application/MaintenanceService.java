@@ -168,8 +168,7 @@ public class MaintenanceService {
             if (aircraft.getStatus() != AircraftStatus.ACTIVE) continue;
 
             // 2. Descobrir os templates de manutenção aplicáveis ao modelo deste avião
-            List<MaintenanceTemplate> templates = templateRepository.findByModelsContaining(aircraft.getAircraftModel());
-
+            List<MaintenanceTemplate> templates = templateRepository.findByAppliesToContaining(aircraft.getAircraftModel());
             for (MaintenanceTemplate template : templates) {
 
                 // VERIFICAÇÃO A: Limite de Horas de Voo
