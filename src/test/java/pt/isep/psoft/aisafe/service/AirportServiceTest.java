@@ -48,7 +48,6 @@ class AirportServiceTest {
         when(mockAirport.getRunways()).thenReturn(List.of());
         when(mockAirport.getCertifications()).thenReturn(List.of());
 
-        // Mock the new lists to prevent null pointers during DTO mapping in the service
         when(mockAirport.getFacilities()).thenReturn(List.of());
 
         when(airportRepository.save(any(Airport.class))).thenReturn(mockAirport);
@@ -60,5 +59,53 @@ class AirportServiceTest {
         assertEquals("Porto", result.city());
 
         verify(airportRepository, times(1)).save(any(Airport.class));
+    }
+
+    @Test
+    void shouldUpdateAirportImageSuccessfully() throws java.io.IOException { // US207
+        String iataCode = "OPO";
+        Airport mockAirport = mock(Airport.class);
+        when(airportRepository.findByIataCodeString(iataCode)).thenReturn(java.util.Optional.of(mockAirport));
+        when(airportRepository.save(any(Airport.class))).thenReturn(mockAirport);
+
+        org.springframework.web.multipart.MultipartFile mockFile = mock(org.springframework.web.multipart.MultipartFile.class);
+        when(mockFile.getOriginalFilename()).thenReturn("map.png");
+        when(mockFile.getInputStream()).thenReturn(new java.io.ByteArrayInputStream("fake bytes".getBytes()));
+
+        when(mockAirport.getIataCode()).thenReturn(new IATACode(iataCode));
+        when(mockAirport.getType()).thenReturn(AirportType.INTERNATIONAL);
+        when(mockAirport.getStatus()).thenReturn(AirportStatus.OPERATIONAL);
+
+        AirportViewDTO result = airportService.updateAirportImage(iataCode, mockFile);
+
+        assertNotNull(result);
+        verify(mockAirport, times(1)).updateImage(anyString());
+        verify(airportRepository, times(1)).save(mockAirport);
+    }
+
+    @Test
+    void shouldGroupAirportsByCountry() { // US211
+        Airport mockAirport1 = mock(Airport.class);
+        when(mockAirport1.getCountry()).thenReturn("Portugal");
+        when(mockAirport1.getIataCode()).thenReturn(new IATACode("OPO"));
+        when(mockAirport1.getType()).thenReturn(AirportType.INTERNATIONAL);
+        when(mockAirport1.getStatus()).thenReturn(AirportStatus.OPERATIONAL);
+
+        Airport mockAirport2 = mock(Airport.class);
+        when(mockAirport2.getCountry()).thenReturn("Spain");
+        when(mockAirport2.getIataCode()).thenReturn(new IATACode("MAD"));
+        when(mockAirport2.getType()).thenReturn(AirportType.INTERNATIONAL);
+        when(mockAirport2.getStatus()).thenReturn(AirportStatus.OPERATIONAL);
+
+        when(airportRepository.findAll()).thenReturn(List.of(mockAirport1, mockAirport2));
+
+
+        Object result = airportService.getAirportsGrouped("country");
+
+        assertNotNull(result);
+        assertTrue(result instanceof java.util.Map);
+        java.util.Map<?, ?> groupedMap = (java.util.Map<?, ?>) result;
+        assertTrue(groupedMap.containsKey("Portugal"));
+        assertTrue(groupedMap.containsKey("Spain"));
     }
 }
