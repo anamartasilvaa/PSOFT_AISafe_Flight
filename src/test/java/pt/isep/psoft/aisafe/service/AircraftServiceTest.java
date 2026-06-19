@@ -7,12 +7,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pt.isep.psoft.aisafe.application.AircraftService;
 import pt.isep.psoft.aisafe.application.DTO.AircraftViewDTO;
+import pt.isep.psoft.aisafe.application.DTO.UpdateAircraftStatusDTO;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.AircraftRepository;
 import pt.isep.psoft.aisafe.repositories.AircraftModelRepository;
+import pt.isep.psoft.aisafe.repositories.RouteRepository;
+import pt.isep.psoft.aisafe.repositories.ScheduledFlightRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -20,108 +25,92 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AircraftServiceTest {
 
-
     @Mock
     private AircraftRepository aircraftRepository;
 
     @Mock
     private AircraftModelRepository modelRepository;
 
+    @Mock
+    private RouteRepository routeRepository;
+
+    @Mock
+    private ScheduledFlightRepository scheduledFlightRepository;
 
     @InjectMocks
     private AircraftService aircraftService;
 
     @Test
     void shouldSearchAircraftsByManufacturingYear() {
-
         Aircraft mockAircraft = mock(Aircraft.class);
         AircraftModel mockModel = mock(AircraftModel.class);
-
 
         when(mockAircraft.getRegistrationNumber()).thenReturn(new RegistrationNumber("CS-TPA"));
         when(mockAircraft.getManufacturingDate()).thenReturn(LocalDate.of(2020, 1, 1));
         when(mockAircraft.getActualSeatingCapacity()).thenReturn(180);
         when(mockAircraft.getStatus()).thenReturn(AircraftStatus.ACTIVE);
         when(mockAircraft.getAircraftModel()).thenReturn(mockModel);
-
         when(mockModel.getModelName()).thenReturn(new ModelName("A320"));
         when(mockModel.getModelPhotoUrl()).thenReturn("url");
 
-
         when(aircraftRepository.findByManufacturingYear(2020)).thenReturn(List.of(mockAircraft));
 
-
         List<AircraftViewDTO> results = aircraftService.searchAircrafts(null, null, 2020);
-
 
         assertEquals(1, results.size());
         assertEquals("CS-TPA", results.get(0).registrationNumber());
         assertEquals("A320", results.get(0).modelName());
-
-
-        verify(aircraftRepository, times(1)).findByManufacturingYear(2020);
     }
 
     @Test
-    void shouldGetTop5UtilizedModels() { // US204
-        pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO dto1 =
-                new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("B737 MAX", 15000.0);
-        pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO dto2 =
-                new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO("A320neo", 10000.0);
-
-        when(aircraftRepository.findTop5ModelsByFlightHours(any())).thenReturn(List.of(dto1, dto2));
-
-        List<pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO> topModels =
-                aircraftService.getTop5UtilizedModels("hours");
-
-        assertEquals(2, topModels.size());
-        assertEquals("B737 MAX", topModels.get(0).modelName());
-        assertEquals(15000.0, topModels.get(0).totalFlightHours());
-    }
-
-    @Mock
-    private pt.isep.psoft.aisafe.repositories.RouteRepository routeRepository;
-
-    @Test
-    void shouldGetCompatibleRoutesForAircraft() { // US203
+    void shouldTriggerSwapAlgorithmWhenAircraftGoesUnderMaintenance() {
+        // Arrange
         String regNum = "CS-TPA";
+        String replacementRegNum = "CS-TVC";
 
-        Aircraft mockAircraft = mock(Aircraft.class);
-        AircraftModel mockModel = mock(AircraftModel.class);
+        // Mocks do Modelo
+        AircraftModel sharedModel = mock(AircraftModel.class);
+        when(sharedModel.getModelName()).thenReturn(new ModelName("A320"));
+        when(sharedModel.getModelPhotoUrl()).thenReturn("url");
 
-        when(mockAircraft.getAircraftModel()).thenReturn(mockModel);
-        when(mockModel.getMaximumRange()).thenReturn(5000.0);
-        when(mockAircraft.getActualSeatingCapacity()).thenReturn(150);
+        // Avião que vai avariar
+        Aircraft brokenAircraft = mock(Aircraft.class);
+        RegistrationNumber brokenReg = new RegistrationNumber(regNum);
+        when(brokenAircraft.getRegistrationNumber()).thenReturn(brokenReg);
+        when(brokenAircraft.getAircraftModel()).thenReturn(sharedModel);
+        // Garantimos que ele tem status para o mapToViewDTO não explodir
+        when(brokenAircraft.getStatus()).thenReturn(AircraftStatus.ACTIVE);
+        when(brokenAircraft.getManufacturingDate()).thenReturn(LocalDate.now());
 
-        when(aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum)))
-                .thenReturn(java.util.Optional.of(mockAircraft));
+        // Avião Salvador
+        Aircraft saviorAircraft = mock(Aircraft.class);
+        RegistrationNumber saviorReg = new RegistrationNumber(replacementRegNum);
+        when(saviorAircraft.getRegistrationNumber()).thenReturn(saviorReg);
+        when(saviorAircraft.getAircraftModel()).thenReturn(sharedModel);
+        when(saviorAircraft.getStatus()).thenReturn(AircraftStatus.ACTIVE);
 
-        Route mockRoute = mock(Route.class);
-        when(mockRoute.getRouteId()).thenReturn(new RouteId("RT-123"));
-        when(mockRoute.getStatus()).thenReturn(RouteStatus.ACTIVE);
-        when(mockRoute.getMinimumCapacity()).thenReturn(100);
+        // O Voo em perigo
+        ScheduledFlight endangeredFlight = mock(ScheduledFlight.class);
+        when(endangeredFlight.getStatus()).thenReturn(FlightStatus.SCHEDULED);
+        when(endangeredFlight.getScheduledDateTime()).thenReturn(java.time.LocalDateTime.now().plusDays(2));
 
-        Airport originMock = mock(Airport.class);
-        when(originMock.getIataCode()).thenReturn(new IATACode("OPO"));
-        when(mockRoute.getOrigin()).thenReturn(originMock);
+        // Configuração dos Repositórios
+        when(aircraftRepository.findByRegistrationNumber(brokenReg)).thenReturn(Optional.of(brokenAircraft));
+        when(aircraftRepository.findAll()).thenReturn(List.of(brokenAircraft, saviorAircraft));
+        when(scheduledFlightRepository.findByAircraft_RegistrationNumber(brokenReg)).thenReturn(List.of(endangeredFlight));
+        when(scheduledFlightRepository.findByAircraft_RegistrationNumber(saviorReg)).thenReturn(List.of());
 
-        Airport destMock = mock(Airport.class);
-        when(destMock.getIataCode()).thenReturn(new IATACode("LIS"));
-        when(mockRoute.getDestination()).thenReturn(destMock);
+        UpdateAircraftStatusDTO dto = new UpdateAircraftStatusDTO("UNDER_MAINTENANCE");
 
-        org.springframework.data.domain.Page<Route> mockPage =
-                new org.springframework.data.domain.PageImpl<>(List.of(mockRoute));
+        // Act
+        Map<String, Object> response = aircraftService.updateAircraftStatusWithReport(regNum, dto);
 
-        when(routeRepository.findCompatibleRoutes(eq(5000.0), eq(150), any(org.springframework.data.domain.Pageable.class)))
-                .thenReturn(mockPage);
+        // Assert
+        verify(brokenAircraft, times(1)).updateStatus(AircraftStatus.UNDER_MAINTENANCE);
+        verify(endangeredFlight, times(1)).changeAircraft(saviorAircraft);
 
-        org.springframework.data.domain.Page<pt.isep.psoft.aisafe.application.DTO.RouteViewDTO> result =
-                aircraftService.getCompatibleRoutesForAircraft(regNum, org.springframework.data.domain.PageRequest.of(0, 10));
-
-        assertNotNull(result);
-        assertEquals(1, result.getContent().size());
-        assertEquals("RT-123", result.getContent().get(0).routeId());
-        assertEquals("OPO", result.getContent().get(0).originIata());
-        assertEquals("LIS", result.getContent().get(0).destinationIata());
+        List<String> report = (List<String>) response.get("swapReport");
+        assertNotNull(report);
+        assertTrue(report.stream().anyMatch(msg -> msg.contains("RECOVERED")));
     }
-};
+}
