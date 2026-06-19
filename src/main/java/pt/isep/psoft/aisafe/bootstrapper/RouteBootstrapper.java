@@ -18,47 +18,34 @@ public class RouteBootstrapper implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        System.out.println("BOOTSTRAP WP3: Setting up US216 Test with EXISTING airports...");
+
+        // --- A SOLUÇÃO PLUG & PLAY PARA A US216 ---
+
+        // Alternativa 1: Voo Direto (Mais rápido: 140 min)
+        saveRouteSafe("RT-LISLHR", "LIS", "LHR", 140, 1500.0, 150);
+
+        // Alternativa 2: Voo com Escala no Porto (45m + 60m MCT + 130m = 235 min)
+        saveRouteSafe("RT-LISOPO", "LIS", "OPO", 45, 250.0, 100);
+        saveRouteSafe("RT-OPOLHR", "OPO", "LHR", 130, 1330.0, 120);
+
+        // --- Restantes rotas originais da tua Base de Dados ---
+        saveRouteSafe("RT-OPOLIS", "OPO", "LIS", 45, 250.0, 100);
+        saveRouteSafe("RT-LISJFK", "LIS", "JFK", 480, 5000.0, 150);
+        saveRouteSafe("RT-JFKLIS", "JFK", "LIS", 480, 5000.0, 150);
+        saveRouteSafe("RT-LISCDG", "LIS", "CDG", 150, 1530.0, 150);
+        saveRouteSafe("RT-CDGLIS", "CDG", "LIS", 155, 1530.0, 150);
+        saveRouteSafe("RT-LHROPO", "LHR", "OPO", 135, 1330.0, 120);
+        saveRouteSafe("RT-LHRJFK", "LHR", "JFK", 460, 5540.0, 250);
+        saveRouteSafe("RT-CDGJFK", "CDG", "JFK", 490, 5830.0, 250);
+
+        System.out.println("BOOTSTRAP WP3: Route verification complete.");
+    }
+
+    private void saveRouteSafe(String routeId, String origin, String destination, int time, double range, int capacity) {
         try {
-            // Rota 1: Porto -> Lisboa (Curta duração)
-            routeService.createRoute(new CreateRouteDTO("RT-OPOLIS", "OPO", "LIS", 45, 250.0, 100));
-
-            // Rota 2: Lisboa -> Nova Iorque (Longa duração)
-            routeService.createRoute(new CreateRouteDTO("RT-LISJFK", "LIS", "JFK", 480, 5000.0, 150));
-
-            System.out.println("BOOTSTRAP: 2 Routes (OPO-LIS, LIS-JFK) successfully added!");
-
-            // --- WP2B: Expandir rede base ---
-            System.out.println("BOOTSTRAP WP2B: Expanding route network for statistics...");
-
-            routeService.createRoute(new CreateRouteDTO("RT-LISOPO", "LIS", "OPO", 45, 250.0, 100));
-            routeService.createRoute(new CreateRouteDTO("RT-JFKLIS", "JFK", "LIS", 480, 5000.0, 150));
-
-            routeService.createRoute(new CreateRouteDTO("RT-LISCDG", "LIS", "CDG", 150, 1530.0, 150));
-            routeService.createRoute(new CreateRouteDTO("RT-CDGLIS", "CDG", "LIS", 155, 1530.0, 150));
-
-            routeService.createRoute(new CreateRouteDTO("RT-OPOLHR", "OPO", "LHR", 130, 1330.0, 120));
-            routeService.createRoute(new CreateRouteDTO("RT-LHROPO", "LHR", "OPO", 135, 1330.0, 120));
-
-            routeService.createRoute(new CreateRouteDTO("RT-LHRJFK", "LHR", "JFK", 460, 5540.0, 250));
-            routeService.createRoute(new CreateRouteDTO("RT-CDGJFK", "CDG", "JFK", 490, 5830.0, 250));
-
-            // --- WP3: Rotas de Teste para o Algoritmo (2 Escalas) ---
-            System.out.println("BOOTSTRAP WP3: Adding complex multi-leg routes (HND, DXB, FRA, MAD)...");
-
-            // Ligações pela Europa
-            routeService.createRoute(new CreateRouteDTO("RT-OPOFRA", "OPO", "FRA", 160, 1650.0, 150));
-            routeService.createRoute(new CreateRouteDTO("RT-LISMAD", "LIS", "MAD", 75, 500.0, 100));
-            routeService.createRoute(new CreateRouteDTO("RT-MADFRA", "MAD", "FRA", 150, 1400.0, 150));
-
-            // Ligações Médio Oriente
-            routeService.createRoute(new CreateRouteDTO("RT-FRADXB", "FRA", "DXB", 360, 4600.0, 250));
-            routeService.createRoute(new CreateRouteDTO("RT-LHRDXB", "LHR", "DXB", 420, 5500.0, 250));
-
-            // A grande ligação final para Tóquio
-            routeService.createRoute(new CreateRouteDTO("RT-DXBHND", "DXB", "HND", 580, 8000.0, 300));
-
+            routeService.createRoute(new CreateRouteDTO(routeId, origin, destination, time, range, capacity));
         } catch (Exception e) {
-            System.out.println("Note: Routes might already exist or: " + e.getMessage());
         }
     }
 }

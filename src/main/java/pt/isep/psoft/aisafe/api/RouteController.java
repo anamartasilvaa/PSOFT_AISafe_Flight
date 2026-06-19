@@ -71,6 +71,30 @@ public class RouteController {
         return ResponseEntity.ok(resource);
     }
 
+    // --- US216: Pesquisar Rotas Alternativas ---
+    @GetMapping("/alternatives")
+    @Operation(summary = "Search for alternative routes between two airports")
+    public ResponseEntity<CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>>> getAlternativeRoutes(
+            @RequestParam String originIata,
+            @RequestParam String destinationIata) {
+
+        List<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO> alternatives = routeService.findAlternativeRoutes(originIata, destinationIata);
+
+        // Se não houver forma de chegar ao destino, devolve 204 No Content
+        if (alternatives.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> resources = alternatives.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(RouteController.class).getAlternativeRoutes(originIata, destinationIata)).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
+
     // --- US113: Ver detalhes de uma rota pelo ID ---
     @GetMapping("/{id}")
     @Operation(summary = "Get route details by ID")
@@ -193,29 +217,5 @@ public class RouteController {
         PagedModel<EntityModel<RouteViewDTO>> pagedModel = assembler.toModel(page, this::addLinksToRoute);
 
         return ResponseEntity.ok(pagedModel);
-    }
-
-    // --- US216: Pesquisar Rotas Alternativas ---
-    @GetMapping("/search/alternatives")
-    @Operation(summary = "Search for alternative routes between two airports")
-    public ResponseEntity<CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>>> getAlternativeRoutes(
-            @RequestParam String origin,
-            @RequestParam String destination) {
-
-        List<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO> alternatives = routeService.findAlternativeRoutes(origin, destination);
-
-        // Se não houver forma de chegar ao destino, devolve 204 No Content
-        if (alternatives.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        List<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> resources = alternatives.stream()
-                .map(EntityModel::of)
-                .collect(Collectors.toList());
-
-        CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> collectionModel = CollectionModel.of(resources,
-                linkTo(methodOn(RouteController.class).getAlternativeRoutes(origin, destination)).withSelfRel());
-
-        return ResponseEntity.ok(collectionModel);
     }
 }

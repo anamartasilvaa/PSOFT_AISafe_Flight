@@ -12,6 +12,9 @@ import pt.isep.psoft.aisafe.repositories.ScheduledFlightRepository;
 
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -119,8 +122,6 @@ public class AircraftService {
         aircraft.updateStatus(newStatus);
         aircraftRepository.save(aircraft);
 
-        // --- LÓGICA DE NEGÓCIO SÉNIOR: AIRCRAFT SWAP ---
-        // Se o avião vai parar, precisamos de realocar os voos agendados!
         if (newStatus == AircraftStatus.UNDER_MAINTENANCE || newStatus == AircraftStatus.INACTIVE) {
             handleAircraftSwap(aircraft);
         }
@@ -128,68 +129,91 @@ public class AircraftService {
         return mapToViewDTO(aircraft);
     }
 
-    // --- ALGORITMO DE PREVENÇÃO DE CANCELAMENTOS ---
-    private void handleAircraftSwap(Aircraft groundedAircraft) {
-        System.out.println("\n[SWAP ALGORITHM] Aircraft " + groundedAircraft.getRegistrationNumber().number() + " grounded. Scanning for affected flights...");
+    // --- NOVO MÉTODO: Devolve o relatório para o Postman ---
+    @Transactional
+    public Map<String, Object> updateAircraftStatusWithReport(String regNum, UpdateAircraftStatusDTO dto) {
+        Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum))
+                .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
 
-        // 1. Procurar todos os voos associados a este avião
+        AircraftStatus newStatus = AircraftStatus.valueOf(dto.status().toUpperCase());
+        aircraft.updateStatus(newStatus);
+        aircraftRepository.save(aircraft);
+
+        List<String> swapLogs = new ArrayList<>();
+        if (newStatus == AircraftStatus.UNDER_MAINTENANCE || newStatus == AircraftStatus.INACTIVE) {
+            swapLogs = handleAircraftSwap(aircraft);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("aircraft", mapToViewDTO(aircraft));
+        response.put("swapReport", swapLogs);
+
+        return response;
+    }
+
+    // ALGORITMO DE RELATÓRIO
+    private List<String> handleAircraftSwap(Aircraft groundedAircraft) {
+        List<String> report = new ArrayList<>();
+        report.add("Aircraft " + groundedAircraft.getRegistrationNumber().number() + " grounded. Scanning for affected flights...");
+        System.out.println(report.get(0));
+
         List<ScheduledFlight> allFlights = scheduledFlightRepository.findByAircraft_RegistrationNumber(groundedAircraft.getRegistrationNumber());
 
-        // Filtrar apenas os voos agendados para o futuro
         List<ScheduledFlight> affectedFlights = allFlights.stream()
                 .filter(f -> f.getStatus() == FlightStatus.SCHEDULED && f.getScheduledDateTime().isAfter(java.time.LocalDateTime.now()))
                 .collect(Collectors.toList());
 
         if (affectedFlights.isEmpty()) {
-            System.out.println("[SWAP ALGORITHM] No future flights affected. Safe to ground.\n");
-            return;
+            String msg = "No future flights affected. Safe to ground.";
+            report.add(msg);
+            System.out.println(msg);
+            return report;
         }
 
-        // 2. Procurar a frota de substituição (Mesmo modelo, estado ACTIVE)
         List<Aircraft> swapCandidates = aircraftRepository.findAll().stream()
                 .filter(a -> a.getAircraftModel().equals(groundedAircraft.getAircraftModel()))
                 .filter(a -> a.getStatus() == AircraftStatus.ACTIVE)
                 .filter(a -> !a.equals(groundedAircraft))
                 .collect(Collectors.toList());
 
-        // 3. Tentar realocar cada voo afetado
         for (ScheduledFlight flight : affectedFlights) {
             boolean isSwapped = false;
 
             for (Aircraft candidate : swapCandidates) {
-                // O candidato está livre nesta hora? (margem de segurança de 4h antes e depois)
                 if (isAircraftFree(candidate, flight.getScheduledDateTime())) {
-                    System.out.println("[SWAP ALGORITHM] -> RECOVERED: Flight on " + flight.getScheduledDateTime() +
+                    String msg = "RECOVERED: Flight on " + flight.getScheduledDateTime() +
                             " reassigned from " + groundedAircraft.getRegistrationNumber().number() +
-                            " to " + candidate.getRegistrationNumber().number());
+                            " to " + candidate.getRegistrationNumber().number();
+                    report.add(msg);
+                    System.out.println(msg);
 
                     flight.changeAircraft(candidate);
                     scheduledFlightRepository.save(flight);
                     isSwapped = true;
-                    break; // Voo salvo, saltar para o próximo!
+                    break;
                 }
             }
 
-            // 4. Se nenhum candidato estiver disponível, cancela o voo.
             if (!isSwapped) {
-                System.out.println("[SWAP ALGORITHM] -> ALERT: No replacement found! Flight on " + flight.getScheduledDateTime() + " is CANCELLED.");
+                String msg = "ALERT: No replacement found! Flight on " + flight.getScheduledDateTime() + " is CANCELLED.";
+                report.add(msg);
+                System.out.println(msg);
                 flight.updateStatus(FlightStatus.CANCELLED);
                 scheduledFlightRepository.save(flight);
             }
         }
-        System.out.println("[SWAP ALGORITHM] Operation complete.\n");
+        report.add("Swap Operation complete.");
+        return report;
     }
 
     private boolean isAircraftFree(Aircraft candidate, java.time.LocalDateTime targetTime) {
         List<ScheduledFlight> candidateFlights = scheduledFlightRepository.findByAircraft_RegistrationNumber(candidate.getRegistrationNumber());
 
         for (ScheduledFlight f : candidateFlights) {
-            // Só nos preocupamos com voos ativos (agendados ou no ar)
             if (f.getStatus() == FlightStatus.SCHEDULED || f.getStatus() == FlightStatus.IN_FLIGHT) {
                 java.time.LocalDateTime flightStartBuffer = f.getScheduledDateTime().minusHours(4);
                 java.time.LocalDateTime flightEndBuffer = f.getScheduledDateTime().plusHours(4);
 
-                // Se o novo voo calhar dentro da margem de 8 horas deste voo, há conflito!
                 if (targetTime.isAfter(flightStartBuffer) && targetTime.isBefore(flightEndBuffer)) {
                     return false;
                 }

@@ -36,6 +36,7 @@ public class FlightBootstrapper implements CommandLineRunner {
 
             LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
+            // 1. Voos originais para Histórico (Passado/Presente)
             flightService.scheduleFlight(new CreateScheduledFlightDTO(
                     "RT-LISJFK", "CS-XPA", now.plusMinutes(5).toString()
             ));
@@ -52,16 +53,38 @@ public class FlightBootstrapper implements CommandLineRunner {
                     "RT-CDGJFK", "CS-XPB", now.plusDays(1).toString()
             ));
 
+            // Voos Futuros para testar o Algoritmo de Swap (US222)
+            System.out.println("BOOTSTRAP WP2B: Injecting future flights for Aircraft Swap testing...");
+
+            // Avião CS-TPA com a agenda cheia nos próximos dias
+            flightService.scheduleFlight(new CreateScheduledFlightDTO(
+                    "RT-OPOLHR", "CS-TPA", now.plusDays(3).withHour(10).withMinute(0).toString()
+            ));
+
+            flightService.scheduleFlight(new CreateScheduledFlightDTO(
+                    "RT-LISJFK", "CS-TPA", now.plusDays(4).withHour(14).withMinute(30).toString()
+            ));
+
+            // Avião CS-BOA com um voo marcado para a próxima semana
+            flightService.scheduleFlight(new CreateScheduledFlightDTO(
+                    "RT-OPOLIS", "CS-BOA", now.plusDays(7).withHour(9).withMinute(0).toString()
+            ));
+
+            // -------------------------------------------------------------------------
+
+            // Atualização de Estados
             Iterable<ScheduledFlight> flights = flightRepository.findAll();
             for (ScheduledFlight f : flights) {
                 String routeId = f.getRoute().getRouteId().id();
 
-                if (routeId.equals("RT-LISJFK")) {
-                    f.updateStatus(FlightStatus.COMPLETED);
-                } else if (routeId.equals("RT-OPOLHR")) {
-                    f.updateStatus(FlightStatus.IN_FLIGHT);
-                } else if (routeId.equals("RT-CDGJFK")) {
-                    f.updateStatus(FlightStatus.CANCELLED);
+                if (f.getScheduledDateTime().isBefore(now.plusHours(1))) {
+                    if (routeId.equals("RT-LISJFK")) {
+                        f.updateStatus(FlightStatus.COMPLETED);
+                    } else if (routeId.equals("RT-OPOLHR")) {
+                        f.updateStatus(FlightStatus.IN_FLIGHT);
+                    } else if (routeId.equals("RT-CDGJFK")) {
+                        f.updateStatus(FlightStatus.CANCELLED);
+                    }
                 }
 
                 flightRepository.save(f);

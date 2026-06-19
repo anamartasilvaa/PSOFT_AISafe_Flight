@@ -68,18 +68,20 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).searchAircrafts(model, status, year)).withSelfRel()));
     }
 
-    /*US105 - Update an aircraft operational status*/
+    /*US105 + US222/US119 - Update an aircraft operational status & Trigger Swap Algorithm*/
     @PatchMapping("/instances/{registrationNumber}/status")
-    public ResponseEntity<EntityModel<AircraftViewDTO>> updateStatus(
+    public ResponseEntity<EntityModel<java.util.Map<String, Object>>> updateStatus(
             @PathVariable String registrationNumber,
             @Valid @RequestBody UpdateAircraftStatusDTO dto) {
 
-        AircraftViewDTO updatedAircraft = service.updateAircraftStatus(registrationNumber, dto);
-        EntityModel<AircraftViewDTO> resource = EntityModel.of(updatedAircraft);
+        // Chamamos o novo método que devolve o Relatório do Algoritmo junto com o Avião
+        java.util.Map<String, Object> responseMap = service.updateAircraftStatusWithReport(registrationNumber, dto);
+
+        EntityModel<java.util.Map<String, Object>> resource = EntityModel.of(responseMap);
         resource.add(linkTo(methodOn(AircraftController.class).getAircraft(registrationNumber)).withSelfRel());
+
         return ResponseEntity.ok(resource);
     }
-
 
     /* US201  */
     @PatchMapping("/models/{modelName}/specifications")
