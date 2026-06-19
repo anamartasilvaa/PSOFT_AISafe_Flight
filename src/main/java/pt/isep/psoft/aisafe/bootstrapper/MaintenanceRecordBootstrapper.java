@@ -8,7 +8,6 @@ import pt.isep.psoft.aisafe.domain.Aircraft;
 import pt.isep.psoft.aisafe.domain.ComponentCategory;
 import pt.isep.psoft.aisafe.domain.MaintenanceRecord;
 import pt.isep.psoft.aisafe.domain.MaintenanceTemplate;
-import pt.isep.psoft.aisafe.domain.RegistrationNumber;
 import pt.isep.psoft.aisafe.repositories.AircraftRepository;
 import pt.isep.psoft.aisafe.repositories.MaintenanceRecordRepository;
 import pt.isep.psoft.aisafe.repositories.MaintenanceTemplateRepository;
@@ -41,7 +40,7 @@ public class MaintenanceRecordBootstrapper implements CommandLineRunner {
                 return;
             }
 
-            System.out.println("BOOTSTRAP: Generating default Maintenance Records...");
+            System.out.println("BOOTSTRAP: Generating precise maintenance records for the fleet...");
 
             List<MaintenanceTemplate> templates = (List<MaintenanceTemplate>) templateRepository.findAll();
             if (templates.isEmpty()) {
@@ -52,49 +51,65 @@ public class MaintenanceRecordBootstrapper implements CommandLineRunner {
             MaintenanceTemplate defaultTemplate = templates.get(0);
             int limit = defaultTemplate.getCalendarDaysInterval() != null ? defaultTemplate.getCalendarDaysInterval() : 120;
 
-            Aircraft a320 = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-TPA")).orElse(null);
-            Aircraft a320Manut = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-MANUT")).orElse(null);
-            Aircraft b737 = aircraftRepository.findByRegistrationNumber(new RegistrationNumber("CS-BOA")).orElse(null);
+            List<Aircraft> allAircraft = aircraftRepository.findAll();
 
-            if (a320 == null || a320Manut == null || b737 == null) {
-                System.out.println("BOOTSTRAP ERROR: Required aircraft not found.");
-                return;
+            for (Aircraft aircraft : allAircraft) {
+                String regNum = aircraft.getRegistrationNumber().toString();
+                LocalDateTime historicalDate;
+                String description;
+
+                // 1. SCENARIO: PREVENTIVE WARNING (Leaves exactly 10 days before reaching the limit)
+                if (regNum.equals("CS-TPA")) {
+                    historicalDate = LocalDateTime.now().minusDays(limit - 10);
+                    description = "Engine inspection (Preventive Scenario)";
+                }
+                // 2. SCENARIO: CRITICAL OVERDUE (5 days past the limit)
+                else if (regNum.equals("CS-BOA")) {
+                    historicalDate = LocalDateTime.now().minusDays(limit + 5);
+                    description = "Navigation update (Overdue Scenario)";
+                }
+                // 3. SCENARIO: HEALTHY FLEET (Recent maintenance, 30 days ago)
+                else {
+                    historicalDate = LocalDateTime.now().minusDays(30);
+                    description = "Standard Transit Check";
+                }
+
+                // Create and complete the record
+                MaintenanceRecord record = new MaintenanceRecord(
+                        aircraft, defaultTemplate, description,
+                        120, ComponentCategory.AIRFRAME, historicalDate.minusDays(1), 500.0
+                );
+
+                // This method internally sets the completion date to TODAY (LocalDateTime.now())
+                record.complete("Completed standard procedures.");
+
+                // --- ENGINEER'S TRICK: JAVA REFLECTION ---
+                // We bypass the domain encapsulation just for this bootstrapper to force the historical date.
+                try {
+                    java.lang.reflect.Field dateField = null;
+                    Class<?> clazz = record.getClass();
+
+                    // Search for the 'completionDate' field in the class (or superclasses)
+                    while (clazz != null && dateField == null) {
+                        try {
+                            dateField = clazz.getDeclaredField("completionDate");
+                        } catch (NoSuchFieldException e) {
+                            clazz = clazz.getSuperclass();
+                        }
+                    }
+
+                    if (dateField != null) {
+                        dateField.setAccessible(true);
+                        dateField.set(record, historicalDate); // Overwrite TODAY with our historical date
+                    }
+                } catch (Exception e) {
+                    System.out.println("Reflection failed: Could not forcefully set completion date: " + e.getMessage());
+                }
+
+                recordRepository.save(record);
             }
 
-            // Record 1: Historical maintenance for CS-TPA (superseded by Record 4)
-            MaintenanceRecord record1 = new MaintenanceRecord(
-                    a320, defaultTemplate, "Engine oil replacement",
-                    120, ComponentCategory.ENGINE, LocalDateTime.now().minusDays(limit + 100), 450.0
-            );
-            record1.complete("Completed successfully.");
-            recordRepository.save(record1);
-
-            // Record 2: Scheduled future maintenance task for CS-MANUT
-            MaintenanceRecord record2 = new MaintenanceRecord(
-                    a320Manut, defaultTemplate, "Landing gear inspection",
-                    300, ComponentCategory.AIRFRAME, LocalDateTime.now().plusDays(1), 1200.0
-            );
-            recordRepository.save(record2);
-
-            // Record 3: TRIGGER FOR CRITICAL OVERDUE ALERT (CS-BOA)
-            // The completion date is 40 days past the allowed template interval
-            MaintenanceRecord record3 = new MaintenanceRecord(
-                    b737, defaultTemplate, "Navigation software update",
-                    60, ComponentCategory.AVIONICS, LocalDateTime.now().minusDays(limit + 40), 200.0
-            );
-            record3.complete("Software updated to version 4.2.");
-            recordRepository.save(record3);
-
-            // Record 4: TRIGGER FOR PREVENTIVE WARNING ALERT (CS-TPA)
-            // The completion date leaves exactly 10 days before reaching expiration (triggers within the 15 days margin)
-            MaintenanceRecord record4 = new MaintenanceRecord(
-                    a320, defaultTemplate, "Passenger seat repairs",
-                    90, ComponentCategory.INTERIOR, LocalDateTime.now().minusDays(limit - 10), 150.0
-            );
-            record4.complete("Fixed fabric.");
-            recordRepository.save(record4);
-
-            System.out.println("BOOTSTRAP: Maintenance Records loaded successfully!");
+            System.out.println("BOOTSTRAP: Precise Maintenance Records loaded successfully!");
 
         } catch (Exception e) {
             System.out.println("An error occurred in Maintenance Record Bootstrap: " + e.getMessage());
