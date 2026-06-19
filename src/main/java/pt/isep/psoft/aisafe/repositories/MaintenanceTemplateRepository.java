@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface MaintenanceTemplateRepository extends JpaRepository<MaintenanceTemplate, Long> {
 
-    // Se precisares de procurar templates pelo nome
+    // Se for preciso de procurar templates pelo nome
     Optional<MaintenanceTemplate> findByTemplateName(String templateName);
 
     List<MaintenanceTemplate> findByAppliesToContaining(AircraftModel model);

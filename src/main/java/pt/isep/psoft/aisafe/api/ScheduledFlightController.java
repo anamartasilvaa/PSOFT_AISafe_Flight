@@ -7,10 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.isep.psoft.aisafe.application.DTO.CreateScheduledFlightDTO;
+import pt.isep.psoft.aisafe.application.DTO.ScheduledFlightViewDTO;
 import pt.isep.psoft.aisafe.application.ScheduledFlightService;
-import pt.isep.psoft.aisafe.domain.ScheduledFlight;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -20,41 +19,28 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/api/scheduled-flights")
 public class ScheduledFlightController {
 
-    private final ScheduledFlightService scheduledFlightService;
+    private final ScheduledFlightService service;
 
-    public ScheduledFlightController(ScheduledFlightService scheduledFlightService) {
-        this.scheduledFlightService = scheduledFlightService;
+    public ScheduledFlightController(ScheduledFlightService service) {
+        this.service = service;
     }
 
-    // US212 - Assign an aircraft to a route for a specific date and time
     @PostMapping
-    public ResponseEntity<EntityModel<ScheduledFlight>> scheduleFlight(@Valid @RequestBody CreateScheduledFlightDTO dto) {
-        ScheduledFlight flight = scheduledFlightService.scheduleFlight(dto);
+    public ResponseEntity<EntityModel<ScheduledFlightViewDTO>> scheduleFlight(@Valid @RequestBody CreateScheduledFlightDTO dto) {
+        ScheduledFlightViewDTO created = service.scheduleFlight(dto);
+        EntityModel<ScheduledFlightViewDTO> resource = EntityModel.of(created);
 
-        EntityModel<ScheduledFlight> resource = EntityModel.of(flight);
-        // Adiciona um link para o utilizador poder ver facilmente todos os voos deste avião
-        resource.add(linkTo(methodOn(ScheduledFlightController.class).getScheduledFlightsByAircraft(dto.registrationNumber())).withRel("view-all-aircraft-flights"));
-
-        return new ResponseEntity<>(resource, HttpStatus.CREATED);
+        resource.add(linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(dto.registrationNumber())).withRel("aircraft-flights"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(resource);
     }
 
-    // US213 - View all scheduled flights for a specific aircraft
     @GetMapping("/aircraft/{registrationNumber}")
-    public ResponseEntity<CollectionModel<EntityModel<ScheduledFlight>>> getScheduledFlightsByAircraft(@PathVariable String registrationNumber) {
-
-        List<ScheduledFlight> rawFlights = scheduledFlightService.getScheduledFlightsByAircraft(registrationNumber);
-
-        if (rawFlights.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        List<EntityModel<ScheduledFlight>> flights = rawFlights.stream()
-                .map(EntityModel::of)
+    public ResponseEntity<CollectionModel<EntityModel<ScheduledFlightViewDTO>>> getFlightsByAircraft(@PathVariable String registrationNumber) {
+        var flights = service.getScheduledFlightsByAircraft(registrationNumber);
+        var resources = flights.stream()
+                .map(dto -> EntityModel.of(dto, linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()))
                 .collect(Collectors.toList());
 
-        CollectionModel<EntityModel<ScheduledFlight>> collection = CollectionModel.of(flights);
-        collection.add(linkTo(methodOn(ScheduledFlightController.class).getScheduledFlightsByAircraft(registrationNumber)).withSelfRel());
-
-        return ResponseEntity.ok(collection);
+        return ResponseEntity.ok(CollectionModel.of(resources, linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()));
     }
 }

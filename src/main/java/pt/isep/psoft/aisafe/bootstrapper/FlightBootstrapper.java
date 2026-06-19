@@ -3,7 +3,7 @@ package pt.isep.psoft.aisafe.bootstrapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import pt.isep.psoft.aisafe.application.FlightService;
+import pt.isep.psoft.aisafe.application.ScheduledFlightService; // Import corrigido
 import pt.isep.psoft.aisafe.application.DTO.CreateScheduledFlightDTO;
 import pt.isep.psoft.aisafe.domain.FlightStatus;
 import pt.isep.psoft.aisafe.domain.ScheduledFlight;
@@ -16,10 +16,10 @@ import java.time.temporal.ChronoUnit;
 @Order(5)
 public class FlightBootstrapper implements CommandLineRunner {
 
-    private final FlightService flightService;
+    private final ScheduledFlightService flightService;
     private final ScheduledFlightRepository flightRepository;
 
-    public FlightBootstrapper(FlightService flightService, ScheduledFlightRepository flightRepository) {
+    public FlightBootstrapper(ScheduledFlightService flightService, ScheduledFlightRepository flightRepository) {
         this.flightService = flightService;
         this.flightRepository = flightRepository;
     }
