@@ -1,27 +1,54 @@
 @startuml
-title US213 - CD
+skinparam classAttributeIconSize 0
+title US213-CD
 
-class AircraftController {
-    + ResponseEntity<CollectionModel<ScheduledFlightDataTransferObject>> getScheduledFlightsByAircraft(String registrationNumber)
+class ScheduledFlightController {
+    + getFlightsByAircraft(registrationNumber: String): ResponseEntity<CollectionModel<EntityModel<ScheduledFlightViewDTO>>>
 }
 
-class AircraftService {
-    + List<ScheduledFlightDataTransferObject> getScheduledFlightsByAircraft(String registrationNumber)
-    - List<ScheduledFlightDataTransferObject> mapToDataTransferObject(List<ScheduledFlight> flightList)
+class ScheduledFlightService {
+    + getScheduledFlightsByAircraft(registrationNumber: String): List<ScheduledFlightViewDTO>
 }
 
-class ScheduledFlightRepository {
-    + List<ScheduledFlight> findByAircraft_RegistrationNumber(String registrationNumber)
+interface ScheduledFlightRepository <<Repository>> {
+    + findByAircraft_RegistrationNumber(registrationNumber: RegistrationNumber): List<ScheduledFlight>
 }
 
-class ScheduledFlight {
-    - String registrationNumber
-    - String routeIdentifier
-    - LocalDateTime scheduledDateTime
-    - String flightStatus
+class ScheduledFlight <<Entity>> <<Root>> {
+    - scheduledDateTime: LocalDateTime
+    - status: FlightStatus
+    + getRoute(): Route
+    + getAircraft(): Aircraft
 }
 
-AircraftController --> AircraftService
-AircraftService --> ScheduledFlightRepository
-AircraftService ..> ScheduledFlight : accesses
+class Route <<Entity>> {
+    + getRouteId(): RouteId
+}
+
+class RegistrationNumber <<Value Object>> {
+    - number: String
+}
+
+class RouteId <<Value Object>> {
+    - id: String
+}
+
+class ScheduledFlightViewDTO <<Record>> {
+    + id: Long
+    + routeId: String
+    + registrationNumber: String
+    + scheduledDateTime: String
+    + status: String
+}
+
+ScheduledFlightController ..> ScheduledFlightViewDTO : produces >
+ScheduledFlightController --> ScheduledFlightService : uses >
+
+ScheduledFlightService ..> ScheduledFlightViewDTO : creates >
+ScheduledFlightService ..> RegistrationNumber : creates >
+ScheduledFlightService --> ScheduledFlightRepository : uses >
+
+ScheduledFlightRepository --> ScheduledFlight : reads >
+ScheduledFlightService --> ScheduledFlight : reads >
+ScheduledFlightService --> Route : reads >
 @enduml

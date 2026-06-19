@@ -1,11 +1,13 @@
 @startuml
-title US213 - SSD
+title US213-SSD
 autonumber
-actor "ATCC" as ATCC
-participant ":AISafeSystem" as System
+actor "ATCC" as Operator
+participant "System" as Sys
 
-ATCC -> System : getScheduledFlightsByAircraft(String registrationNumber)
-activate System
-System --> ATCC : 200 OK (List<ScheduledFlightDataTransferObject>)
-deactivate System
+activate Operator
+Operator -> Sys : GET /api/scheduled-flights/aircraft/{registrationNumber}
+activate Sys
+Sys --> Operator : Returns the scheduled flights for the aircraft (200 OK)
+deactivate Sys
+deactivate Operator
 @enduml

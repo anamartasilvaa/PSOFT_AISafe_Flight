@@ -1,0 +1,69 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US216-CD
+
+class RouteController {
+    + getAlternativeRoutes(originIata: String, destinationIata: String): ResponseEntity<CollectionModel<EntityModel<AlternativeRouteDTO>>>
+}
+
+class RouteService {
+    + findAlternativeRoutes(originIata: String, destinationIata: String): List<AlternativeRouteDTO>
+}
+
+interface RouteSearchStrategy <<Interface>> {
+    + findAlternatives(originIata: String, destinationIata: String): List<AlternativeRouteDTO>
+}
+
+class FastestRouteStrategy {
+    - MINIMUM_CONNECTING_TIME_MINUTES: int = 60
+    - MAX_FLIGHTS: int = 3
+    + findAlternatives(originIata: String, destinationIata: String): List<AlternativeRouteDTO>
+    - getOutgoingRoutes(iataCode: String): List<Route>
+    - isAirportInPath(path: List<Route>, destinationIata: String): boolean
+    - convertToAlternativeDTO(path: List<Route>): AlternativeRouteDTO
+}
+
+interface RouteRepository <<Repository>> {
+    + findByOrigin_IataCode_Code(originIata: String, pageable: Pageable): Page<Route>
+}
+
+class Route <<Entity>> <<Root>> {
+    - estimatedFlightTime: Integer
+    - minimumRange: Double
+    + getOrigin(): Airport
+    + getDestination(): Airport
+    + getStatus(): RouteStatus
+}
+
+class Airport <<Entity>> {
+    + getIataCode(): IATACode
+}
+
+class AlternativeRouteDTO <<Record>> {
+    + legs: List<RouteViewDTO>
+    + totalEstimatedFlightTime: Integer
+    + totalDistance: Double
+}
+
+class RouteViewDTO <<Record>> {
+    + routeId: String
+    + originIata: String
+    + destinationIata: String
+    + status: String
+    + minimumCapacity: Integer
+}
+
+RouteController ..> AlternativeRouteDTO : produces >
+RouteController --> RouteService : uses >
+
+RouteService --> RouteSearchStrategy : depends on >
+
+FastestRouteStrategy ..|> RouteSearchStrategy : implements
+FastestRouteStrategy --> RouteRepository : uses >
+FastestRouteStrategy ..> AlternativeRouteDTO : creates >
+FastestRouteStrategy ..> RouteViewDTO : creates >
+FastestRouteStrategy --> Route : reads >
+
+RouteRepository --> Route : reads >
+Route --> Airport : reads >
+@enduml

@@ -58,6 +58,15 @@ public class UserBootstrapper implements CommandLineRunner {
                         Set.of(Role.MAINTENANCE_TECH)
                 );
                 System.out.println("BOOTSTRAP: Maintenance Technician created!");
+
+                if (!userService.existsByUsername("supervisor@aisafe.pt")) {
+                    userService.registerUser(
+                            "supervisor@aisafe.pt",
+                            "SupervisorPass123!",
+                            Set.of(Role.MAINTENANCE_SUPERVISOR)
+                    );
+                    System.out.println("BOOTSTRAP: Maintenance Supervisor created!");
+                }
             }
 
         } catch (Exception e) {

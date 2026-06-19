@@ -1,11 +1,13 @@
 @startuml
 title US214-SSD
 autonumber
-actor "ATCC" as ATCC
-participant ":AISafeSystem" as System
+actor "ATCC" as Operator
+participant "System" as Sys
 
-ATCC -> System : listActiveRoutes(String distanceOrPopularity)
-activate System
-System --> ATCC : 200 OK (List<RouteDataTransferObject>)
-deactivate System
+activate Operator
+Operator -> Sys : GET /api/routes/active/sorted?sortBy={popularity|distance}&page={page}&size={size}
+activate Sys
+Sys --> Operator : Returns a paged list of active routes sorted by popularity or distance (200 OK)
+deactivate Sys
+deactivate Operator
 @enduml

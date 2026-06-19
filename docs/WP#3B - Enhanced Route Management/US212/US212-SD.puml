@@ -1,45 +1,61 @@
 @startuml
-title US212 - SD
+title US212-SD
 autonumber
-participant "AircraftController" as AircraftController
-participant "AircraftService" as AircraftService
-participant "RouteRepository" as RouteRepository
-participant "AircraftRepository" as AircraftRepository
-participant "ScheduledFlightRepository" as ScheduledFlightRepository
-participant "ScheduledFlight" as ScheduledFlightDomain
+actor "ATCC" as Operator
+participant ":ScheduledFlightController" as Ctrl
+participant "dto\n:CreateScheduledFlightDTO" as DTO
+participant ":ScheduledFlightService" as Service
+participant ":RouteRepository" as RouteRepo
+participant ":AircraftRepository" as AircraftRepo
+participant "flight\n:ScheduledFlight" as Entity
+participant ":ScheduledFlightRepository" as FlightRepo
 
-AircraftController -> AircraftService : assignAircraft(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
-activate AircraftService
+activate Operator
+Operator -> Ctrl : POST /api/scheduled-flights\n(CreateScheduledFlightDTO)
+activate Ctrl
 
-AircraftService -> RouteRepository : findById(String routeIdentifier)
-activate RouteRepository
-RouteRepository -->> AircraftService : Route route
-deactivate RouteRepository
+Ctrl -> Service : scheduleFlight(dto)
+activate Service
 
-AircraftService -> AircraftRepository : findByRegistrationNumber(String registrationNumber)
-activate AircraftRepository
-AircraftRepository -->> AircraftService : Aircraft aircraft
-deactivate AircraftRepository
+Service -> DTO : routeId()
+activate DTO
+DTO --> Service : routeId
+deactivate DTO
 
-AircraftService -> ScheduledFlightRepository : findByAircraft_RegistrationNumber(String registrationNumber)
-activate ScheduledFlightRepository
-ScheduledFlightRepository -->> AircraftService : List<ScheduledFlight> flightList
-deactivate ScheduledFlightRepository
+Service -> RouteRepo : findByRouteId(new RouteId(routeId))
+activate RouteRepo
+RouteRepo --> Service : Optional<Route>
+deactivate RouteRepo
 
-AircraftService -> AircraftService : validateConstraints(Route route, Aircraft aircraft, List<ScheduledFlight> flightList)
-activate AircraftService
-AircraftService -->> AircraftService : boolean valid
-deactivate AircraftService
+Service -> DTO : registrationNumber()
+activate DTO
+DTO --> Service : registrationNumber
+deactivate DTO
 
-create ScheduledFlightDomain
-AircraftService -> ScheduledFlightDomain : new ScheduledFlight(routeIdentifier, registrationNumber, scheduledDateTime)
-ScheduledFlightDomain -->> AircraftService : ScheduledFlight scheduledFlight
+Service -> AircraftRepo : findByRegistrationNumber(new RegistrationNumber(registrationNumber))
+activate AircraftRepo
+AircraftRepo --> Service : Optional<Aircraft>
+deactivate AircraftRepo
 
-AircraftService -> ScheduledFlightRepository : save(ScheduledFlight scheduledFlight)
-activate ScheduledFlightRepository
-ScheduledFlightRepository -->> AircraftService : ScheduledFlight savedScheduledFlight
-deactivate ScheduledFlightRepository
 
-AircraftService -->> AircraftController : ScheduledFlightDataTransferObject flightDataTransferObject
-deactivate AircraftService
+Service -> DTO : scheduledDateTime()
+activate DTO
+DTO --> Service : scheduledDateTime
+deactivate DTO
+
+Service -> Entity ** : new ScheduledFlight(route, aircraft, dateTime)
+
+Service -> FlightRepo : save(flight)
+activate FlightRepo
+FlightRepo --> Service : savedFlight
+deactivate FlightRepo
+
+Service --> Ctrl : ScheduledFlightViewDTO
+deactivate Service
+
+Ctrl -> Ctrl : EntityModel.of(created)
+Ctrl -> Ctrl : add linkTo(getFlightsByAircraft)
+Ctrl --> Operator : 201 Created\n(EntityModel<ScheduledFlightViewDTO>)
+deactivate Ctrl
+deactivate Operator
 @enduml

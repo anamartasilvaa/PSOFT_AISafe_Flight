@@ -1,33 +1,74 @@
 @startuml
-title US212 - DM
-hide methods
+skinparam classAttributeIconSize 0
+hide empty members
+title US212-DM
 
-class ScheduledFlight {
-    - String registrationNumber
-    - String routeIdentifier
-    - LocalDateTime scheduledDateTime
-    - String flightStatus
+package "Scheduled Flight Aggregate" {
+    class ScheduledFlight <<Entity>> <<Root>> {
+        - scheduledDateTime: LocalDateTime
+    }
+
+    enum FlightStatus <<Enumeration>> {
+        SCHEDULED
+    }
+
+    ScheduledFlight "1" --> "1" FlightStatus : has >
 }
 
-class Aircraft {
-    - String registrationNumber
-    - String aircraftStatus
-    - int actualSeatingCapacity
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - estimatedFlightTime: Integer
+        - minimumRange: Double
+        - minimumCapacity: Integer
+    }
+
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+
+    Route "1" *-- "1" RouteId : identified by >
 }
 
-class Route {
-    - String routeIdentifier
-    - String originIataCode
-    - String destinationIataCode
-    - int minimumRange
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - name: String
+        - city: String
+        - country: String
+    }
+
+    enum AirportStatus <<Enumeration>> {
+        OPERATIONAL
+        CLOSED
+    }
+
+    Airport "1" --> "1" AirportStatus : has >
 }
 
-class AircraftModel {
-    - String modelName
-    - double maximumRange
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+        - actualSeatingCapacity: Integer
+    }
+
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+
+    enum AircraftStatus <<Enumeration>> {
+        ACTIVE
+    }
+
+    Aircraft "1" *-- "1" RegistrationNumber : identified by >
+    Aircraft "1" --> "1" AircraftStatus : has >
 }
 
-ScheduledFlight "1" -- "1" Aircraft : assignedTo
-ScheduledFlight "1" -- "1" Route : follows
-Aircraft "1" -- "1" AircraftModel : hasModel
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - maximumRange: Double
+    }
+}
+
+ScheduledFlight "*" --> "1" Route : follows >
+ScheduledFlight "*" --> "1" Aircraft : assigned to >
+Route "*" --> "2" Airport : connects (origin, destination) >
+Aircraft "*" --> "1" AircraftModel : is of model >
 @enduml

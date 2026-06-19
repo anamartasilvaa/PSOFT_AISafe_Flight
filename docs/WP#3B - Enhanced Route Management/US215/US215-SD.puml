@@ -1,23 +1,28 @@
 @startuml
 title US215-SD
 autonumber
-participant "RouteController" as RouteController
-participant "RouteService" as RouteService
-participant "RouteRepository" as RouteRepository
+actor "ATCC" as Operator
+participant ":RouteController" as Ctrl
+participant ":RouteService" as Service
+participant ":RouteRepository" as Repo
 
-RouteController -> RouteService : calculateTotalDistanceOfAllRoutes()
-activate RouteService
+activate Operator
+Operator -> Ctrl : GET /api/routes/statistics/total-distance
+activate Ctrl
 
-RouteService -> RouteRepository : findAll()
-activate RouteRepository
-RouteRepository -->> RouteService : List<Route> routeList
-deactivate RouteRepository
+Ctrl -> Service : getTotalNetworkDistance()
+activate Service
 
-RouteService -> RouteService : calculateTotalDistance(List<Route> routeList)
-activate RouteService
-RouteService -->> RouteService : Double totalDistance
-deactivate RouteService
+Service -> Repo : calculateTotalNetworkDistance()
+activate Repo
+note right of Repo : Query: SUM(minimumRange)\nWHERE status = 'ACTIVE'
+Repo --> Service : Double (total)
+deactivate Repo
 
-RouteService -->> RouteController : TotalDistanceDataTransferObject totalDistanceDataTransferObject
-deactivate RouteService
+Service --> Ctrl : Double (total)
+deactivate Service
+
+Ctrl --> Operator : 200 OK\n(EntityModel<Map<String, Double>>)
+deactivate Ctrl
+deactivate Operator
 @enduml

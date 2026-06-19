@@ -1,28 +1,31 @@
 @startuml
+skinparam classAttributeIconSize 0
 title US215-CD
+
 class RouteController {
-    + ResponseEntity<TotalDistanceDataTransferObject> calculateTotalDistanceOfAllRoutes()
+    + getTotalDistance(): ResponseEntity<EntityModel<Map<String, Double>>>
 }
 
 class RouteService {
-    + TotalDistanceDataTransferObject calculateTotalDistanceOfAllRoutes()
-    - Double calculateTotalDistance(List<Route> routeList)
+    + getTotalNetworkDistance(): Double
 }
 
-class RouteRepository {
-    + List<Route> findAll()
+interface RouteRepository <<Repository>> {
+    + calculateTotalNetworkDistance(): Double
 }
 
-class Route {
-    - String routeIdentifier
-    - String originIataCode
-    - String destinationIataCode
-    - int minimumRange
-    - int distance
-    - String routeStatus
+class Route <<Entity>> <<Root>> {
+    - minimumRange: Double
+    + getStatus(): RouteStatus
 }
 
-RouteController --> RouteService
-RouteService --> RouteRepository
-RouteService ..> Route : accesses
+enum RouteStatus <<Enumeration>> {
+    ACTIVE
+    INACTIVE
+}
+
+RouteController --> RouteService : uses >
+RouteService --> RouteRepository : uses >
+RouteRepository --> Route : reads >
+Route --> RouteStatus : uses >
 @enduml

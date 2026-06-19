@@ -1,11 +1,13 @@
 @startuml
-title US212 - SSD
+title US212-SSD
 autonumber
-actor "Air Traffic Control Coordinator" as ATCC
-participant ":AISafeSystem" as System
+actor "ATCC" as Operator
+participant "System" as Sys
 
-ATCC -> System : assignAircraftToRoute(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
-activate System
-System --> ATCC : 201 Created (ScheduledFlightDataTransferObject)
-deactivate System
+activate Operator
+Operator -> Sys : POST /api/scheduled-flights\n(CreateScheduledFlightDTO)
+activate Sys
+Sys --> Operator : Schedules the flight and returns the flight details\nwith aircraft-flights link (201 Created)
+deactivate Sys
+deactivate Operator
 @enduml

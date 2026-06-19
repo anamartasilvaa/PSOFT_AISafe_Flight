@@ -1,29 +1,66 @@
 @startuml
+skinparam classAttributeIconSize 0
 title US214-CD
+
 class RouteController {
-    + ResponseEntity<CollectionModel<RouteDataTransferObject>> listActiveRoutes(String distanceOrPopularity)
+    + getActiveRoutesSorted(sortBy: String, pageable: Pageable, assembler: PagedResourcesAssembler<RouteViewDTO>): ResponseEntity<PagedModel<EntityModel<RouteViewDTO>>>
+    - addLinksToRoute(route: RouteViewDTO): EntityModel<RouteViewDTO>
 }
 
 class RouteService {
-    + List<RouteDataTransferObject> listActiveRoutes(String distanceOrPopularity)
-    - List<RouteDataTransferObject> mapToDataTransferObject(List<Route> routeList)
+    + getActiveRoutesSorted(sortBy: String, pageable: Pageable): Page<RouteViewDTO>
+    - convertToDTO(route: Route): RouteViewDTO
 }
 
-class RouteRepository {
-    + List<Route> findActiveRoutesSortedByPopularity()
-    + List<Route> findActiveRoutesSortedByDistance()
+interface RouteRepository <<Repository>> {
+    + findAllActiveRoutesSortedByPopularity(pageable: Pageable): Page<Route>
+    + findAllActiveRoutesSortedByDistance(pageable: Pageable): Page<Route>
 }
 
-class Route {
-    - String routeIdentifier
-    - String originIataCode
-    - String destinationIataCode
-    - int minimumRange
-    - int distance
-    - String routeStatus
+class Route <<Entity>> <<Root>> {
+    - minimumCapacity: Integer
+    + getRouteId(): RouteId
+    + getOrigin(): Airport
+    + getDestination(): Airport
+    + getStatus(): RouteStatus
+    + getMinimumCapacity(): Integer
 }
 
-RouteController --> RouteService
-RouteService --> RouteRepository
-RouteService ..> Route : processes
+class Airport <<Entity>> {
+    + getIataCode(): IATACode
+}
+
+class IATACode <<Value Object>> {
+    - code: String
+}
+
+class RouteId <<Value Object>> {
+    - id: String
+}
+
+enum RouteStatus <<Enumeration>> {
+    ACTIVE
+    INACTIVE
+}
+
+class RouteViewDTO <<Record>> {
+    + routeId: String
+    + originIata: String
+    + destinationIata: String
+    + status: String
+    + minimumCapacity: Integer
+}
+
+RouteController ..> RouteViewDTO : produces >
+RouteController --> RouteService : uses >
+
+RouteService ..> RouteViewDTO : creates >
+RouteService --> RouteRepository : uses >
+RouteService --> Route : reads >
+RouteService --> Airport : reads >
+RouteService --> IATACode : reads >
+
+RouteRepository --> Route : reads >
+Route --> RouteStatus : uses >
+Route --> RouteId : uses >
 @enduml

@@ -1,11 +1,13 @@
 @startuml
 title US215-SSD
 autonumber
-actor "ATCC" as ATCC
-participant ":AISafeSystem" as System
+actor "ATCC" as Operator
+participant "System" as Sys
 
-ATCC -> System : calculateTotalDistanceOfAllRoutes()
-activate System
-System --> ATCC : 200 OK (TotalDistanceDataTransferObject)
-deactivate System
+activate Operator
+Operator -> Sys : GET /api/routes/statistics/total-distance
+activate Sys
+Sys --> Operator : Calculates and returns the total network distance (200 OK)
+deactivate Sys
+deactivate Operator
 @enduml
