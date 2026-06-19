@@ -218,4 +218,17 @@ public class RouteController {
 
         return ResponseEntity.ok(pagedModel);
     }
+
+    // US228
+    @GetMapping(value = "/export/geojson", produces = "application/geo+json")
+    @Operation(summary = "Export all routes as a GeoJSON file")
+    public ResponseEntity<byte[]> exportGeoJson() {
+        String geoJson = routeService.exportRoutesAsGeoJson();
+        byte[] fileBytes = geoJson.getBytes();
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"routes-network.geojson\"");
+
+        return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
+    }
 }
