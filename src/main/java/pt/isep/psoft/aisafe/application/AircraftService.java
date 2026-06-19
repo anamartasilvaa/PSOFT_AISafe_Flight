@@ -23,9 +23,7 @@ public class AircraftService {
 
     private final AircraftModelRepository modelRepository;
     private final AircraftRepository aircraftRepository;
-
     private final RouteRepository routeRepository;
-
     private final ScheduledFlightRepository scheduledFlightRepository;
 
     public AircraftService(AircraftModelRepository modelRepository,
@@ -117,10 +115,87 @@ public class AircraftService {
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
 
-        aircraft.updateStatus(AircraftStatus.valueOf(dto.status().toUpperCase()));
+        AircraftStatus newStatus = AircraftStatus.valueOf(dto.status().toUpperCase());
+        aircraft.updateStatus(newStatus);
         aircraftRepository.save(aircraft);
 
+        // --- LÓGICA DE NEGÓCIO SÉNIOR: AIRCRAFT SWAP ---
+        // Se o avião vai parar, precisamos de realocar os voos agendados!
+        if (newStatus == AircraftStatus.UNDER_MAINTENANCE || newStatus == AircraftStatus.INACTIVE) {
+            handleAircraftSwap(aircraft);
+        }
+
         return mapToViewDTO(aircraft);
+    }
+
+    // --- ALGORITMO DE PREVENÇÃO DE CANCELAMENTOS ---
+    private void handleAircraftSwap(Aircraft groundedAircraft) {
+        System.out.println("\n[SWAP ALGORITHM] Aircraft " + groundedAircraft.getRegistrationNumber().number() + " grounded. Scanning for affected flights...");
+
+        // 1. Procurar todos os voos associados a este avião
+        List<ScheduledFlight> allFlights = scheduledFlightRepository.findByAircraft_RegistrationNumber(groundedAircraft.getRegistrationNumber());
+
+        // Filtrar apenas os voos agendados para o futuro
+        List<ScheduledFlight> affectedFlights = allFlights.stream()
+                .filter(f -> f.getStatus() == FlightStatus.SCHEDULED && f.getScheduledDateTime().isAfter(java.time.LocalDateTime.now()))
+                .collect(Collectors.toList());
+
+        if (affectedFlights.isEmpty()) {
+            System.out.println("[SWAP ALGORITHM] No future flights affected. Safe to ground.\n");
+            return;
+        }
+
+        // 2. Procurar a frota de substituição (Mesmo modelo, estado ACTIVE)
+        List<Aircraft> swapCandidates = aircraftRepository.findAll().stream()
+                .filter(a -> a.getAircraftModel().equals(groundedAircraft.getAircraftModel()))
+                .filter(a -> a.getStatus() == AircraftStatus.ACTIVE)
+                .filter(a -> !a.equals(groundedAircraft))
+                .collect(Collectors.toList());
+
+        // 3. Tentar realocar cada voo afetado
+        for (ScheduledFlight flight : affectedFlights) {
+            boolean isSwapped = false;
+
+            for (Aircraft candidate : swapCandidates) {
+                // O candidato está livre nesta hora? (margem de segurança de 4h antes e depois)
+                if (isAircraftFree(candidate, flight.getScheduledDateTime())) {
+                    System.out.println("[SWAP ALGORITHM] -> RECOVERED: Flight on " + flight.getScheduledDateTime() +
+                            " reassigned from " + groundedAircraft.getRegistrationNumber().number() +
+                            " to " + candidate.getRegistrationNumber().number());
+
+                    flight.changeAircraft(candidate);
+                    scheduledFlightRepository.save(flight);
+                    isSwapped = true;
+                    break; // Voo salvo, saltar para o próximo!
+                }
+            }
+
+            // 4. Se nenhum candidato estiver disponível, cancela o voo.
+            if (!isSwapped) {
+                System.out.println("[SWAP ALGORITHM] -> ALERT: No replacement found! Flight on " + flight.getScheduledDateTime() + " is CANCELLED.");
+                flight.updateStatus(FlightStatus.CANCELLED);
+                scheduledFlightRepository.save(flight);
+            }
+        }
+        System.out.println("[SWAP ALGORITHM] Operation complete.\n");
+    }
+
+    private boolean isAircraftFree(Aircraft candidate, java.time.LocalDateTime targetTime) {
+        List<ScheduledFlight> candidateFlights = scheduledFlightRepository.findByAircraft_RegistrationNumber(candidate.getRegistrationNumber());
+
+        for (ScheduledFlight f : candidateFlights) {
+            // Só nos preocupamos com voos ativos (agendados ou no ar)
+            if (f.getStatus() == FlightStatus.SCHEDULED || f.getStatus() == FlightStatus.IN_FLIGHT) {
+                java.time.LocalDateTime flightStartBuffer = f.getScheduledDateTime().minusHours(4);
+                java.time.LocalDateTime flightEndBuffer = f.getScheduledDateTime().plusHours(4);
+
+                // Se o novo voo calhar dentro da margem de 8 horas deste voo, há conflito!
+                if (targetTime.isAfter(flightStartBuffer) && targetTime.isBefore(flightEndBuffer)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Transactional
@@ -174,6 +249,7 @@ public class AircraftService {
                 savedModel.getOperatingHoursRange()
         );
     }
+
     private AircraftViewDTO mapToViewDTO(Aircraft aircraft) {
         return new AircraftViewDTO(
                 aircraft.getRegistrationNumber().toString(),
@@ -199,7 +275,6 @@ public class AircraftService {
     public org.springframework.data.domain.Page<OperationalHoursDTO> getAllAircraftOperationalHours(
             org.springframework.data.domain.Pageable pageable) {
 
-
         return aircraftRepository.findAll(pageable)
                 .map(aircraft -> new OperationalHoursDTO(
                         aircraft.getRegistrationNumber().number(),
@@ -214,7 +289,6 @@ public class AircraftService {
         if ("assignments".equalsIgnoreCase(sortBy)) {
             return aircraftRepository.findTop5ModelsByAssignments(pageRequest);
         }
-
 
         return aircraftRepository.findTop5ModelsByFlightHours(pageRequest);
     }
@@ -244,7 +318,6 @@ public class AircraftService {
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum.trim().toUpperCase()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
 
-
         if (aircraft.getStatus() == AircraftStatus.UNDER_MAINTENANCE) {
             return "under maintenance";
         }
@@ -252,13 +325,11 @@ public class AircraftService {
             return "inactive";
         }
 
-
         boolean isFlying = scheduledFlightRepository.existsByAircraftAndStatus(aircraft, FlightStatus.IN_FLIGHT);
 
         if (isFlying) {
             return "in-flight";
         }
-
 
         return "available";
     }

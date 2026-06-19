@@ -53,10 +53,17 @@ public class ScheduledFlight {
         this.status = newStatus;
     }
 
+    // --- US212/US222: Lógica de Swap de Aeronaves ---
+    public void changeAircraft(Aircraft newAircraft) {
+        org.springframework.util.Assert.notNull(newAircraft, "Replacement aircraft cannot be null.");
+        this.aircraft = newAircraft;
+    }
+
     // --- GETTERS ---
     public Long getPk() { return pk; }
     public Route getRoute() { return route; }
     public Aircraft getAircraft() { return aircraft; }
     public LocalDateTime getScheduledDateTime() { return scheduledDateTime; }
     public FlightStatus getStatus() { return status; }
+
 }

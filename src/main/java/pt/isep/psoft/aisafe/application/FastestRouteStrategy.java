@@ -7,13 +7,14 @@ import pt.isep.psoft.aisafe.domain.Route;
 import pt.isep.psoft.aisafe.repositories.RouteRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class FastestRouteStrategy implements RouteSearchStrategy {
 
     private final RouteRepository routeRepository;
-    private static final int MINIMUM_CONNECTING_TIME_MINUTES = 60; // A regra de 1 hora de espera obrigatória
-    private static final int MAX_FLIGHTS = 3; // Limite fixo: máximo de 3 voos (ou seja, 2 escalas).
+    private static final int MINIMUM_CONNECTING_TIME_MINUTES = 60; // Regra do MCT (Minimum Connection Time)
+    private static final int MAX_FLIGHTS = 3; // Limite fixo: máximo de 3 voos (2 escalas).
 
     public FastestRouteStrategy(RouteRepository routeRepository) {
         this.routeRepository = routeRepository;
@@ -22,9 +23,9 @@ public class FastestRouteStrategy implements RouteSearchStrategy {
     @Override
     public List<AlternativeRouteDTO> findAlternatives(String originIata, String destinationIata) {
         List<AlternativeRouteDTO> foundAlternatives = new ArrayList<>();
-
-        // Fila que vai guardar os caminhos que estamos a explorar
         Queue<List<Route>> queue = new LinkedList<>();
+
+        System.out.println("\n[ALGORITHM] Starting search for fastest alternative routes from " + originIata + " to " + destinationIata);
 
         // 1. Procurar os voos iniciais (sem escalas)
         List<Route> initialRoutes = getOutgoingRoutes(originIata);
@@ -34,27 +35,33 @@ public class FastestRouteStrategy implements RouteSearchStrategy {
             queue.add(initialPath);
         }
 
-        // 2. Procurar ligações
+        // 2. Procurar ligações usando Breadth-First Search (BFS)
         while (!queue.isEmpty()) {
             List<Route> currentPath = queue.poll();
             Route lastRoute = currentPath.get(currentPath.size() - 1);
             String currentAirport = lastRoute.getDestination().getIataCode().code();
 
-            // Se chegámos ao destino, convertemos para DTO e guardamos a solução!
+            // Se chegámos ao destino, processar a rota e guardar
             if (currentAirport.equalsIgnoreCase(destinationIata)) {
-                foundAlternatives.add(convertToAlternativeDTO(currentPath));
+                AlternativeRouteDTO dto = convertToAlternativeDTO(currentPath);
+                foundAlternatives.add(dto);
+
+                // Imprime a árvore de decisão na consola para a defesa
+                String pathString = currentPath.stream()
+                        .map(r -> r.getOrigin().getIataCode().code())
+                        .collect(Collectors.joining(" -> ")) + " -> " + destinationIata;
+                System.out.println("[ALGORITHM] Found Valid Path: " + pathString + " | Total Cost: " + dto.totalEstimatedFlightTime() + " mins (includes MCT penalties)");
                 continue;
             }
 
-            // O limite mágico: Se já temos 3 voos e ainda não chegámos ao destino, descartamos este caminho.
+            // O limite mágico para evitar loops infinitos
             if (currentPath.size() >= MAX_FLIGHTS) {
                 continue;
             }
 
-            // Procurar os próximos voos a partir do aeroporto onde estamos
+            // Expandir a pesquisa a partir deste aeroporto
             List<Route> nextRoutes = getOutgoingRoutes(currentAirport);
             for (Route nextRoute : nextRoutes) {
-                // Prevenção básica de ciclo (ex: Porto -> Madrid -> Porto)
                 if (!isAirportInPath(currentPath, nextRoute.getDestination().getIataCode().code())) {
                     List<Route> newPath = new ArrayList<>(currentPath);
                     newPath.add(nextRoute);
@@ -63,8 +70,10 @@ public class FastestRouteStrategy implements RouteSearchStrategy {
             }
         }
 
-        // 3. Ordenar os resultados do Mais Rápido para o Mais Lento (A magia desta estratégia!)
+        // 3. Ordenar os resultados do Mais Rápido para o Mais Lento
         foundAlternatives.sort(Comparator.comparingInt(AlternativeRouteDTO::totalEstimatedFlightTime));
+
+        System.out.println("[ALGORITHM] Search finished. Returned " + foundAlternatives.size() + " options sorted by speed.\n");
 
         return foundAlternatives;
     }
@@ -99,11 +108,10 @@ public class FastestRouteStrategy implements RouteSearchStrategy {
                     route.getMinimumCapacity()
             ));
 
-            // Soma o tempo do voo
             totalTime += (route.getEstimatedFlightTime() != null) ? route.getEstimatedFlightTime() : 0;
             totalDistance += (route.getMinimumRange() != null) ? route.getMinimumRange() : 0.0;
 
-            // Se não for o último voo da viagem, soma o tempo de espera no aeroporto (MCT)
+            // Se for escala, soma os 60 minutos do Minimum Connection Time
             if (i < path.size() - 1) {
                 totalTime += MINIMUM_CONNECTING_TIME_MINUTES;
             }
