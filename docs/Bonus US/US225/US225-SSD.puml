@@ -1,0 +1,15 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SSD-US225
+
+actor "Backoffice Operator" as Admin
+participant "AISafe System" as SYS
+
+Admin -> SYS : POST /api/airports/import (MultipartFile)
+activate SYS
+
+SYS --> Admin : 201 Created (List of Imported Airports + HATEOAS Links)
+deactivate SYS
+
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title CD-US225
+
+package "API Layer" {
+    class AirportController {
+        + importAirportsFromCsv(file: MultipartFile): ResponseEntity<CollectionModel<EntityModel<AirportViewDTO>>>
+    }
+}
+
+package "Application Layer" {
+    class AirportService {
+        + importAirportsFromCsv(file: MultipartFile): List<AirportViewDTO>
+        + registerAirport(dto: RegisterAirportDTO): AirportViewDTO
+    }
+    class RegisterAirportDTO <<DTO>> {
+        + iataCode: String
+        + name: String
+        + city: String
+        + country: String
+        + timezone: String
+        + type: String
+        + latitude: Double
+        + longitude: Double
+    }
+    class AirportViewDTO <<DTO>> {
+        + iataCode: String
+        + name: String
+        + city: String
+        + status: String
+    }
+    class CSVParser <<External Library>> {
+        + iterator(): Iterator<CSVRecord>
+    }
+}
+
+package "Domain Layer" {
+    class Airport <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        - name: String
+        - city: String
+        - country: String
+        - timezone: String
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    class Coordinates <<Value Object>> {
+        - latitude: Double
+        - longitude: Double
+    }
+    enum AirportType <<Enum>> {
+        INTERNATIONAL
+        REGIONAL
+        DOMESTIC
+    }
+}
+
+package "Infrastructure Layer" {
+    interface AirportRepository <<Repository>> {
+        + save(airport: Airport): Airport
+    }
+}
+
+AirportController .down.> AirportService : calls
+AirportService .down.> CSVParser : uses
+AirportService .down.> RegisterAirportDTO : creates
+AirportService .down.> AirportViewDTO : creates
+AirportService .down.> AirportRepository : uses
+AirportService .down.> Airport : creates
+AirportService .down.> IATACode : creates
+AirportService .down.> Coordinates : creates
+AirportService .down.> AirportType : uses
+
+Airport *-- "1" IATACode
+Airport *-- "1" Coordinates
+Airport --> "1" AirportType
+@enduml
