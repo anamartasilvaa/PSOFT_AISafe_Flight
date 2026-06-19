@@ -1,0 +1,13 @@
+@startuml
+title US216-SSD
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : GET /api/routes/alternatives?originIata={origin}&destinationIata={destination}
+activate Sys
+Sys --> Operator : Returns the alternative routes between the airports (200 OK / 204 No Content)
+deactivate Sys
+deactivate Operator
+@enduml

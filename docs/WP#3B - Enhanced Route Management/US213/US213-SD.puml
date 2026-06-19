@@ -1,23 +1,30 @@
 @startuml
-title US213 - SD
+title US213-SD
 autonumber
-participant "AircraftController" as AircraftController
-participant "AircraftService" as AircraftService
-participant "ScheduledFlightRepository" as ScheduledFlightRepository
+actor "ATCC" as Operator
+participant ":ScheduledFlightController" as Ctrl
+participant ":ScheduledFlightService" as Service
+participant "regNum\n:RegistrationNumber" as RegNum
+participant ":ScheduledFlightRepository" as Repo
 
-AircraftController -> AircraftService : getScheduledFlightsByAircraft(String registrationNumber)
-activate AircraftService
+activate Operator
+Operator -> Ctrl : GET /api/scheduled-flights/aircraft/{registrationNumber}
+activate Ctrl
 
-AircraftService -> ScheduledFlightRepository : findByAircraft_RegistrationNumber(String registrationNumber)
-activate ScheduledFlightRepository
-ScheduledFlightRepository -->> AircraftService : List<ScheduledFlight> flightList
-deactivate ScheduledFlightRepository
+Ctrl -> Service : getScheduledFlightsByAircraft(registrationNumber)
+activate Service
 
-AircraftService -> AircraftService : mapToDataTransferObject(List<ScheduledFlight> flightList)
-activate AircraftService
-AircraftService -->> AircraftService : List<ScheduledFlightDataTransferObject> flightDataTransferObjectList
-deactivate AircraftService
+Service -> RegNum ** : new RegistrationNumber(registrationNumber.trim().toUpperCase())
 
-AircraftService -->> AircraftController : List<ScheduledFlightDataTransferObject> flightDataTransferObjectList
-deactivate AircraftService
+Service -> Repo : findByAircraft_RegistrationNumber(regNum)
+activate Repo
+Repo --> Service : List<ScheduledFlight>
+deactivate Repo
+
+Service --> Ctrl : List<ScheduledFlightViewDTO>
+deactivate Service
+
+Ctrl --> Operator : 200 OK\n(CollectionModel<EntityModel<ScheduledFlightViewDTO>>)
+deactivate Ctrl
+deactivate Operator
 @enduml

@@ -1,38 +1,83 @@
 @startuml
-title US212 - CD
-class AircraftController {
-    + ResponseEntity<EntityModel<ScheduledFlightDataTransferObject>> assignAircraft(ScheduledFlightRequestDataTransferObject requestDataTransferObject)
+skinparam classAttributeIconSize 0
+title US212-CD
+
+class ScheduledFlightController {
+    + scheduleFlight(dto: CreateScheduledFlightDTO): ResponseEntity<EntityModel<ScheduledFlightViewDTO>>
 }
 
-class AircraftService {
-    + ScheduledFlightDataTransferObject assignAircraft(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
-    - void validateConstraints(Route route, Aircraft aircraft, List<ScheduledFlight> flightList)
+class ScheduledFlightService {
+    + scheduleFlight(dto: CreateScheduledFlightDTO): ScheduledFlightViewDTO
 }
 
-class RouteRepository {
-    + Optional<Route> findById(String routeIdentifier)
+interface ScheduledFlightRepository <<Repository>> {
+    + save(flight: ScheduledFlight): ScheduledFlight
 }
 
-class AircraftRepository {
-    + Optional<Aircraft> findByRegistrationNumber(String registrationNumber)
+interface RouteRepository <<Repository>> {
+    + findByRouteId(routeId: RouteId): Optional<Route>
 }
 
-class ScheduledFlightRepository {
-    + ScheduledFlight save(ScheduledFlight scheduledFlight)
-    + List<ScheduledFlight> findByAircraft_RegistrationNumber(String registrationNumber)
+interface AircraftRepository <<Repository>> {
+    + findByRegistrationNumber(registrationNumber: RegistrationNumber): Optional<Aircraft>
 }
 
-class ScheduledFlight {
-    - String registrationNumber
-    - String routeIdentifier
-    - LocalDateTime scheduledDateTime
-    - String flightStatus
-    + ScheduledFlight(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
+class ScheduledFlight <<Entity>> <<Root>> {
+    - scheduledDateTime: LocalDateTime
+    - status: FlightStatus
+    + ScheduledFlight(route: Route, aircraft: Aircraft, scheduledDateTime: LocalDateTime)
 }
 
-AircraftController --> AircraftService
-AircraftService --> RouteRepository
-AircraftService --> AircraftRepository
-AircraftService --> ScheduledFlightRepository
-AircraftService ..> ScheduledFlight : creates
+class CreateScheduledFlightDTO <<Record>> {
+    + routeId: String
+    + registrationNumber: String
+    + scheduledDateTime: String
+}
+
+class ScheduledFlightViewDTO <<Record>> {
+    + id: Long
+    + routeId: String
+    + registrationNumber: String
+    + scheduledDateTime: String
+    + status: String
+}
+
+class Route <<Entity>> {
+    - minimumRange: Double
+    - minimumCapacity: Integer
+    + getOrigin(): Airport
+    + getDestination(): Airport
+}
+
+class Aircraft <<Entity>> {
+    - actualSeatingCapacity: Integer
+    + getStatus(): AircraftStatus
+    + getAircraftModel(): AircraftModel
+}
+
+class Airport <<Entity>> {
+    + getStatus(): AirportStatus
+}
+
+class AircraftModel <<Entity>> {
+    + getMaximumRange(): Double
+}
+
+ScheduledFlightController ..> CreateScheduledFlightDTO : consumes >
+ScheduledFlightController ..> ScheduledFlightViewDTO : produces >
+ScheduledFlightController --> ScheduledFlightService : uses >
+
+ScheduledFlightService ..> CreateScheduledFlightDTO : uses >
+ScheduledFlightService ..> ScheduledFlightViewDTO : creates >
+ScheduledFlightService --> ScheduledFlightRepository : uses >
+ScheduledFlightService --> RouteRepository : uses >
+ScheduledFlightService --> AircraftRepository : uses >
+
+ScheduledFlightService --> ScheduledFlight : creates >
+ScheduledFlightService --> Route : reads >
+ScheduledFlightService --> Aircraft : reads >
+ScheduledFlightService --> Airport : checks status >
+ScheduledFlightService --> AircraftModel : checks range >
+
+ScheduledFlightRepository --> ScheduledFlight : persists >
 @enduml
