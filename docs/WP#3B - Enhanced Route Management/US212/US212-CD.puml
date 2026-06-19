@@ -1,0 +1,24 @@
+@startuml
+class AircraftController {
+    + assignAircraft(dto)
+}
+class FlightService {
+    + assignAircraft(routeId, reg, date)
+    - validateRange(route, aircraft)
+    - validateAvailability(aircraft, date)
+}
+class ScheduledFlightRepository {
+    + save(ScheduledFlight)
+}
+class AircraftRepository {
+    + findByRegistrationNumber(reg)
+}
+class ScheduledFlight {
+    - ScheduledFlight(route, aircraft, date)
+}
+
+AircraftController --> FlightService
+FlightService --> ScheduledFlightRepository
+FlightService --> AircraftRepository
+FlightService --> ScheduledFlight : creates
+@enduml

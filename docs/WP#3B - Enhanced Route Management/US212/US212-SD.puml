@@ -1,0 +1,44 @@
+@startuml
+autonumber
+participant "Ctrl :AircraftController" as Ctrl
+participant "svc :FlightService" as Svc
+participant "routeRepo :RouteRepository" as RRepo
+participant "airRepo :AircraftRepository" as ARepo
+participant "flightRepo :ScheduledFlightRepository" as FRepo
+participant "flight :ScheduledFlight" as Domain
+
+Ctrl -> Svc : assignAircraft(routeId, reg, dateTime)
+activate Svc
+
+Svc -> RRepo : findById(routeId)
+activate RRepo
+RRepo -->> Svc : route
+deactivate RRepo
+
+Svc -> ARepo : findByRegistrationNumber(reg)
+activate ARepo
+ARepo -->> Svc : aircraft
+deactivate ARepo
+
+Svc -> FRepo : findByAircraft(reg)
+activate FRepo
+FRepo -->> Svc : flightList
+deactivate FRepo
+
+Svc -> Svc : validateConstraints(route, aircraft, flightList)
+activate Svc
+Svc -->> Svc : valid
+deactivate Svc
+
+create Domain
+Svc -> Domain : new ScheduledFlight(route, aircraft, dateTime)
+Domain -->> Svc : flight
+
+Svc -> FRepo : save(flight)
+activate FRepo
+FRepo -->> Svc : savedFlight
+deactivate FRepo
+
+Svc -->> Ctrl : flightDTO
+deactivate Svc
+@enduml

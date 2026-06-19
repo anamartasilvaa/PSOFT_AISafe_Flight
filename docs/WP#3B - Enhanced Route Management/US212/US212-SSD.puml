@@ -1,0 +1,16 @@
+@startuml
+autonumber
+actor "ATCC" as ATCC
+participant ":AISafeSystem" as System
+
+activate ATCC
+ATCC -> System : assignAircraftToRoute(routeId, aircraftReg, dateTime)
+activate System
+
+System -> System : validateAssignment(routeId, aircraftReg, dateTime)
+System -> System : createScheduledFlight(routeId, aircraftReg, dateTime)
+System --> ATCC : 201 Created (Success)
+
+deactivate System
+deactivate ATCC
+@enduml

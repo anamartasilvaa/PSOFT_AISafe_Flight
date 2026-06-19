@@ -1,0 +1,22 @@
+@startuml
+hide methods
+class ScheduledFlight {
+    - dateTime
+    - status
+}
+class Aircraft {
+    - registrationNumber
+    - status
+}
+class Route {
+    - routeId
+    - minRange
+}
+class AircraftModel {
+    - maxRange
+}
+
+ScheduledFlight "1" -- "1" Aircraft : assignedTo
+ScheduledFlight "1" -- "1" Route : follows
+Aircraft "1" -- "1" AircraftModel : has
+@enduml
