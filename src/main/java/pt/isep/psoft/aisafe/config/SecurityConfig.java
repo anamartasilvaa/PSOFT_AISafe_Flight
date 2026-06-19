@@ -124,8 +124,13 @@ public class SecurityConfig {
 // US217 & US218 - Search and Categorize (Maintenance Technician)
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/search").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
 
-// (WP4 - Fallback para restantes endpoints de manutenção)
+// US117 - Total Hours (ATCC)
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+// US117 (Extension) - Total Hours by Specific Aircraft (ATCC) -> A NOVA ROTA AQUI!
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+
+// (WP4 - Fallback para restantes endpoints de manutenção)
                     auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
 
                     auth.anyRequest().authenticated();

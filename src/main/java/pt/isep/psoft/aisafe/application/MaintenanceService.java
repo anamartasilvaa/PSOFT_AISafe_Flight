@@ -86,6 +86,15 @@ public class MaintenanceService {
                 .sum();
     }
 
+    // US117 (Extension) - Calculate Total Maintenance Hours for a specific Aircraft
+    public Integer getTotalMaintenanceHoursByAircraft(String registrationNumber) {
+        return recordRepository.findByAircraft_RegistrationNumber(new RegistrationNumber(registrationNumber))
+                .stream()
+                .filter(record -> record.getStatus() == MaintenanceRecordStatus.COMPLETED)
+                .mapToInt(MaintenanceRecord::getExpectedDuration)
+                .sum();
+    }
+
     // US119 - Conclude Maintenance Activity
     public MaintenanceRecord completeMaintenance(Long recordId, CompleteMaintenanceDTO dto) {
         MaintenanceRecord record = recordRepository.findById(recordId)

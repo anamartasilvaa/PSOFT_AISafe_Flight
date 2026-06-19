@@ -79,6 +79,23 @@ public class MaintenanceController {
         return ResponseEntity.ok(resource);
     }
 
+    // US117 (Extension) - Get Total Maintenance Hours for a Specific Aircraft
+    @GetMapping("/records/aircraft/{registrationNumber}/total-hours")
+    public ResponseEntity<EntityModel<java.util.Map<String, Object>>> getTotalHoursByAircraft(
+            @PathVariable String registrationNumber) {
+
+        Integer total = maintenanceService.getTotalMaintenanceHoursByAircraft(registrationNumber);
+
+        java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
+        responseBody.put("registrationNumber", registrationNumber);
+        responseBody.put("totalHours", total != null ? total : 0);
+
+        EntityModel<java.util.Map<String, Object>> resource = EntityModel.of(responseBody);
+        resource.add(linkTo(methodOn(MaintenanceController.class).getTotalHoursByAircraft(registrationNumber)).withSelfRel());
+
+        return ResponseEntity.ok(resource);
+    }
+
     // US119 - Mark Maintenance as Completed
     @PatchMapping("/records/{id}/complete")
     public ResponseEntity<EntityModel<MaintenanceRecord>> completeMaintenance(
