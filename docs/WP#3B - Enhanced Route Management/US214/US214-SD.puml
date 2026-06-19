@@ -1,0 +1,30 @@
+@startuml
+title US214-SD
+autonumber
+participant "RouteController" as RouteController
+participant "RouteService" as RouteService
+participant "RouteRepository" as RouteRepository
+
+RouteController -> RouteService : listActiveRoutes(String distanceOrPopularity)
+activate RouteService
+
+alt distanceOrPopularity == "popularity"
+    note right of RouteService : O sistema calcula o número de vezes que cada rota foi utilizada e ordena a lista, da mais utilizada para a menos utilizada.
+    RouteService -> RouteRepository : findActiveRoutesSortedByPopularity()
+else distanceOrPopularity == "distance"
+    note right of RouteService : O sistema acede ao atributo da distância definido em cada rota e ordena a lista com base nesse valor numérico.
+    RouteService -> RouteRepository : findActiveRoutesSortedByDistance()
+end
+
+activate RouteRepository
+RouteRepository -->> RouteService : List<Route> routeList
+deactivate RouteRepository
+
+RouteService -> RouteService : mapToDataTransferObject(List<Route> routeList)
+activate RouteService
+RouteService -->> RouteService : List<RouteDataTransferObject> routeDataTransferObjectList
+deactivate RouteService
+
+RouteService -->> RouteController : List<RouteDataTransferObject> routeDataTransferObjectList
+deactivate RouteService
+@enduml

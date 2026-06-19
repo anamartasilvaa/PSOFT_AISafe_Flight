@@ -1,0 +1,11 @@
+@startuml
+title US214-SSD
+autonumber
+actor "ATCC" as ATCC
+participant ":AISafeSystem" as System
+
+ATCC -> System : listActiveRoutes(String distanceOrPopularity)
+activate System
+System --> ATCC : 200 OK (List<RouteDataTransferObject>)
+deactivate System
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+title US214-DM
+hide methods
+
+class Route {
+    - String routeIdentifier
+    - String originIataCode
+    - String destinationIataCode
+    - int minimumRange
+    - int distance
+    - String routeStatus
+}
+
+class ScheduledFlight {
+    - String registrationNumber
+    - String routeIdentifier
+    - LocalDateTime scheduledDateTime
+    - String flightStatus
+}
+
+Route "1" -- "0..*" ScheduledFlight : hasFlights
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title US214-CD
+class RouteController {
+    + ResponseEntity<CollectionModel<RouteDataTransferObject>> listActiveRoutes(String distanceOrPopularity)
+}
+
+class RouteService {
+    + List<RouteDataTransferObject> listActiveRoutes(String distanceOrPopularity)
+    - List<RouteDataTransferObject> mapToDataTransferObject(List<Route> routeList)
+}
+
+class RouteRepository {
+    + List<Route> findActiveRoutesSortedByPopularity()
+    + List<Route> findActiveRoutesSortedByDistance()
+}
+
+class Route {
+    - String routeIdentifier
+    - String originIataCode
+    - String destinationIataCode
+    - int minimumRange
+    - int distance
+    - String routeStatus
+}
+
+RouteController --> RouteService
+RouteService --> RouteRepository
+RouteService ..> Route : processes
+@enduml
