@@ -1,0 +1,15 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SSD-US228
+
+actor "Backoffice Operator" as Admin
+participant "AISafe System" as SYS
+
+Admin -> SYS : GET /api/routes/export/geojson
+activate SYS
+
+SYS --> Admin : 200 OK (routes-network.geojson file)
+deactivate SYS
+
+@enduml

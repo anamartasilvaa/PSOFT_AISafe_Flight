@@ -1,0 +1,54 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SD-US228
+
+actor "Backoffice Operator" as Admin
+participant ":RouteController" as Controller
+participant ":RouteService" as Service
+participant ":RouteRepository" as Repo
+participant "allRoutes:List<Route>" as List
+participant "route:Route" as Route
+participant "origin:Airport" as Origin
+participant "dest:Airport" as Dest
+
+Admin -> Controller : GET /api/routes/export/geojson
+activate Controller
+
+Controller -> Service : exportRoutesAsGeoJson()
+activate Service
+
+Service -> Repo : findAll()
+activate Repo
+Repo --> Service : allRoutes
+deactivate Repo
+
+Service -> Service : sb = new StringBuilder()
+
+loop for each route in allRoutes
+    Service -> Route : getOrigin()
+    activate Route
+    Route --> Service : origin
+    deactivate Route
+
+    Service -> Route : getDestination()
+    activate Route
+    Route --> Service : dest
+    deactivate Route
+
+    Service -> Origin : getIataCode()
+    Service -> Origin : getCoordinates()
+
+    Service -> Dest : getIataCode()
+    Service -> Dest : getCoordinates()
+
+    Service -> Service : sb.append(GeoJSON LineString mapped properties)
+end
+
+Service --> Controller : geoJsonData (String)
+deactivate Service
+
+Controller -> Controller : fileBytes = geoJsonData.getBytes(UTF_8)
+Controller --> Admin : 200 OK (MediaType.APPLICATION_OCTET_STREAM_VALUE) \n Header: "attachment; filename=routes-network.geojson"
+deactivate Controller
+@enduml

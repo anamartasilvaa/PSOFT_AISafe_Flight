@@ -1,0 +1,62 @@
+@startuml
+skinparam style strictuml
+skinparam packageStyle rectangle
+title CD-US228
+
+package "API Layer" {
+    class RouteController {
+        + exportRoutesGeoJson(): ResponseEntity<byte[]>
+    }
+}
+
+package "Application Layer" {
+    class RouteService {
+        + exportRoutesAsGeoJson(): String
+    }
+}
+
+package "Domain Layer" {
+    class Route <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+    class Airport <<Entity>> <<Root>> {
+        - pk: Long
+        - version: Long
+        + getCoordinates(): Coordinates
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    class Coordinates <<Value Object>> {
+        - latitude: Double
+        - longitude: Double
+    }
+    enum RouteStatus <<Enum>> {
+        ACTIVE
+        INACTIVE
+    }
+}
+
+package "Infrastructure Layer" {
+    interface RouteRepository <<Repository>> {
+        + findAll(): List<Route>
+    }
+}
+
+RouteController .down.> RouteService : calls
+RouteService .down.> RouteRepository : uses
+RouteService .down.> Route : reads
+RouteService .down.> Airport : reads
+RouteService .down.> Coordinates : reads
+RouteService .down.> IATACode : reads
+
+Route *-- "1" RouteId
+Route --> "1" RouteStatus
+Route --> "2" Airport : origin / destination
+Airport *-- "1" Coordinates
+Airport *-- "1" IATACode
+@enduml
