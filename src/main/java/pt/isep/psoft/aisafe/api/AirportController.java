@@ -94,16 +94,19 @@ public class AirportController {
     }
 
     /* US207 - Upload an image or map of the airport */
-    @PatchMapping("/{iataCode}/image")
+    @PatchMapping(value = "/{iataCode}/image", consumes = "multipart/form-data")
     public ResponseEntity<EntityModel<AirportViewDTO>> updateAirportImage(
             @PathVariable String iataCode,
-            @Valid @RequestBody UpdateAirportImageDTO dto) {
-        AirportViewDTO updatedAirport = service.updateAirportImage(iataCode, dto.imageUrl());
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+
+        AirportViewDTO updatedAirport = service.updateAirportImage(iataCode, file);
 
         EntityModel<AirportViewDTO> resource = EntityModel.of(updatedAirport);
 
         resource.add(linkTo(methodOn(AirportController.class)
-                .updateAirportImage(iataCode, dto)).withSelfRel());
+                .updateAirportImage(iataCode, file)).withSelfRel());
+        resource.add(linkTo(methodOn(AirportController.class)
+                .getAirport(iataCode)).withRel("airport-details"));
 
         return ResponseEntity.ok(resource);
     }

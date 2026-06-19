@@ -3,11 +3,11 @@ title US207-CD
 skinparam classAttributeIconSize 0
 
 class AirportController {
-    + updateAirportImage(iataCode: String, dto: UpdateAirportImageDTO): ResponseEntity<EntityModel<AirportViewDTO>>
+    + updateAirportImage(iataCode: String, file: MultipartFile): ResponseEntity<EntityModel<AirportViewDTO>>
 }
 
 class AirportService {
-    + updateAirportImage(iataCode: String, imageUrl: String): AirportViewDTO
+    + updateAirportImage(iataCode: String, file: MultipartFile): AirportViewDTO
 }
 
 interface AirportRepository <<Repository>> {
@@ -15,14 +15,13 @@ interface AirportRepository <<Repository>> {
     + save(airport: Airport): Airport
 }
 
+interface MultipartFile <<Interface>> {
+    + transferTo(dest: File)
+}
+
 class Airport <<Entity>> <<Root>> {
     - imageUrl: String
     + updateImage(newImageUrl: String)
-}
-
-class UpdateAirportImageDTO <<DTO>> {
-    + imageUrl: String
-    + imageUrl(): String
 }
 
 class AirportViewDTO <<DTO>> {
@@ -32,12 +31,13 @@ class AirportViewDTO <<DTO>> {
     + facilities: List<FacilityDTO>
 }
 
-AirportController ..> UpdateAirportImageDTO : consumes >
+AirportController ..> MultipartFile : consumes >
 AirportController ..> AirportViewDTO : produces >
 AirportController --> AirportService : uses >
 
 AirportService ..> AirportViewDTO : creates >
 AirportService --> AirportRepository : uses >
+AirportService ..> MultipartFile : processes >
 AirportService --> Airport : updates >
 
 AirportRepository --> Airport : persists >

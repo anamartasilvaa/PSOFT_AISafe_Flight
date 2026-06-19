@@ -3,21 +3,16 @@ title US207-SD
 autonumber
 actor "Backoffice Operator" as Operator
 participant ":AirportController" as Ctrl
-participant "dto\n:UpdateAirportImageDTO" as DTO
 participant ":AirportService" as Service
+participant "file\n:MultipartFile" as File
 participant ":AirportRepository" as Repo
 participant "airport\n:Airport" as Entity
 
 activate Operator
-Operator -> Ctrl : PATCH /api/airports/{iataCode}/image\n(UpdateAirportImageDTO)
+Operator -> Ctrl : PATCH /api/airports/{iataCode}/image\n(file)
 activate Ctrl
 
-Ctrl -> DTO : imageUrl()
-activate DTO
-DTO --> Ctrl : imageUrl
-deactivate DTO
-
-Ctrl -> Service : updateAirportImage(iataCode, imageUrl)
+Ctrl -> Service : updateAirportImage(iataCode, file)
 activate Service
 
 Service -> Repo : findByIataCodeString(iataCode)
@@ -25,7 +20,12 @@ activate Repo
 Repo --> Service : Optional<Airport>
 deactivate Repo
 
-Service -> Entity : updateImage(imageUrl)
+Service -> File : transferTo(filePath)
+activate File
+File --> Service : success
+deactivate File
+
+Service -> Entity : updateImage(fileUrl)
 activate Entity
 Entity --> Service : success
 deactivate Entity
