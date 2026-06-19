@@ -16,14 +16,18 @@ public class MaintenanceService {
     private final AircraftRepository aircraftRepository;
     private final AircraftModelRepository aircraftModelRepository;
 
+    private final MaintenancePartRepository partRepository;
+
     public MaintenanceService(MaintenanceTemplateRepository templateRepository,
                               MaintenanceRecordRepository recordRepository,
                               AircraftRepository aircraftRepository,
-                              AircraftModelRepository aircraftModelRepository) {
+                              AircraftModelRepository aircraftModelRepository,
+                              MaintenancePartRepository partRepository) {
         this.templateRepository = templateRepository;
         this.recordRepository = recordRepository;
         this.aircraftRepository = aircraftRepository;
         this.aircraftModelRepository = aircraftModelRepository;
+        this.partRepository = partRepository;
     }
 
     // US115 (Part 1) - Create Maintenance Template
@@ -217,5 +221,19 @@ public class MaintenanceService {
             }
         }
         return alerts;
+    }
+    //  US226
+    public List<LowStockAlertDTO> generateLowStockAlerts() {
+        List<MaintenancePart> lowStockParts = partRepository.findPartsWithLowStock();
+
+        return lowStockParts.stream()
+                .map(part -> new LowStockAlertDTO(
+                        part.getPartNumber().getNumber(),
+                        part.getName(),
+                        part.getStockQuantity(),
+                        part.getMinimumThreshold(),
+                        "CRITICAL: Stock is at " + part.getStockQuantity() + " (Minimum required: " + part.getMinimumThreshold() + ")."
+                ))
+                .collect(Collectors.toList());
     }
 }
