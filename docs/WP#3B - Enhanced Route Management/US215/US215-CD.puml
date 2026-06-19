@@ -1,0 +1,28 @@
+@startuml
+title US215-CD
+class RouteController {
+    + ResponseEntity<TotalDistanceDataTransferObject> calculateTotalDistanceOfAllRoutes()
+}
+
+class RouteService {
+    + TotalDistanceDataTransferObject calculateTotalDistanceOfAllRoutes()
+    - Double calculateTotalDistance(List<Route> routeList)
+}
+
+class RouteRepository {
+    + List<Route> findAll()
+}
+
+class Route {
+    - String routeIdentifier
+    - String originIataCode
+    - String destinationIataCode
+    - int minimumRange
+    - int distance
+    - String routeStatus
+}
+
+RouteController --> RouteService
+RouteService --> RouteRepository
+RouteService ..> Route : accesses
+@enduml

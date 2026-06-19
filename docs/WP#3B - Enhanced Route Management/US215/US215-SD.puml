@@ -1,0 +1,23 @@
+@startuml
+title US215-SD
+autonumber
+participant "RouteController" as RouteController
+participant "RouteService" as RouteService
+participant "RouteRepository" as RouteRepository
+
+RouteController -> RouteService : calculateTotalDistanceOfAllRoutes()
+activate RouteService
+
+RouteService -> RouteRepository : findAll()
+activate RouteRepository
+RouteRepository -->> RouteService : List<Route> routeList
+deactivate RouteRepository
+
+RouteService -> RouteService : calculateTotalDistance(List<Route> routeList)
+activate RouteService
+RouteService -->> RouteService : Double totalDistance
+deactivate RouteService
+
+RouteService -->> RouteController : TotalDistanceDataTransferObject totalDistanceDataTransferObject
+deactivate RouteService
+@enduml

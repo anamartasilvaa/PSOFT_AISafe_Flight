@@ -1,0 +1,11 @@
+@startuml
+title US215-SSD
+autonumber
+actor "ATCC" as ATCC
+participant ":AISafeSystem" as System
+
+ATCC -> System : calculateTotalDistanceOfAllRoutes()
+activate System
+System --> ATCC : 200 OK (TotalDistanceDataTransferObject)
+deactivate System
+@enduml

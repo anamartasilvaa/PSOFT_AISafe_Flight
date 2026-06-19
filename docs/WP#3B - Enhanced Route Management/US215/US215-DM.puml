@@ -1,0 +1,13 @@
+@startuml
+title US215-DM
+hide methods
+
+class Route {
+    - String routeIdentifier
+    - String originIataCode
+    - String destinationIataCode
+    - int minimumRange
+    - int distance
+    - String routeStatus
+}
+@enduml
