@@ -1,0 +1,27 @@
+@startuml
+title US213 - CD
+
+class AircraftController {
+    + ResponseEntity<CollectionModel<ScheduledFlightDataTransferObject>> getScheduledFlightsByAircraft(String registrationNumber)
+}
+
+class AircraftService {
+    + List<ScheduledFlightDataTransferObject> getScheduledFlightsByAircraft(String registrationNumber)
+    - List<ScheduledFlightDataTransferObject> mapToDataTransferObject(List<ScheduledFlight> flightList)
+}
+
+class ScheduledFlightRepository {
+    + List<ScheduledFlight> findByAircraft_RegistrationNumber(String registrationNumber)
+}
+
+class ScheduledFlight {
+    - String registrationNumber
+    - String routeIdentifier
+    - LocalDateTime scheduledDateTime
+    - String flightStatus
+}
+
+AircraftController --> AircraftService
+AircraftService --> ScheduledFlightRepository
+AircraftService ..> ScheduledFlight : accesses
+@enduml

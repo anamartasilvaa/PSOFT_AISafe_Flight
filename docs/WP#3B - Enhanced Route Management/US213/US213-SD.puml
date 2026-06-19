@@ -1,0 +1,23 @@
+@startuml
+title US213 - SD
+autonumber
+participant "AircraftController" as AircraftController
+participant "AircraftService" as AircraftService
+participant "ScheduledFlightRepository" as ScheduledFlightRepository
+
+AircraftController -> AircraftService : getScheduledFlightsByAircraft(String registrationNumber)
+activate AircraftService
+
+AircraftService -> ScheduledFlightRepository : findByAircraft_RegistrationNumber(String registrationNumber)
+activate ScheduledFlightRepository
+ScheduledFlightRepository -->> AircraftService : List<ScheduledFlight> flightList
+deactivate ScheduledFlightRepository
+
+AircraftService -> AircraftService : mapToDataTransferObject(List<ScheduledFlight> flightList)
+activate AircraftService
+AircraftService -->> AircraftService : List<ScheduledFlightDataTransferObject> flightDataTransferObjectList
+deactivate AircraftService
+
+AircraftService -->> AircraftController : List<ScheduledFlightDataTransferObject> flightDataTransferObjectList
+deactivate AircraftService
+@enduml

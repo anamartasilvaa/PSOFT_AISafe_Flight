@@ -1,0 +1,11 @@
+@startuml
+title US213 - SSD
+autonumber
+actor "ATCC" as ATCC
+participant ":AISafeSystem" as System
+
+ATCC -> System : getScheduledFlightsByAircraft(String registrationNumber)
+activate System
+System --> ATCC : 200 OK (List<ScheduledFlightDataTransferObject>)
+deactivate System
+@enduml

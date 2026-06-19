@@ -1,24 +1,38 @@
 @startuml
+title US212 - CD
 class AircraftController {
-    + assignAircraft(dto)
-}
-class FlightService {
-    + assignAircraft(routeId, reg, date)
-    - validateRange(route, aircraft)
-    - validateAvailability(aircraft, date)
-}
-class ScheduledFlightRepository {
-    + save(ScheduledFlight)
-}
-class AircraftRepository {
-    + findByRegistrationNumber(reg)
-}
-class ScheduledFlight {
-    - ScheduledFlight(route, aircraft, date)
+    + ResponseEntity<EntityModel<ScheduledFlightDataTransferObject>> assignAircraft(ScheduledFlightRequestDataTransferObject requestDataTransferObject)
 }
 
-AircraftController --> FlightService
-FlightService --> ScheduledFlightRepository
-FlightService --> AircraftRepository
-FlightService --> ScheduledFlight : creates
+class AircraftService {
+    + ScheduledFlightDataTransferObject assignAircraft(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
+    - void validateConstraints(Route route, Aircraft aircraft, List<ScheduledFlight> flightList)
+}
+
+class RouteRepository {
+    + Optional<Route> findById(String routeIdentifier)
+}
+
+class AircraftRepository {
+    + Optional<Aircraft> findByRegistrationNumber(String registrationNumber)
+}
+
+class ScheduledFlightRepository {
+    + ScheduledFlight save(ScheduledFlight scheduledFlight)
+    + List<ScheduledFlight> findByAircraft_RegistrationNumber(String registrationNumber)
+}
+
+class ScheduledFlight {
+    - String registrationNumber
+    - String routeIdentifier
+    - LocalDateTime scheduledDateTime
+    - String flightStatus
+    + ScheduledFlight(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
+}
+
+AircraftController --> AircraftService
+AircraftService --> RouteRepository
+AircraftService --> AircraftRepository
+AircraftService --> ScheduledFlightRepository
+AircraftService ..> ScheduledFlight : creates
 @enduml

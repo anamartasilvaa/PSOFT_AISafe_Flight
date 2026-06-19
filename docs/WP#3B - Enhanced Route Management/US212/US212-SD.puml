@@ -1,44 +1,45 @@
 @startuml
+title US212 - SD
 autonumber
-participant "Ctrl :AircraftController" as Ctrl
-participant "svc :FlightService" as Svc
-participant "routeRepo :RouteRepository" as RRepo
-participant "airRepo :AircraftRepository" as ARepo
-participant "flightRepo :ScheduledFlightRepository" as FRepo
-participant "flight :ScheduledFlight" as Domain
+participant "AircraftController" as AircraftController
+participant "AircraftService" as AircraftService
+participant "RouteRepository" as RouteRepository
+participant "AircraftRepository" as AircraftRepository
+participant "ScheduledFlightRepository" as ScheduledFlightRepository
+participant "ScheduledFlight" as ScheduledFlightDomain
 
-Ctrl -> Svc : assignAircraft(routeId, reg, dateTime)
-activate Svc
+AircraftController -> AircraftService : assignAircraft(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
+activate AircraftService
 
-Svc -> RRepo : findById(routeId)
-activate RRepo
-RRepo -->> Svc : route
-deactivate RRepo
+AircraftService -> RouteRepository : findById(String routeIdentifier)
+activate RouteRepository
+RouteRepository -->> AircraftService : Route route
+deactivate RouteRepository
 
-Svc -> ARepo : findByRegistrationNumber(reg)
-activate ARepo
-ARepo -->> Svc : aircraft
-deactivate ARepo
+AircraftService -> AircraftRepository : findByRegistrationNumber(String registrationNumber)
+activate AircraftRepository
+AircraftRepository -->> AircraftService : Aircraft aircraft
+deactivate AircraftRepository
 
-Svc -> FRepo : findByAircraft(reg)
-activate FRepo
-FRepo -->> Svc : flightList
-deactivate FRepo
+AircraftService -> ScheduledFlightRepository : findByAircraft_RegistrationNumber(String registrationNumber)
+activate ScheduledFlightRepository
+ScheduledFlightRepository -->> AircraftService : List<ScheduledFlight> flightList
+deactivate ScheduledFlightRepository
 
-Svc -> Svc : validateConstraints(route, aircraft, flightList)
-activate Svc
-Svc -->> Svc : valid
-deactivate Svc
+AircraftService -> AircraftService : validateConstraints(Route route, Aircraft aircraft, List<ScheduledFlight> flightList)
+activate AircraftService
+AircraftService -->> AircraftService : boolean valid
+deactivate AircraftService
 
-create Domain
-Svc -> Domain : new ScheduledFlight(route, aircraft, dateTime)
-Domain -->> Svc : flight
+create ScheduledFlightDomain
+AircraftService -> ScheduledFlightDomain : new ScheduledFlight(routeIdentifier, registrationNumber, scheduledDateTime)
+ScheduledFlightDomain -->> AircraftService : ScheduledFlight scheduledFlight
 
-Svc -> FRepo : save(flight)
-activate FRepo
-FRepo -->> Svc : savedFlight
-deactivate FRepo
+AircraftService -> ScheduledFlightRepository : save(ScheduledFlight scheduledFlight)
+activate ScheduledFlightRepository
+ScheduledFlightRepository -->> AircraftService : ScheduledFlight savedScheduledFlight
+deactivate ScheduledFlightRepository
 
-Svc -->> Ctrl : flightDTO
-deactivate Svc
+AircraftService -->> AircraftController : ScheduledFlightDataTransferObject flightDataTransferObject
+deactivate AircraftService
 @enduml

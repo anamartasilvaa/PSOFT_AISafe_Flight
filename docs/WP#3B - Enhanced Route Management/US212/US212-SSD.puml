@@ -1,16 +1,11 @@
 @startuml
+title US212 - SSD
 autonumber
-actor "ATCC" as ATCC
+actor "Air Traffic Control Coordinator" as ATCC
 participant ":AISafeSystem" as System
 
-activate ATCC
-ATCC -> System : assignAircraftToRoute(routeId, aircraftReg, dateTime)
+ATCC -> System : assignAircraftToRoute(String routeIdentifier, String registrationNumber, LocalDateTime scheduledDateTime)
 activate System
-
-System -> System : validateAssignment(routeId, aircraftReg, dateTime)
-System -> System : createScheduledFlight(routeId, aircraftReg, dateTime)
-System --> ATCC : 201 Created (Success)
-
+System --> ATCC : 201 Created (ScheduledFlightDataTransferObject)
 deactivate System
-deactivate ATCC
 @enduml

@@ -1,0 +1,19 @@
+@startuml
+title US213 - DM
+hide methods
+
+class ScheduledFlight {
+    - String registrationNumber
+    - String routeIdentifier
+    - LocalDateTime scheduledDateTime
+    - String flightStatus
+}
+
+class Aircraft {
+    - String registrationNumber
+    - String aircraftStatus
+    - int actualSeatingCapacity
+}
+
+ScheduledFlight "0..*" -- "1" Aircraft : hasFlightsFor
+@enduml

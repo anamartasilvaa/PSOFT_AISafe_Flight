@@ -1,22 +1,33 @@
 @startuml
+title US212 - DM
 hide methods
+
 class ScheduledFlight {
-    - dateTime
-    - status
+    - String registrationNumber
+    - String routeIdentifier
+    - LocalDateTime scheduledDateTime
+    - String flightStatus
 }
+
 class Aircraft {
-    - registrationNumber
-    - status
+    - String registrationNumber
+    - String aircraftStatus
+    - int actualSeatingCapacity
 }
+
 class Route {
-    - routeId
-    - minRange
+    - String routeIdentifier
+    - String originIataCode
+    - String destinationIataCode
+    - int minimumRange
 }
+
 class AircraftModel {
-    - maxRange
+    - String modelName
+    - double maximumRange
 }
 
 ScheduledFlight "1" -- "1" Aircraft : assignedTo
 ScheduledFlight "1" -- "1" Route : follows
-Aircraft "1" -- "1" AircraftModel : has
+Aircraft "1" -- "1" AircraftModel : hasModel
 @enduml
