@@ -72,6 +72,8 @@ public class SecurityConfig {
 
 // US211
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/grouped").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+// US225
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports/import").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
 
 // (WP2)
                     auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
