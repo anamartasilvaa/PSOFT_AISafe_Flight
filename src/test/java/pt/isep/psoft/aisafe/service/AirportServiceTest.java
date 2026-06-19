@@ -28,7 +28,6 @@ class AirportServiceTest {
     @Test
     void shouldRegisterAirportSuccessfully() {
 
-        // O construtor foi atualizado com List.of() para facilities e null para a imagem
         RegisterAirportDTO dto = new RegisterAirportDTO(
                 "OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL",
                 41.23, -8.67, List.of(), List.of(), null
@@ -107,5 +106,43 @@ class AirportServiceTest {
         java.util.Map<?, ?> groupedMap = (java.util.Map<?, ?>) result;
         assertTrue(groupedMap.containsKey("Portugal"));
         assertTrue(groupedMap.containsKey("Spain"));
+    }
+
+    //US225
+    @Test
+    void givenValidCsvFile_whenImportAirports_thenSuccessfullyParsesAndSaves() {
+        String csvContent = "IATACode,Name,City,Country,Region,Timezone,Type,latitude,longitude\n" +
+                "OPO,Francisco Sa Carneiro,Porto,Portugal,Norte,Europe/Lisbon,INTERNATIONAL,41.23,-8.67\n";
+
+        org.springframework.mock.web.MockMultipartFile fakeCsvFile = new org.springframework.mock.web.MockMultipartFile(
+                "file", "aeroportos.csv", "text/csv", csvContent.getBytes()
+        );
+
+        lenient().when(airportRepository.findByIataCodeString(anyString()))
+                .thenReturn(java.util.Optional.empty());
+        lenient().when(airportRepository.save(any(Airport.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<AirportViewDTO> importedAirports = airportService.importAirportsFromCsv(fakeCsvFile);
+
+        assertNotNull(importedAirports);
+        assertFalse(importedAirports.isEmpty(), "A lista de aeroportos importados não devia estar vazia!");
+        assertEquals("OPO", importedAirports.get(0).iataCode());
+
+        verify(airportRepository, atLeastOnce()).save(any(Airport.class));
+    }
+
+    // US225: Lançar erro quando o ficheiro está vazio
+    @Test
+    void givenEmptyCsvFile_whenImportAirports_thenThrowsException() {
+        org.springframework.mock.web.MockMultipartFile emptyFile = new org.springframework.mock.web.MockMultipartFile(
+                "file", "vazio.csv", "text/csv", "".getBytes()
+        );
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            airportService.importAirportsFromCsv(emptyFile);
+        });
+
+        assertNotNull(exception.getMessage());
     }
 }

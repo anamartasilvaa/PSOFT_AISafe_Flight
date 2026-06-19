@@ -164,4 +164,23 @@ class AirportControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
+
+    // US225
+    @Test
+    void shouldReturn201CreatedWhenImportingAirportsFromCsv() {
+        org.springframework.web.multipart.MultipartFile mockFile = org.mockito.Mockito.mock(org.springframework.web.multipart.MultipartFile.class);
+
+        AirportViewDTO mockDto = new AirportViewDTO(
+                "OPO", "Sá Carneiro", "Porto", "Portugal", "Europe/Lisbon", "INTERNATIONAL", "OPERATIONAL",
+                List.of(), List.of(), List.of(), null, null, null
+        );
+
+        when(airportService.importAirportsFromCsv(mockFile)).thenReturn(List.of(mockDto));
+
+        ResponseEntity<org.springframework.hateoas.CollectionModel<EntityModel<AirportViewDTO>>> response = airportController.importAirportsFromCsv(mockFile);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().getContent().isEmpty());
+    }
 }

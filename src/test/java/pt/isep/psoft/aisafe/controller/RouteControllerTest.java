@@ -145,4 +145,26 @@ class RouteControllerTest {
 
         assertTrue(response.getBody().hasLinks(), "A resposta deve conter links HATEOAS");
     }
+
+    //US228
+    @Test
+    void shouldReturn200AndFileWhenExportingGeoJson() {
+        // Arrange
+        String fakeGeoJson = "{\"type\": \"FeatureCollection\", \"features\": []}";
+
+        // Agora o mock sabe que o serviço real devolve uma String!
+        when(routeService.exportRoutesAsGeoJson()).thenReturn(fakeGeoJson);
+
+        // Act
+        ResponseEntity<byte[]> response = routeController.exportGeoJson();
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(fakeGeoJson.getBytes().length, response.getBody().length);
+
+        // Verifica se o Header Content-Disposition existe sem usar containsKey
+        assertNotNull(response.getHeaders().get(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION),
+                "Falta o header Content-Disposition para forçar o download");
+    }
 }
