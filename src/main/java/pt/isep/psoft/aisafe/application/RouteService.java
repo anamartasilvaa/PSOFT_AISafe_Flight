@@ -182,4 +182,48 @@ public class RouteService {
         }
         routeHistoryRepository.save(new RouteHistory(routeId, action));
     }
+
+    // US228
+    public String exportRoutesAsGeoJson() {
+        List<Route> allRoutes = routeRepository.findAll();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+        sb.append("  \"type\": \"FeatureCollection\",\n");
+        sb.append("  \"features\": [\n");
+
+        boolean isFirst = true;
+
+        for (Route route : allRoutes) {
+            if (!isFirst) {
+                sb.append(",\n");
+            }
+            isFirst = false;
+
+            Airport origin = route.getOrigin();
+            Airport dest = route.getDestination();
+
+            sb.append("    {\n");
+            sb.append("      \"type\": \"Feature\",\n");
+            sb.append("      \"properties\": {\n");
+            sb.append("        \"routeId\": \"").append(route.getRouteId().id()).append("\",\n");
+            sb.append("        \"origin\": \"").append(origin.getIataCode().code()).append("\",\n");
+            sb.append("        \"destination\": \"").append(dest.getIataCode().code()).append("\",\n");
+            sb.append("        \"status\": \"").append(route.getStatus().name()).append("\"\n");
+            sb.append("      },\n");
+            sb.append("      \"geometry\": {\n");
+            sb.append("        \"type\": \"LineString\",\n");
+            sb.append("        \"coordinates\": [\n");
+            sb.append("          [").append(origin.getCoordinates().longitude()).append(", ").append(origin.getCoordinates().latitude()).append("],\n");
+            sb.append("          [").append(dest.getCoordinates().longitude()).append(", ").append(dest.getCoordinates().latitude()).append("]\n");
+            sb.append("        ]\n");
+            sb.append("      }\n");
+            sb.append("    }");
+        }
+
+        sb.append("\n  ]\n");
+        sb.append("}\n");
+
+        return sb.toString();
+    }
 }
