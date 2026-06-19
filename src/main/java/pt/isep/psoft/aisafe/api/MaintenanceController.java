@@ -212,4 +212,23 @@ public class MaintenanceController {
 
         return ResponseEntity.ok(collectionModel);
     }
+
+    // US226
+    @GetMapping("/parts/low-stock-alerts")
+    public ResponseEntity<CollectionModel<EntityModel<LowStockAlertDTO>>> getLowStockAlerts() {
+        List<LowStockAlertDTO> alerts = maintenanceService.generateLowStockAlerts();
+
+        if (alerts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<LowStockAlertDTO>> resources = alerts.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<LowStockAlertDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(MaintenanceController.class).getLowStockAlerts()).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
 }
