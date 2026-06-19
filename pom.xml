@@ -84,7 +84,14 @@
             <version>3.0.3</version>
         </dependency>
 
-<!--/* dependências de  segurança */-->
+        <!--/* csv - US225 */-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+<!--/* dependências de segurança */-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>

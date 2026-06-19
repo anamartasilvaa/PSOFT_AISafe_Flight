@@ -125,6 +125,7 @@ public class Airport {
     public String getCity() { return city; }
     public String getCountry() { return country; }
     public String getTimezone() { return timezone; }
+    public Coordinates getCoordinates() {return coordinates;}
     public AirportType getType() { return type; }
     public List<Runway> getRunways() { return runways; }
     public List<AirplaneCertification> getCertifications() { return certifications; }

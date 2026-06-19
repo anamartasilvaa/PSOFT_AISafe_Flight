@@ -139,4 +139,22 @@ public class AirportController {
 
         return ResponseEntity.ok(groupedAirports);
     }
+
+    /* US225 - Import bulk airport data from CSV files */
+    @PostMapping(value = "/import", consumes = "multipart/form-data")
+    public ResponseEntity<CollectionModel<EntityModel<AirportViewDTO>>> importAirportsFromCsv(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+
+        List<AirportViewDTO> importedAirports = service.importAirportsFromCsv(file);
+
+        List<EntityModel<AirportViewDTO>> airportResources = importedAirports.stream()
+                .map(dto -> EntityModel.of(dto,
+                        linkTo(methodOn(AirportController.class).getAirport(dto.iataCode())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<AirportViewDTO>> collectionModel = CollectionModel.of(airportResources,
+                linkTo(methodOn(AirportController.class).importAirportsFromCsv(file)).withSelfRel());
+
+        return new ResponseEntity<>(collectionModel, HttpStatus.CREATED);
+    }
 }

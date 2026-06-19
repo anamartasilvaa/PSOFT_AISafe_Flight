@@ -194,7 +194,6 @@ public class AirportService {
     public Object getAirportsGrouped(String groupBy) {
         List<Airport> airports = airportRepository.findAll();
 
-        // 1. Se pedir os DOIS
         if ("both".equalsIgnoreCase(groupBy)) {
             return airports.stream()
                     .map(this::mapToDTO)
@@ -204,14 +203,12 @@ public class AirportService {
                     ));
         }
 
-        // 2. Se pedir SÓ REGIÃO
         if ("region".equalsIgnoreCase(groupBy)) {
             return airports.stream()
                     .map(this::mapToDTO)
                     .collect(Collectors.groupingBy(this::extractRegion));
         }
 
-        // 3. Se pedir SÓ PAÍS
         return airports.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.groupingBy(dto -> dto.country() != null ? dto.country() : "Unknown Country"));
@@ -222,5 +219,46 @@ public class AirportService {
             return dto.timezone().split("/")[0];
         }
         return "Unknown Region";
+    }
+
+    // US225
+    @Transactional
+    public List<AirportViewDTO> importAirportsFromCsv(org.springframework.web.multipart.MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("The uploaded CSV file is empty.");
+        }
+
+        List<AirportViewDTO> importedAirports = new java.util.ArrayList<>();
+
+        try (java.io.BufferedReader fileReader = new java.io.BufferedReader(new java.io.InputStreamReader(file.getInputStream(), "UTF-8"));
+             org.apache.commons.csv.CSVParser csvParser = new org.apache.commons.csv.CSVParser(fileReader,
+                     org.apache.commons.csv.CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim())) {
+
+            for (org.apache.commons.csv.CSVRecord csvRecord : csvParser) {
+                RegisterAirportDTO dto = new RegisterAirportDTO(
+                        csvRecord.get("iataCode"),
+                        csvRecord.get("name"),
+                        csvRecord.get("city"),
+                        csvRecord.get("country"),
+                        csvRecord.get("timezone"),
+                        csvRecord.get("type"),
+                        Double.parseDouble(csvRecord.get("latitude")),
+                        Double.parseDouble(csvRecord.get("longitude")),
+                        List.of(), // runways
+                        List.of(), // facilities
+                        null       // imageUrl
+                );
+
+                AirportViewDTO savedAirport = registerAirport(dto);
+                importedAirports.add(savedAirport);
+            }
+
+            return importedAirports;
+
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Error parsing the CSV file: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error in CSV formatting/data: " + e.getMessage());
+        }
     }
     }

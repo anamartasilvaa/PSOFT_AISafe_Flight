@@ -72,6 +72,8 @@ public class SecurityConfig {
 
 // US211
                     auth.requestMatchers(HttpMethod.GET, "/api/airports/grouped").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+// US225
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports/import").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
 
 // (WP2)
                     auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
@@ -97,10 +99,12 @@ public class SecurityConfig {
 // US209
                     auth.requestMatchers(HttpMethod.GET, "/api/routes/involving/*").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
 
+//  US228
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/export/geojson").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+
 // (WP3)
-                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.BACKOFFICE.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
 
 // US212 & US213 - Scheduled Flights
                     auth.requestMatchers(HttpMethod.POST, "/api/flights").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
