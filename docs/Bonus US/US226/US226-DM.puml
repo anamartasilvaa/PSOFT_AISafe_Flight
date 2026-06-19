@@ -1,0 +1,28 @@
+@startuml
+skinparam style strictuml
+hide empty members
+hide methods
+title DM - US226
+
+class MaintenancePart <<Entity>> <<Aggregate Root>> {
+    name: String
+    description: String
+    stockQuantity: Integer
+    minimumThreshold: Integer
+}
+
+class PartNumber <<ValueObject>> {
+    number: String
+}
+
+enum ComponentCategory {
+    AIRFRAME
+    AVIONICS
+    ENGINE
+    EXTERIOR
+    INTERIOR
+}
+
+MaintenancePart "1" --> "1" PartNumber : is identified by >
+MaintenancePart "1" --> "1" ComponentCategory : is categorized as >
+@enduml

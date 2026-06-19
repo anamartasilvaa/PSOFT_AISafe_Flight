@@ -1,0 +1,50 @@
+@startuml
+skinparam style strictuml
+title CD-US226
+package "API Layer" {
+    class MaintenanceController {
+        + getLowStockAlerts(): ResponseEntity
+    }
+}
+
+package "Application Layer" {
+    class MaintenanceService {
+        + generateLowStockAlerts(): List<LowStockAlertDTO>
+    }
+
+    class LowStockAlertDTO <<DTO>> {
+        - partNumber: String
+        - partName: String
+        - currentStock: Integer
+        - minimumThreshold: Integer
+        - alertMessage: String
+    }
+}
+
+package "Infrastructure Layer" {
+    interface MaintenancePartRepository {
+        + findPartsWithLowStock(): List<MaintenancePart>
+    }
+}
+
+package "Domain Layer" {
+    class MaintenancePart {
+        - stockQuantity: Integer
+        - minimumThreshold: Integer
+        + getStockQuantity(): Integer
+        + getMinimumThreshold(): Integer
+    }
+
+    class PartNumber <<ValueObject>> {
+        - number: String
+        + getNumber(): String
+    }
+}
+
+MaintenanceController ..> MaintenanceService : uses
+MaintenanceService ..> MaintenancePartRepository : uses
+MaintenanceService ..> LowStockAlertDTO : creates
+MaintenanceService ..> MaintenancePart : queries
+MaintenancePartRepository --> MaintenancePart : manages
+MaintenancePart *-- PartNumber : contains
+@enduml
