@@ -194,4 +194,28 @@ public class RouteController {
 
         return ResponseEntity.ok(pagedModel);
     }
+
+    // --- US216: Pesquisar Rotas Alternativas ---
+    @GetMapping("/search/alternatives")
+    @Operation(summary = "Search for alternative routes between two airports")
+    public ResponseEntity<CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>>> getAlternativeRoutes(
+            @RequestParam String origin,
+            @RequestParam String destination) {
+
+        List<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO> alternatives = routeService.findAlternativeRoutes(origin, destination);
+
+        // Se não houver forma de chegar ao destino, devolve 204 No Content
+        if (alternatives.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> resources = alternatives.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        CollectionModel<EntityModel<pt.isep.psoft.aisafe.application.DTO.AlternativeRouteDTO>> collectionModel = CollectionModel.of(resources,
+                linkTo(methodOn(RouteController.class).getAlternativeRoutes(origin, destination)).withSelfRel());
+
+        return ResponseEntity.ok(collectionModel);
+    }
 }

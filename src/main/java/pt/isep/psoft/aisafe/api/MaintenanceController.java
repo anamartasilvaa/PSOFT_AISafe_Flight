@@ -174,24 +174,30 @@ public class MaintenanceController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    // US222 - Receber alertas para manutenções programadas (Horas de voo ou Dias de calendário)
+    // US222 - Updated to support filtering by type
     @GetMapping("/alerts")
-    public ResponseEntity<CollectionModel<EntityModel<MaintenanceAlertDTO>>> getMaintenanceAlerts() {
+    public ResponseEntity<CollectionModel<EntityModel<MaintenanceAlertDTO>>> getMaintenanceAlerts(
+            @RequestParam(required = false) String type) {
 
         List<MaintenanceAlertDTO> alerts = maintenanceService.generateMaintenanceAlerts();
 
-        // Se a frota estiver toda em dia, devolvemos 204 No Content
+        // Apply filtering if the 'type' parameter is provided
+        if (type != null && !type.isEmpty()) {
+            alerts = alerts.stream()
+                    .filter(a -> a.alertType() != null && a.alertType().equalsIgnoreCase(type))
+                    .collect(Collectors.toList());
+        }
+
         if (alerts.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        // Embrulhamos cada alerta num EntityModel para suportar HATEOAS
         List<EntityModel<MaintenanceAlertDTO>> resources = alerts.stream()
                 .map(EntityModel::of)
                 .collect(Collectors.toList());
 
         CollectionModel<EntityModel<MaintenanceAlertDTO>> collectionModel = CollectionModel.of(resources,
-                linkTo(methodOn(MaintenanceController.class).getMaintenanceAlerts()).withSelfRel());
+                linkTo(methodOn(MaintenanceController.class).getMaintenanceAlerts(type)).withSelfRel());
 
         return ResponseEntity.ok(collectionModel);
     }

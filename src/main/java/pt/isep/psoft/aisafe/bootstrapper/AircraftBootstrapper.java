@@ -69,6 +69,9 @@ public class AircraftBootstrapper implements CommandLineRunner {
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-TVB", "A320neo", LocalDate.of(2020, 8, 22), 180));
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-TVC", "A320neo", LocalDate.of(2021, 1, 15), 180));
 
+            // ---> AVIÃO DEDICADO PARA TESTES DE MANUTENÇÃO NO POSTMAN <---
+            aircraftService.registerAircraft(new RegisterAircraftDTO("CS-MANUT", "A320neo", LocalDate.of(2023, 1, 1), 180));
+
             // Boeing 737 MAX Fleet
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-BOA", "B737 MAX", LocalDate.of(2022, 3, 5), 200));
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-BOB", "B737 MAX", LocalDate.of(2023, 7, 11), 200));
@@ -98,7 +101,10 @@ public class AircraftBootstrapper implements CommandLineRunner {
             aircraftService.updateAircraftStatus("CS-ATB", new UpdateAircraftStatusDTO("INACTIVE"));
             aircraftService.updateAircraftStatus("CS-TTA", new UpdateAircraftStatusDTO("UNDER_MAINTENANCE"));
 
-            System.out.println("BOOTSTRAP: WP#0B - 6 Models and 12 Aircraft loaded successfully with operational hours!");
+            //  AVIÃO DE TESTES EM MANUTENÇÃO
+            aircraftService.updateAircraftStatus("CS-MANUT", new UpdateAircraftStatusDTO("UNDER_MAINTENANCE"));
+
+            System.out.println("BOOTSTRAP: WP#0B - 6 Models and 13 Aircraft loaded successfully with operational hours!");
 
         } catch (Exception e) {
             System.out.println("An error occurred in the aircraft's Bootstrap: " + e.getMessage());
