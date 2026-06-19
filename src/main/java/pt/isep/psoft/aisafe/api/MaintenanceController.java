@@ -20,6 +20,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/maintenance")
+@SuppressWarnings("NullableProblems")
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
@@ -70,8 +71,6 @@ public class MaintenanceController {
     @GetMapping("/records/total-hours")
     public ResponseEntity<EntityModel<java.util.Map<String, Integer>>> getTotalHours() {
         Integer total = maintenanceService.getTotalMaintenanceHours();
-
-        // Embrulha o número num objeto para o JSON poder receber os _links
         java.util.Map<String, Integer> responseBody = java.util.Map.of("totalHours", total != null ? total : 0);
 
         EntityModel<java.util.Map<String, Integer>> resource = EntityModel.of(responseBody);
@@ -117,12 +116,10 @@ public class MaintenanceController {
     // US219 - View ongoing maintenance activities across the fleet
     @GetMapping("/records/ongoing")
     public ResponseEntity<CollectionModel<EntityModel<MaintenanceRecord>>> getOngoingMaintenances() {
-
         List<EntityModel<MaintenanceRecord>> records = maintenanceService.getOngoingMaintenances()
                 .stream()
                 .map(record -> {
                     EntityModel<MaintenanceRecord> em = EntityModel.of(record);
-                    // Adiciona o link para poder concluir a manutenção diretamente daqui
                     em.add(linkTo(methodOn(MaintenanceController.class).completeMaintenance(record.getPk(), null)).withRel("complete-this-record"));
                     return em;
                 })
@@ -134,10 +131,9 @@ public class MaintenanceController {
         return ResponseEntity.ok(collection);
     }
 
-    //  US220 - Obter custos de manutenção por aeronave
+    // US220 - Get maintenance costs per aircraft
     @GetMapping("/statistics/costs")
     public ResponseEntity<CollectionModel<EntityModel<MaintenanceCostDTO>>> getMaintenanceCosts() {
-
         List<MaintenanceCostDTO> costs = maintenanceService.getMaintenanceCostsPerAircraft();
 
         if (costs.isEmpty()) {
@@ -154,10 +150,9 @@ public class MaintenanceController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    //  US221 - Obter tempo médio de turnaround por modelo de aeronave
+    // US221 - Get average turnaround time per aircraft model
     @GetMapping("/statistics/turnaround")
     public ResponseEntity<CollectionModel<EntityModel<TurnaroundTimeDTO>>> getTurnaroundTime() {
-
         List<TurnaroundTimeDTO> turnaroundStats = maintenanceService.getTurnaroundTimePerAircraftModel();
 
         if (turnaroundStats.isEmpty()) {
@@ -174,17 +169,16 @@ public class MaintenanceController {
         return ResponseEntity.ok(collectionModel);
     }
 
-    // US222 - Updated to support filtering by type
+    // US222 - Receive alerts filtered optionally by criteria type (FLIGHT_HOURS / CALENDAR_DAYS)
     @GetMapping("/alerts")
     public ResponseEntity<CollectionModel<EntityModel<MaintenanceAlertDTO>>> getMaintenanceAlerts(
             @RequestParam(required = false) String type) {
 
         List<MaintenanceAlertDTO> alerts = maintenanceService.generateMaintenanceAlerts();
 
-        // Apply filtering if the 'type' parameter is provided
         if (type != null && !type.isEmpty()) {
             alerts = alerts.stream()
-                    .filter(a -> a.alertType() != null && a.alertType().equalsIgnoreCase(type))
+                    .filter(a -> a.alertType().equalsIgnoreCase(type))
                     .collect(Collectors.toList());
         }
 

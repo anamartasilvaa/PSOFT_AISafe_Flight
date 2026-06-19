@@ -28,7 +28,6 @@ public class MaintenanceService {
 
     // US115 (Part 1) - Create Maintenance Template
     public MaintenanceTemplate createTemplate(CreateMaintenanceTemplateDTO dto) {
-
         if (templateRepository.findByTemplateName(dto.templateName()).isPresent()) {
             throw new IllegalArgumentException("Template name already exists: " + dto.templateName());
         }
@@ -54,17 +53,14 @@ public class MaintenanceService {
 
     // US115 (Part 2) - Register Maintenance Event for an Aircraft
     public MaintenanceRecord registerMaintenance(RegisterMaintenanceDTO dto) {
-
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(dto.registrationNumber()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found with registration: " + dto.registrationNumber()));
 
         MaintenanceTemplate template = templateRepository.findById(dto.templateId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance template not found with ID: " + dto.templateId()));
 
-        // 1. Convertemos a String com a hora (formato ISO)
         java.time.LocalDateTime startDate = java.time.LocalDateTime.parse(dto.startDate());
 
-        // 2. Passamos os 7 parâmetros corretos para o registo!
         MaintenanceRecord record = new MaintenanceRecord(
                 aircraft,
                 template,
@@ -85,7 +81,6 @@ public class MaintenanceService {
     // US117 - Calculate Fleet Total Maintenance Hours
     public Integer getTotalMaintenanceHours() {
         return recordRepository.findAll().stream()
-                // só contabiliza se o status for COMPLETED
                 .filter(record -> record.getStatus() == MaintenanceRecordStatus.COMPLETED)
                 .mapToInt(MaintenanceRecord::getExpectedDuration)
                 .sum();
@@ -103,7 +98,6 @@ public class MaintenanceService {
     public org.springframework.data.domain.Page<MaintenanceRecord> searchMaintenanceRecords(
             String registrationNumber, String fromDate, String toDate, String category, org.springframework.data.domain.Pageable pageable) {
 
-        // Adaptado para aceitar pesquisa por datas simples e convertê-las para o início e fim do dia em LocalDateTime
         java.time.LocalDateTime start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate).atStartOfDay() : null;
         java.time.LocalDateTime end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59) : null;
 
@@ -120,23 +114,22 @@ public class MaintenanceService {
         return recordRepository.findByStatus(MaintenanceRecordStatus.SCHEDULED);
     }
 
-    // US220: Gerar relatório de custos de manutenção por aeronave
+    // US220: Generate maintenance costs report per aircraft
     public List<MaintenanceCostDTO> getMaintenanceCostsPerAircraft() {
         List<Object[]> results = recordRepository.getMaintenanceCostsByAircraft();
 
         return results.stream()
                 .map(row -> new MaintenanceCostDTO(
-                        (String) row[0], // A matrícula vem na primeira posição
-                        (Double) row[1]  // O somatório do custo vem na segunda
+                        (String) row[0],
+                        (Double) row[1]
                 ))
                 .collect(Collectors.toList());
     }
 
-    //  US221: Tempo médio de turnaround por modelo de aeronave
+    // US221: Average turnaround time per aircraft model
     public List<TurnaroundTimeDTO> getTurnaroundTimePerAircraftModel() {
         List<MaintenanceRecord> completedRecords = recordRepository.findByStatus(MaintenanceRecordStatus.COMPLETED);
 
-        // Agrupa os registos pelo Nome do Modelo do Avião
         java.util.Map<String, List<MaintenanceRecord>> recordsByModel = completedRecords.stream()
                 .filter(r -> r.getCompletionDate() != null)
                 .collect(Collectors.groupingBy(r -> r.getAircraft().getAircraftModel().getModelName().toString()));
@@ -145,7 +138,6 @@ public class MaintenanceService {
                     String modelName = entry.getKey();
                     List<MaintenanceRecord> records = entry.getValue();
 
-                    // Calculado em HORAS em vez de DIAS
                     double averageHours = records.stream()
                             .mapToLong(r -> java.time.temporal.ChronoUnit.HOURS.between(r.getStartDate(), r.getCompletionDate()))
                             .average()
@@ -156,56 +148,60 @@ public class MaintenanceService {
                 .collect(Collectors.toList());
     }
 
-    // --- US222: Gerar Alertas de Manutenção ---
+    // --- US222: Generate Maintenance Alerts ---
     public List<MaintenanceAlertDTO> generateMaintenanceAlerts() {
         List<MaintenanceAlertDTO> alerts = new java.util.ArrayList<>();
-
-        // 1. Ir buscar todos os aviões à base de dados
         List<Aircraft> allAircraft = aircraftRepository.findAll();
 
         for (Aircraft aircraft : allAircraft) {
-            // Ignorar aviões que já estejam em manutenção ou aterrados
             if (aircraft.getStatus() != AircraftStatus.ACTIVE) continue;
 
-            // 2. Descobrir os templates de manutenção aplicáveis ao modelo deste avião
             List<MaintenanceTemplate> templates = templateRepository.findByAppliesToContaining(aircraft.getAircraftModel());
             for (MaintenanceTemplate template : templates) {
 
-                // VERIFICAÇÃO A: Limite de Horas de Voo
+                // VERIFICATION A: Flight Hours Limit check
                 if (template.getFlightHoursInterval() != null) {
                     if (aircraft.getTotalFlightHours() >= template.getFlightHoursInterval()) {
                         alerts.add(new MaintenanceAlertDTO(
-                                aircraft.getRegistrationNumber().toString(), // CORRIGIDO AQUI
+                                aircraft.getRegistrationNumber().toString(),
                                 "FLIGHT_HOURS",
-                                "O avião atingiu " + aircraft.getTotalFlightHours() + " horas. Limite do template: " + template.getFlightHoursInterval()
+                                "Aircraft reached " + aircraft.getTotalFlightHours() + " hours. Template limit: " + template.getFlightHoursInterval()
                         ));
-                        continue; // Evita duplicar alertas para o mesmo template
                     }
                 }
 
-                // VERIFICAÇÃO B: Limite de Dias de Calendário
+                // VERIFICATION B: Calendar Days Interval check with dynamic safety margin
                 if (template.getCalendarDaysInterval() != null) {
-                    // Descobrir a data da última manutenção concluída deste avião
                     java.util.Optional<MaintenanceRecord> lastRecord = recordRepository.findTopByAircraftAndStatusOrderByCompletionDateDesc(
                             aircraft, MaintenanceRecordStatus.COMPLETED
                     );
 
                     java.time.LocalDate referenceDate;
                     if (lastRecord.isPresent() && lastRecord.get().getCompletionDate() != null) {
-                        // Conta a partir da conclusão da última manutenção
                         referenceDate = lastRecord.get().getCompletionDate().toLocalDate();
                     } else {
-                        // Se nunca teve manutenção, conta a partir da data de fabrico
                         referenceDate = aircraft.getManufacturingDate();
                     }
 
                     long daysPassed = java.time.temporal.ChronoUnit.DAYS.between(referenceDate, java.time.LocalDate.now());
 
-                    if (daysPassed >= template.getCalendarDaysInterval()) {
+                    // Safety Buffer Configuration (15 days ahead alert window)
+                    int safetyMargin = 15;
+
+                    if (daysPassed >= (template.getCalendarDaysInterval() - safetyMargin)) {
+                        long daysLeft = template.getCalendarDaysInterval() - daysPassed;
+                        String alertMessage;
+
+                        if (daysLeft < 0) {
+                            alertMessage = "CRITICAL OVERDUE: Aircraft is " + Math.abs(daysLeft) + " days past the safety threshold (" + template.getCalendarDaysInterval() + " days limit).";
+                        } else {
+                            alertMessage = "PREVENTIVE WARNING: Upcoming maintenance must be performed within " + daysLeft + " days. (Limit: " + template.getCalendarDaysInterval() + " days).";
+                        }
+
                         alerts.add(new MaintenanceAlertDTO(
-                                aircraft.getRegistrationNumber().toString(), // CORRIGIDO AQUI
+                                aircraft.getRegistrationNumber().toString(),
                                 "CALENDAR_DAYS",
-                                "Passaram " + daysPassed + " dias sem manutenção. Limite: " + template.getCalendarDaysInterval()
+                                alertMessage
                         ));
                     }
                 }
