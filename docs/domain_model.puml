@@ -41,7 +41,7 @@ package "Aircraft Aggregate" {
         - totalFlightHours: Double
         - operatingHoursRange: String
         - seatingConfiguration: String
-        - AircraftImage: String
+       //- AircraftImage: String
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -71,6 +71,7 @@ package "Airport Aggregate" {
         - region: String
         - timezone: String
         - operationalHours: String
+        imageUrl: String
     }
 
     enum AirportType <<Enumeration>> {
