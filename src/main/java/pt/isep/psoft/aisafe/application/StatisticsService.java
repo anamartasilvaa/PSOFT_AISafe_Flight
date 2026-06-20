@@ -1,6 +1,7 @@
 package pt.isep.psoft.aisafe.application;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pt.isep.psoft.aisafe.application.DTO.RouteUtilizationDTO;
 import pt.isep.psoft.aisafe.repositories.ScheduledFlightRepository;
 
@@ -10,19 +11,19 @@ import java.util.stream.Collectors;
 @Service
 public class StatisticsService {
 
-    private final ScheduledFlightRepository scheduledFlightRepository;
+    private final ScheduledFlightRepository flightRepository;
 
-    public StatisticsService(ScheduledFlightRepository scheduledFlightRepository) {
-        this.scheduledFlightRepository = scheduledFlightRepository;
+    // Injeção de dependência via construtor (prática recomendada)
+    public StatisticsService(ScheduledFlightRepository flightRepository) {
+        this.flightRepository = flightRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<RouteUtilizationDTO> getMostFrequentRoutes() {
-        List<Object[]> results = scheduledFlightRepository.countFlightsGroupedByRoute();
-
-        return results.stream()
-                .map(row -> new RouteUtilizationDTO(
-                        (String) row[0], // routeId
-                        (Long) row[1]    // flightCount
+        return flightRepository.countFlightsGroupedByRoute().stream()
+                .map(obj -> new RouteUtilizationDTO(
+                        (String) obj[0],
+                        (Long) obj[1]
                 ))
                 .collect(Collectors.toList());
     }

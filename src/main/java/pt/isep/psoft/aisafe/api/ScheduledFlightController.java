@@ -10,6 +10,7 @@ import pt.isep.psoft.aisafe.application.DTO.CreateScheduledFlightDTO;
 import pt.isep.psoft.aisafe.application.DTO.ScheduledFlightViewDTO;
 import pt.isep.psoft.aisafe.application.ScheduledFlightService;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -30,17 +31,28 @@ public class ScheduledFlightController {
         ScheduledFlightViewDTO created = service.scheduleFlight(dto);
         EntityModel<ScheduledFlightViewDTO> resource = EntityModel.of(created);
 
-        resource.add(linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(dto.registrationNumber())).withRel("aircraft-flights"));
+        resource.add(linkTo(methodOn(ScheduledFlightController.class)
+                .getFlightsByAircraft(dto.registrationNumber()))
+                .withRel("aircraft-flights"));
+
         return ResponseEntity.status(HttpStatus.CREATED).body(resource);
     }
 
     @GetMapping("/aircraft/{registrationNumber}")
     public ResponseEntity<CollectionModel<EntityModel<ScheduledFlightViewDTO>>> getFlightsByAircraft(@PathVariable String registrationNumber) {
-        var flights = service.getScheduledFlightsByAircraft(registrationNumber);
-        var resources = flights.stream()
-                .map(dto -> EntityModel.of(dto, linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()))
+        List<ScheduledFlightViewDTO> flights = service.getScheduledFlightsByAircraft(registrationNumber);
+
+        // Retorna 204 se a lista estiver vazia
+        if (flights.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<ScheduledFlightViewDTO>> resources = flights.stream()
+                .map(dto -> EntityModel.of(dto,
+                        linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(CollectionModel.of(resources, linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()));
+        return ResponseEntity.ok(CollectionModel.of(resources,
+                linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()));
     }
 }

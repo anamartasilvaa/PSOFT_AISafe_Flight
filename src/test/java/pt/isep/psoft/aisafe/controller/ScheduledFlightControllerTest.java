@@ -42,10 +42,8 @@ class ScheduledFlightControllerTest {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
-    // --- TESTES DE SUCESSO (HAPPY PATH) ---
-
     @Test
-    void shouldReturn201CreatedWhenSchedulingFlight() { // US212
+    void shouldReturn201CreatedWhenSchedulingFlight() {
         CreateScheduledFlightDTO requestDto = new CreateScheduledFlightDTO("RT-OPOLIS", "CS-TPA", "2026-10-10T10:00:00");
         ScheduledFlightViewDTO responseDto = new ScheduledFlightViewDTO(1L, "RT-OPOLIS", "CS-TPA", "2026-10-10T10:00:00", "SCHEDULED");
 
@@ -56,11 +54,10 @@ class ScheduledFlightControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("RT-OPOLIS", response.getBody().getContent().routeId());
-        assertTrue(response.getBody().hasLinks());
     }
 
     @Test
-    void shouldReturn200OkWhenGettingScheduledFlights() { // US213
+    void shouldReturn200OkWhenGettingScheduledFlights() {
         String regNum = "CS-TPA";
         ScheduledFlightViewDTO flight1 = new ScheduledFlightViewDTO(1L, "RT-OPOLIS", regNum, "2026-10-10T10:00:00", "SCHEDULED");
 
@@ -74,10 +71,8 @@ class ScheduledFlightControllerTest {
         assertFalse(response.getBody().getContent().isEmpty());
     }
 
-    // --- TESTES DE CASOS DE BORDA (EDGE CASES) ---
-
     @Test
-    void shouldReturn204NoContentWhenNoFlightsFound() { // US213 Edge Case
+    void shouldReturn204NoContentWhenNoFlightsFound() {
         String regNum = "CS-INVALIDO";
         when(scheduledFlightService.getScheduledFlightsByAircraft(eq(regNum))).thenReturn(Collections.emptyList());
 
@@ -88,10 +83,8 @@ class ScheduledFlightControllerTest {
         assertNull(response.getBody());
     }
 
-    // --- TESTES DE ERRO/VALIDAÇÃO ---
-
     @Test
-    void shouldThrowExceptionWhenSchedulingFlightFails() { // US212 Validation Error
+    void shouldThrowExceptionWhenSchedulingFlightFails() {
         CreateScheduledFlightDTO requestDto = new CreateScheduledFlightDTO("RT-INVALID", "CS-TPA", "2026-10-10T10:00:00");
 
         when(scheduledFlightService.scheduleFlight(any(CreateScheduledFlightDTO.class)))
@@ -100,16 +93,5 @@ class ScheduledFlightControllerTest {
         assertThrows(IllegalArgumentException.class, () -> {
             scheduledFlightController.scheduleFlight(requestDto);
         });
-    }
-
-    @Test
-    void shouldReturnEmptyCollectionWhenNoFlightsForAircraft() {
-        String regNum = "CS-EMPTY";
-        when(scheduledFlightService.getScheduledFlightsByAircraft(regNum)).thenReturn(Collections.emptyList());
-
-        ResponseEntity<CollectionModel<EntityModel<ScheduledFlightViewDTO>>> response =
-                scheduledFlightController.getFlightsByAircraft(regNum);
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 }

@@ -1,4 +1,5 @@
 package pt.isep.psoft.aisafe.application.DTO;
+
 import java.time.LocalDate;
 
 public record AircraftViewDTO(
@@ -7,5 +8,7 @@ public record AircraftViewDTO(
         LocalDate manufacturingDate,
         Integer seatingCapacity,
         String status,
-        String modelPhotoUrl
+        String modelPhotoUrl,
+        String features,
+        String engineType
 ) {}

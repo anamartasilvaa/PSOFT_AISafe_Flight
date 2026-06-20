@@ -36,10 +36,13 @@ public class Aircraft {
     @Column(nullable = false)
     private Double totalFlightHours;
 
+    @Column(nullable = true)
+    private String features;
+
     protected Aircraft() {}
 
     public Aircraft(RegistrationNumber registrationNumber, AircraftModel model,
-                    LocalDate manufacturingDate, Integer actualSeatingCapacity) {
+                    LocalDate manufacturingDate, Integer actualSeatingCapacity, String features) {
 
         Assert.notNull(registrationNumber, "Registration number must not be null.");
         Assert.notNull(model, "Aircraft model must not be null.");
@@ -51,7 +54,7 @@ public class Aircraft {
         this.model = model;
         this.manufacturingDate = manufacturingDate;
         this.actualSeatingCapacity = actualSeatingCapacity;
-
+        this.features = features;
 
         this.status = AircraftStatus.ACTIVE;
         this.totalFlightHours = 0.0;
@@ -104,4 +107,6 @@ public class Aircraft {
     }
 
     public Double getTotalFlightHours() { return this.totalFlightHours; }
+
+    public String getFeatures() { return this.features; }
 }

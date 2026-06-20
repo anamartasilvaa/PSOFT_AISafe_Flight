@@ -25,5 +25,8 @@ public record RegisterAircraftModelDTO(
         Double speed,
 
         @URL(message = "If provided, the model photo must be a valid URL")
-        String modelPhotoUrl
+        String modelPhotoUrl,
+
+        @NotBlank(message = "Engine type is required")
+        String engineType
 ) {}

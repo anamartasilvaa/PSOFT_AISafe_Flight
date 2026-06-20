@@ -9,5 +9,6 @@ public record AircraftModelViewDTO(
         Double cruisingSpeed,
         String modelPhotoUrl,
         String seatingConfiguration,
-        String operatingHoursRange
+        String operatingHoursRange,
+        String engineType
 ) {}

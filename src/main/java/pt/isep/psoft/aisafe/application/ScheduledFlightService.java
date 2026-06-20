@@ -3,12 +3,14 @@ package pt.isep.psoft.aisafe.application;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pt.isep.psoft.aisafe.application.DTO.CreateScheduledFlightDTO;
+import pt.isep.psoft.aisafe.application.DTO.RouteUtilizationDTO;
 import pt.isep.psoft.aisafe.application.DTO.ScheduledFlightViewDTO;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ScheduledFlightService {
@@ -27,14 +29,12 @@ public class ScheduledFlightService {
 
     @Transactional
     public ScheduledFlightViewDTO scheduleFlight(CreateScheduledFlightDTO dto) {
-        // Usa RouteId (Value Object) corretamente
         Route route = routeRepository.findByRouteId(new RouteId(dto.routeId()))
                 .orElseThrow(() -> new IllegalArgumentException("Route not found: " + dto.routeId()));
 
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(dto.registrationNumber()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + dto.registrationNumber()));
 
-        // Validações de Negócio Robustas
         if (aircraft.getStatus() != AircraftStatus.ACTIVE) {
             throw new IllegalStateException("Aircraft is not available. Status: " + aircraft.getStatus());
         }
@@ -60,6 +60,7 @@ public class ScheduledFlightService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<ScheduledFlightViewDTO> getScheduledFlightsByAircraft(String registrationNumber) {
         RegistrationNumber regNum = new RegistrationNumber(registrationNumber.trim().toUpperCase());
         return flightRepository.findByAircraft_RegistrationNumber(regNum).stream()
@@ -70,5 +71,12 @@ public class ScheduledFlightService {
                         f.getScheduledDateTime().toString(),
                         f.getStatus().name()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RouteUtilizationDTO> getRouteUtilizationReport() {
+        return flightRepository.countFlightsGroupedByRoute().stream()
+                .map(obj -> new RouteUtilizationDTO((String) obj[0], (Long) obj[1]))
+                .collect(Collectors.toList());
     }
 }

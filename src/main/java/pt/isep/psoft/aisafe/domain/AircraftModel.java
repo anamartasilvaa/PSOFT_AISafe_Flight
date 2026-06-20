@@ -43,11 +43,14 @@ public class AircraftModel {
     @Column(nullable = true)
     private String seatingConfiguration;
 
+    @Column(nullable = true)
+    private String engineType;
+
     protected AircraftModel() {}
 
     public AircraftModel(ModelName modelName, Manufacturer manufacturer, Integer defaultSeatingCapacity,
                          Double fuelCapacity, Double maximumRange, Double cruisingSpeed, String modelPhotoUrl,
-                         String seatingConfiguration, String operatingHoursRange) {
+                         String seatingConfiguration, String operatingHoursRange, String engineType) {
 
         Assert.notNull(modelName, "The model name is required.");
         Assert.notNull(manufacturer, "The manufacturer is required.");
@@ -65,6 +68,10 @@ public class AircraftModel {
         this.modelPhotoUrl = modelPhotoUrl;
         this.seatingConfiguration = seatingConfiguration;
         this.operatingHoursRange = operatingHoursRange;
+        this.engineType = engineType;
+    }
+
+    public AircraftModel(ModelName name, Manufacturer manufacturer, int i, double v, double v1, double v2, String url, String s, Object o) {
     }
 
     // US201
@@ -119,4 +126,6 @@ public class AircraftModel {
     public String getModelPhotoUrl() { return this.modelPhotoUrl; }
     public String getSeatingConfiguration() { return this.seatingConfiguration; }
     public String getOperatingHoursRange() { return this.operatingHoursRange; }
+
+    public String getEngineType() { return this.engineType; }
 }
