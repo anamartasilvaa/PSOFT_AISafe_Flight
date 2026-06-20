@@ -186,4 +186,25 @@ public class AircraftController {
 
         return ResponseEntity.ok(resource);
     }
+
+    /* US224 - Search for aircraft by specific features (e.g., WiFi, engine type) */
+    @GetMapping("/instances/search-features")
+    public ResponseEntity<CollectionModel<EntityModel<AircraftViewDTO>>> searchAircraftByFeatures(
+            @RequestParam(required = false) String feature,
+            @RequestParam(required = false) String engineType) {
+
+        List<AircraftViewDTO> list = service.searchAircraftByFeatures(feature, engineType);
+
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<EntityModel<AircraftViewDTO>> resources = list.stream()
+                .map(dto -> EntityModel.of(dto,
+                        linkTo(methodOn(AircraftController.class).getAircraft(dto.registrationNumber())).withSelfRel()))
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(resources,
+                linkTo(methodOn(AircraftController.class).searchAircraftByFeatures(feature, engineType)).withSelfRel()));
+    }
 }

@@ -28,4 +28,11 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
     @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.model.modelName.name, COUNT(sf)) " +
             "FROM ScheduledFlight sf JOIN sf.aircraft a GROUP BY a.model.modelName.name ORDER BY COUNT(sf) DESC")
     List<TopAircraftModelDTO> findTop5ModelsByAssignments(org.springframework.data.domain.Pageable pageable);
+
+    // --- US224 ---
+    @Query("SELECT a FROM Aircraft a WHERE " +
+            "(:engineType IS NULL OR a.aircraftModel.engineType = :engineType) AND " +
+            "(:feature IS NULL OR a.features LIKE %:feature%)")
+    List<Aircraft> findByFeaturesAndEngine(@Param("feature") String feature,
+                                           @Param("engineType") String engineType);
 }
