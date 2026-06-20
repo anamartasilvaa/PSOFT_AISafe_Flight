@@ -1,0 +1,13 @@
+@startuml
+title US219-SSD
+autonumber
+actor "Maintenance Supervisor" as Supervisor
+participant "System" as Sys
+
+activate Supervisor
+Supervisor -> Sys : GET /api/maintenance/records/ongoing
+activate Sys
+Sys --> Supervisor : Returns a list of all ongoing (IN_PROGRESS) maintenance activities (200 OK)
+deactivate Sys
+deactivate Supervisor
+@enduml

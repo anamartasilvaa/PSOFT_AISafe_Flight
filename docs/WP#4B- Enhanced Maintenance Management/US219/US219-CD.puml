@@ -1,0 +1,32 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US219-CD
+
+class MaintenanceController {
+    + getOngoingMaintenances(): ResponseEntity<CollectionModel<EntityModel<MaintenanceRecord>>>
+}
+
+class MaintenanceService {
+    + getOngoingMaintenances(): List<MaintenanceRecord>
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + findByStatus(status: MaintenanceRecordStatus): List<MaintenanceRecord>
+}
+
+class MaintenanceRecord <<Entity>> <<Root>> {
+    - description: String
+    + getStatus(): MaintenanceRecordStatus
+}
+
+enum MaintenanceRecordStatus <<Enumeration>> {
+    SCHEDULED
+    IN_PROGRESS
+    COMPLETED
+}
+
+MaintenanceController --> MaintenanceService : uses
+MaintenanceService --> MaintenanceRecordRepository : uses
+MaintenanceRecordRepository --> MaintenanceRecord : reads
+MaintenanceRecord --> MaintenanceRecordStatus : uses
+@enduml

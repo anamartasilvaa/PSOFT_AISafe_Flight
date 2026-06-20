@@ -1,0 +1,21 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+title US219-DM
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+    }
+
+    enum MaintenanceRecordStatus <<Enumeration>> {
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    MaintenanceRecord "1" --> "1" MaintenanceRecordStatus : has >
+}
+@enduml

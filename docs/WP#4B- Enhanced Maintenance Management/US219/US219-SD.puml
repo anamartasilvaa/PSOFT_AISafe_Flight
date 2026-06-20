@@ -1,0 +1,27 @@
+@startuml
+title US219-SD
+autonumber
+actor "Maintenance Supervisor" as Supervisor
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant ":MaintenanceRecordRepository" as Repo
+
+activate Supervisor
+Supervisor -> Ctrl : GET /api/maintenance/records/ongoing
+activate Ctrl
+
+Ctrl -> Service : getOngoingMaintenances()
+activate Service
+
+Service -> Repo : findByStatus(MaintenanceRecordStatus.IN_PROGRESS)
+activate Repo
+Repo --> Service : List<MaintenanceRecord>
+deactivate Repo
+
+Service --> Ctrl : List<MaintenanceRecord>
+deactivate Service
+
+Ctrl --> Supervisor : 200 OK (CollectionModel)
+deactivate Ctrl
+deactivate Supervisor
+@enduml
