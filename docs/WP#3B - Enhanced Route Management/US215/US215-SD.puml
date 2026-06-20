@@ -5,6 +5,7 @@ actor "ATCC" as Operator
 participant ":RouteController" as Ctrl
 participant ":RouteService" as Service
 participant ":RouteRepository" as Repo
+participant "response:Map<String, Double>" as MapDTO
 
 activate Operator
 Operator -> Ctrl : GET /api/routes/statistics/total-distance
@@ -19,9 +20,11 @@ note right of Repo : Query: SUM(minimumRange)\nWHERE status = 'ACTIVE'
 Repo --> Service : Double (total)
 deactivate Repo
 
-Service --> Ctrl : Double (total)
+Service -> MapDTO ** : create (Map.of("totalDistance", total))
+Service --> Ctrl : response:Map<String, Double>
 deactivate Service
 
+Ctrl -> Ctrl : wrap in EntityModel
 Ctrl --> Operator : 200 OK\n(EntityModel<Map<String, Double>>)
 deactivate Ctrl
 deactivate Operator
