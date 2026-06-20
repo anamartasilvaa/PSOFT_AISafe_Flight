@@ -1,0 +1,13 @@
+@startuml
+title US218-SSD
+autonumber
+actor "Maintenance Technician" as Tech
+participant "System" as Sys
+
+activate Tech
+Tech -> Sys : GET /api/maintenance/records/search?registrationNumber={reg}&fromDate={start}&toDate={end}&category={category}
+activate Sys
+Sys --> Tech : Returns a paged list of maintenance records matching the search criteria (200 OK)
+deactivate Sys
+deactivate Tech
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+title US218-SD
+autonumber
+actor "Maintenance Technician" as Tech
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant "ComponentCategory" as Enum
+participant ":MaintenanceRecordRepository" as Repo
+
+activate Tech
+Tech -> Ctrl : GET /api/maintenance/records/search\n?(registrationNumber, fromDate, toDate, category, pageable)
+activate Ctrl
+
+Ctrl -> Service : searchMaintenanceRecords(regNum, fromDate, toDate, category, pageable)
+activate Service
+
+
+alt category != null && !category.isBlank()
+    Service -> Enum : valueOf(category.toUpperCase())
+    activate Enum
+    Enum --> Service : cat (ComponentCategory)
+    deactivate Enum
+end
+
+Service -> Repo : searchRecords(regNum, start, end, cat, pageable)
+activate Repo
+note right of Repo : Executes @Query filtering by optional parameters:\nregNum, startDate, endDate, category
+Repo --> Service : Page<MaintenanceRecord>
+deactivate Repo
+
+Service --> Ctrl : Page<MaintenanceRecord>
+deactivate Service
+
+Ctrl --> Tech : 200 OK\n(PagedModel<EntityModel<MaintenanceRecord>>)
+deactivate Ctrl
+deactivate Tech
+@enduml

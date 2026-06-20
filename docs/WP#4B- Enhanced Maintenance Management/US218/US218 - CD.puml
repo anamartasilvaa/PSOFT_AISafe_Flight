@@ -1,0 +1,41 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US218-CD
+
+class MaintenanceController {
+    + searchRecords(registrationNumber: String, fromDate: String, toDate: String, category: String, pageable: Pageable, assembler: PagedResourcesAssembler<MaintenanceRecord>): ResponseEntity<PagedModel<EntityModel<MaintenanceRecord>>>
+}
+
+class MaintenanceService {
+    + searchMaintenanceRecords(registrationNumber: String, fromDate: String, toDate: String, category: String, pageable: Pageable): Page<MaintenanceRecord>
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + searchRecords(registrationNumber: String, startDate: LocalDateTime, endDate: LocalDateTime, category: ComponentCategory, pageable: Pageable): Page<MaintenanceRecord>
+}
+
+class MaintenanceRecord <<Entity>> <<Root>> {
+    - description: String
+    - startDate: LocalDateTime
+    + getStatus(): MaintenanceRecordStatus
+}
+
+class Aircraft <<Entity>> {
+}
+
+class RegistrationNumber <<Value Object>> {
+    - number: String
+}
+
+enum ComponentCategory <<Enumeration>> {
+}
+
+MaintenanceController --> MaintenanceService : uses >
+MaintenanceService --> MaintenanceRecordRepository : uses >
+MaintenanceService --> ComponentCategory : parses >
+
+MaintenanceRecordRepository --> MaintenanceRecord : reads >
+MaintenanceRecord --> ComponentCategory : uses >
+MaintenanceRecord --> Aircraft : references >
+Aircraft --> RegistrationNumber : uses >
+@enduml
