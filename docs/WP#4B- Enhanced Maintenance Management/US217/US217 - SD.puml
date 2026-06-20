@@ -1,0 +1,35 @@
+@startuml
+title US217-SD
+autonumber
+actor "Maintenance Technician" as Tech
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant "ComponentCategory" as Enum
+participant ":MaintenanceRecordRepository" as Repo
+
+activate Tech
+Tech -> Ctrl : GET /api/maintenance/records/search\n?category={category}&page={page}&size={size}
+activate Ctrl
+
+Ctrl -> Service : searchMaintenanceRecords(..., category, pageable)
+activate Service
+
+alt category != null && !category.isBlank()
+    Service -> Enum : valueOf(category.toUpperCase())
+    activate Enum
+    Enum --> Service : cat (ComponentCategory)
+    deactivate Enum
+end
+
+Service -> Repo : searchRecords(..., cat, pageable)
+activate Repo
+Repo --> Service : Page<MaintenanceRecord>
+deactivate Repo
+
+Service --> Ctrl : Page<MaintenanceRecord>
+deactivate Service
+
+Ctrl --> Tech : 200 OK\n(PagedModel<EntityModel<MaintenanceRecord>>)
+deactivate Ctrl
+deactivate Tech
+@enduml

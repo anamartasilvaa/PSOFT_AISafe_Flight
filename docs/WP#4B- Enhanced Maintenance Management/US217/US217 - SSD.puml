@@ -1,0 +1,13 @@
+@startuml
+title US217-SSD
+autonumber
+actor "Maintenance Technician" as Tech
+participant "System" as Sys
+
+activate Tech
+Tech -> Sys : GET /api/maintenance/records/search?category={category}&page={page}&size={size}
+activate Sys
+Sys --> Tech : Returns a paged list of maintenance records categorized by the requested component (200 OK)
+deactivate Sys
+deactivate Tech
+@enduml

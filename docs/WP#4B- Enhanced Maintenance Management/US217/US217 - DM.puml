@@ -1,0 +1,30 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+title US217-DM
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - description: String
+        - startDate: LocalDateTime
+        - expectedDuration: Integer
+        - cost: Double
+    }
+
+    enum ComponentCategory <<Enumeration>> {
+        ENGINE
+        AIRFRAME
+        AVIONICS
+        INTERIOR
+        EXTERIOR
+    }
+
+    enum MaintenanceRecordStatus <<Enumeration>> {
+        SCHEDULED
+        COMPLETED
+    }
+
+    MaintenanceRecord "1" --> "1" ComponentCategory : categorized under >
+    MaintenanceRecord "1" --> "1" MaintenanceRecordStatus : has >
+}
+@enduml
