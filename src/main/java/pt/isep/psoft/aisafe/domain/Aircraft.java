@@ -60,7 +60,6 @@ public class Aircraft {
         this.totalFlightHours = 0.0;
     }
 
-
     public void updateStatus(AircraftStatus newStatus) {
         Assert.notNull(newStatus, "New status must not be null.");
         this.status = newStatus;
@@ -70,7 +69,6 @@ public class Aircraft {
         Assert.isTrue(hours != null && hours > 0, "Flight hours to add must be positive.");
         this.totalFlightHours += hours;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -85,12 +83,17 @@ public class Aircraft {
         return Objects.hash(registrationNumber);
     }
 
+    // --- GETTERS ---
 
     public RegistrationNumber getRegistrationNumber() {
         return this.registrationNumber;
     }
 
     public AircraftModel getAircraftModel() {
+        return this.model;
+    }
+
+    public AircraftModel getModel() {
         return this.model;
     }
 
@@ -106,7 +109,11 @@ public class Aircraft {
         return this.status;
     }
 
-    public Double getTotalFlightHours() { return this.totalFlightHours; }
+    public Double getTotalFlightHours() {
+        return this.totalFlightHours;
+    }
 
-    public String getFeatures() { return this.features; }
+    public String getFeatures() {
+        return this.features;
+    }
 }

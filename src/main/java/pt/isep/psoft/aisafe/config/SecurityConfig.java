@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import pt.isep.psoft.aisafe.domain.Role;
 import pt.isep.psoft.aisafe.infrastructure.JwtAuthenticationFilter;
 
 @Configuration
@@ -41,101 +40,63 @@ public class SecurityConfig {
                         auth.requestMatchers("/h2-console/**").permitAll();
                     }
 
-// WP1 & WP1B
+                    // WP1 & WP1B
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/compatible-routes").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/real-time-status").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/operational-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/operational-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models/instances").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/instances/*/status").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
 
-// US201 & US202
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+                    // WP2 & WP2B
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/details").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/airports/grouped").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports/import").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/status").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/airports/*/certifications").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
 
-// US204
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
+                    // WP3 & WP3B
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/busiest-airports").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/total-distance").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/alternatives").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/involving/*").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/export/geojson").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/flights").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/flights/**").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
-// US203, US205, US206
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/compatible-routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/real-time-status").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/operational-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/operational-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
+                    // WP4 & WP4B
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/costs").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/alerts").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/ongoing").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/turnaround").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/search").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers("/api/maintenance/**").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
 
-// (WP1)
-                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.POST, "/api/aircraft-models/instances").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/instances/*/status").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
+                    // --- CORREÇÕES E NOVAS ROTAS (US223, US224, US227, US229) ---
+                    // US224 - Path real: /api/aircraft-models/instances/search-features
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/search-features").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
+                    // US229 - Relatório de utilização de rotas (Ajustar se o path for diferente)
+                    auth.requestMatchers(HttpMethod.GET, "/api/scheduled-flights/route-utilization").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
 
-// WP2 & WP2B - AIRPORT MANAGEMENT
+                    // US223 - Top Utilized (Já tens /api/aircraft-models/models/top5 acima)
+                    // Se houver uma nova rota para top-utilized, ajusta aqui:
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/top-utilized").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
-// US207
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/image").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-// US208
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/details").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-// US211
-                    auth.requestMatchers(HttpMethod.GET, "/api/airports/grouped").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-// US225
-                    auth.requestMatchers(HttpMethod.POST, "/api/airports/import").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-// (WP2)
-                    auth.requestMatchers(HttpMethod.POST, "/api/airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.PATCH, "/api/airports/*/status").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.POST, "/api/airports/*/certifications").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/airports/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
-
-
-// WP3 & WP3B - FLIGHT ROUTES & STATISTICS
-
-// US210
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/busiest-airports").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-// US214 - Routes sorted
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US215 - Total Network Distance
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/statistics/total-distance").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US216 - Alternative Routes
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/alternatives").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US209
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/involving/*").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-//  US228
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/export/geojson").hasAnyRole(Role.BACKOFFICE.name(), Role.ADMIN.name());
-
-// (WP3)
-                    auth.requestMatchers(HttpMethod.POST, "/api/routes").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/routes/**").hasAnyRole(Role.BACKOFFICE.name(), Role.ATCC.name(), Role.ADMIN.name());
-
-// US212 & US213 - Scheduled Flights
-                    auth.requestMatchers(HttpMethod.POST, "/api/flights").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-                    auth.requestMatchers(HttpMethod.GET, "/api/flights/**").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-
-// WP4 & WP4B - MAINTENANCE RECORDS
-
-// US220 - Maintenance Costs Report (ATCC)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/costs").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US222 - Maintenance Alerts (ATCC)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/alerts").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US219 - View ongoing maintenance ( MAINTENANCE_TECH)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/ongoing").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
-
-// US221 - Turnaround time ( MAINTENANCE_TECH)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/turnaround").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
-
-// US217 & US218 - Search and Categorize (Maintenance Technician)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/search").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
-
-// US117 - Total Hours (ATCC)
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// US117 (Extension) - Total Hours by Specific Aircraft (ATCC) -> A NOVA ROTA AQUI!
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyRole(Role.ATCC.name(), Role.ADMIN.name());
-
-// (WP4 - Fallback para restantes endpoints de manutenção)
-                    auth.requestMatchers("/api/maintenance/**").hasAnyRole(Role.MAINTENANCE_TECH.name(), Role.ADMIN.name());
+                    // US227 - Eficiência de combustível
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/fuel-efficiency").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
                     auth.anyRequest().authenticated();
                 })

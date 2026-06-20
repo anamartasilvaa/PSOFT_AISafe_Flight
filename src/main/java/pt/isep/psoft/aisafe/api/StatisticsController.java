@@ -1,14 +1,14 @@
-package pt.isep.psoft.aisafe.api; // Ajusta o package conforme a tua estrutura
+package pt.isep.psoft.aisafe.api;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pt.isep.psoft.aisafe.application.StatisticsService;
-import pt.isep.psoft.aisafe.application.DTO.RouteUtilizationDTO;
+import pt.isep.psoft.aisafe.application.DTO.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,21 +23,29 @@ public class StatisticsController {
     }
 
     @GetMapping("/routes/most-flown")
-    // @RolesAllowed("BACKOFFICE") // Descomenta se tiveres a segurança ativada
     public ResponseEntity<CollectionModel<EntityModel<RouteUtilizationDTO>>> getMostFrequentRoutes() {
-
         List<RouteUtilizationDTO> frequentRoutes = statisticsService.getMostFrequentRoutes();
+        if (frequentRoutes.isEmpty()) return ResponseEntity.noContent().build();
+        List<EntityModel<RouteUtilizationDTO>> models = frequentRoutes.stream().map(EntityModel::of).collect(Collectors.toList());
+        return ResponseEntity.ok(CollectionModel.of(models));
+    }
 
-        if (frequentRoutes.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+    @GetMapping("/utilization-over-time")
+    public ResponseEntity<CollectionModel<EntityModel<AircraftUtilizationRateDTO>>> getUtilizationOverTime(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        List<AircraftUtilizationRateDTO> data = statisticsService.getUtilizationRateOverTime(start, end);
+        if (data.isEmpty()) return ResponseEntity.noContent().build();
+        List<EntityModel<AircraftUtilizationRateDTO>> models = data.stream().map(EntityModel::of).collect(Collectors.toList());
+        return ResponseEntity.ok(CollectionModel.of(models));
+    }
 
-        List<EntityModel<RouteUtilizationDTO>> models = frequentRoutes.stream()
-                .map(EntityModel::of)
-                .collect(Collectors.toList());
-
-        CollectionModel<EntityModel<RouteUtilizationDTO>> collectionModel = CollectionModel.of(models);
-
-        return ResponseEntity.ok(collectionModel);
+    @GetMapping("/fuel-efficiency")
+    public ResponseEntity<CollectionModel<EntityModel<FuelEfficiencyDTO>>> getFuelEfficiency(
+            @RequestParam(defaultValue = "true") boolean byAircraft) {
+        List<FuelEfficiencyDTO> report = statisticsService.getFuelEfficiencyReport(byAircraft);
+        if (report.isEmpty()) return ResponseEntity.noContent().build();
+        List<EntityModel<FuelEfficiencyDTO>> models = report.stream().map(EntityModel::of).collect(Collectors.toList());
+        return ResponseEntity.ok(CollectionModel.of(models));
     }
 }

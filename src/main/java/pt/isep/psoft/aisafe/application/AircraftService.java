@@ -57,7 +57,8 @@ public class AircraftService {
         AircraftModel model = new AircraftModel(
                 new ModelName(dto.modelName()), Manufacturer.valueOf(dto.manufacturer().toUpperCase()),
                 dto.seatingCapacity(), dto.fuelCapacity(), dto.range(), dto.speed(),
-                dto.modelPhotoUrl(), null, null, dto.engineType()
+                dto.fuelConsumption(),
+                dto.modelPhotoUrl(), dto.seatingConfiguration(), dto.operatingHoursRange(), dto.engineType()
         );
         modelRepository.save(model);
     }
@@ -92,9 +93,10 @@ public class AircraftService {
     public Map<String, Object> updateAircraftStatusWithReport(String regNum, UpdateAircraftStatusDTO dto) {
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
-        aircraft.updateStatus(AircraftStatus.valueOf(dto.status().toUpperCase()));
+        AircraftStatus newStatus = AircraftStatus.valueOf(dto.status().toUpperCase());
+        aircraft.updateStatus(newStatus);
         aircraftRepository.save(aircraft);
-        List<String> swapLogs = (aircraft.getStatus() == AircraftStatus.UNDER_MAINTENANCE || aircraft.getStatus() == AircraftStatus.INACTIVE)
+        List<String> swapLogs = (newStatus == AircraftStatus.UNDER_MAINTENANCE || newStatus == AircraftStatus.INACTIVE)
                 ? handleAircraftSwap(aircraft) : new ArrayList<>();
         Map<String, Object> response = new HashMap<>();
         response.put("aircraft", mapToViewDTO(aircraft));

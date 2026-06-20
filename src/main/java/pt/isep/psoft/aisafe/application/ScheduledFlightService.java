@@ -38,10 +38,12 @@ public class ScheduledFlightService {
         if (aircraft.getStatus() != AircraftStatus.ACTIVE) {
             throw new IllegalStateException("Aircraft is not available. Status: " + aircraft.getStatus());
         }
+
         if (route.getOrigin().getStatus() != AirportStatus.OPERATIONAL ||
                 route.getDestination().getStatus() != AirportStatus.OPERATIONAL) {
             throw new IllegalStateException("One of the airports is not operational.");
         }
+
         if (aircraft.getActualSeatingCapacity() < route.getMinimumCapacity() ||
                 aircraft.getAircraftModel().getMaximumRange() < route.getMinimumRange()) {
             throw new IllegalArgumentException("Aircraft does not meet route requirements.");
@@ -70,7 +72,7 @@ public class ScheduledFlightService {
                         f.getAircraft().getRegistrationNumber().number(),
                         f.getScheduledDateTime().toString(),
                         f.getStatus().name()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
