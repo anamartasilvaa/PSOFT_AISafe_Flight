@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -51,7 +50,7 @@ class AircraftControllerTest {
 
     @Test
     void shouldReturn201CreatedWhenCreatingAircraft() {
-        RegisterAircraftDTO requestDto = new RegisterAircraftDTO("CS-TPA", "A320", LocalDate.of(2023, 5, 10), 180);
+        RegisterAircraftDTO requestDto = new RegisterAircraftDTO("CS-TPA", "A320", LocalDate.of(2023, 5, 10), 180, "None");
         ResponseEntity<EntityModel<RegisterAircraftDTO>> response = aircraftController.createAircraft(requestDto);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
@@ -63,7 +62,7 @@ class AircraftControllerTest {
         UpdateAircraftStatusDTO requestDto = new UpdateAircraftStatusDTO("UNDER_MAINTENANCE");
 
         Map<String, Object> mockResponse = new HashMap<>();
-        mockResponse.put("aircraft", new AircraftViewDTO(regNum, "A320", LocalDate.of(2023, 5, 10), 180, "UNDER_MAINTENANCE", "url"));
+        mockResponse.put("aircraft", new AircraftViewDTO(regNum, "A320", LocalDate.of(2023, 5, 10), 180, "UNDER_MAINTENANCE", "url", "None", "Turbofan"));
         mockResponse.put("swapReport", List.of("Algorithm executed"));
 
         when(aircraftService.updateAircraftStatusWithReport(eq(regNum), any())).thenReturn(mockResponse);
@@ -77,7 +76,7 @@ class AircraftControllerTest {
     @Test
     void shouldReturn200OkWhenGettingAircraft() {
         String regNum = "CS-TPA";
-        AircraftViewDTO responseDto = new AircraftViewDTO(regNum, "A320", LocalDate.of(2023, 5, 10), 180, "ACTIVE", "url");
+        AircraftViewDTO responseDto = new AircraftViewDTO(regNum, "A320", LocalDate.of(2023, 5, 10), 180, "ACTIVE", "url", "None", "Turbofan");
         when(aircraftService.getAircraftByRegistrationNumber(eq(regNum))).thenReturn(responseDto);
 
         ResponseEntity<EntityModel<AircraftViewDTO>> response = aircraftController.getAircraft(regNum);
@@ -88,7 +87,7 @@ class AircraftControllerTest {
     void shouldReturn200OkWhenUpdatingModelSpecifications() {
         String modelName = "B737 MAX";
         UpdateAircraftModelSpecsDTO requestDto = new UpdateAircraftModelSpecsDTO(200, 20000.0, 5000.0, 800.0, "3-3", null);
-        AircraftModelViewDTO responseDto = new AircraftModelViewDTO(modelName, "BOEING", 200, 20000.0, 5000.0, 800.0, "url", "3-3", null);
+        AircraftModelViewDTO responseDto = new AircraftModelViewDTO(modelName, "BOEING", 200, 20000.0, 5000.0, 800.0, "url", "3-3", null, "Turbofan");
 
         when(aircraftService.updateModelSpecifications(eq(modelName), any())).thenReturn(responseDto);
         ResponseEntity<EntityModel<AircraftModelViewDTO>> response = aircraftController.updateModelSpecifications(modelName, requestDto);
