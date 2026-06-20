@@ -33,9 +33,13 @@ public interface MaintenanceRecordRepository extends JpaRepository<MaintenanceRe
             Pageable pageable
     );
 
-    // US220 - Soma de custos por avião (Retorna pares de [String, Double])
-    @Query("SELECT m.aircraft.registrationNumber.number, SUM(m.cost) FROM MaintenanceRecord m GROUP BY m.aircraft")
+    // US220 - Soma de custos por avião
+    @Query("SELECT m.aircraft.registrationNumber.number, SUM(m.cost) FROM MaintenanceRecord m GROUP BY m.aircraft.registrationNumber.number")
     List<Object[]> getMaintenanceCostsByAircraft();
+
+    // US220 - Soma de custos por MODELO de avião
+    @Query("SELECT m.aircraft.model.modelName, SUM(m.cost) FROM MaintenanceRecord m GROUP BY m.aircraft.model.modelName")
+    List<Object[]> getMaintenanceCostsByAircraftModel();
 
     // US222 - Encontra o último registo de manutenção concluído para um avião específico
     Optional<MaintenanceRecord> findTopByAircraftAndStatusOrderByCompletionDateDesc(
