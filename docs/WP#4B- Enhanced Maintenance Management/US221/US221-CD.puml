@@ -1,0 +1,49 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US221-CD
+
+class MaintenanceController <<RestController>> {
+    + getTurnaroundTime(): ResponseEntity<CollectionModel<EntityModel<TurnaroundTimeDTO>>>
+}
+
+class MaintenanceService <<Service>> {
+    + getTurnaroundTimePerAircraftModel(): List<TurnaroundTimeDTO>
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + findByStatus(status: MaintenanceRecordStatus): List<MaintenanceRecord>
+}
+
+class MaintenanceRecord <<Entity>> {
+    - startDate: LocalDateTime
+    - completionDate: LocalDateTime
+    - status: MaintenanceRecordStatus
+    + getAircraft(): Aircraft
+    + getStartDate(): LocalDateTime
+    + getCompletionDate(): LocalDateTime
+}
+
+class Aircraft <<Entity>> {
+    + getAircraftModel(): AircraftModel
+}
+
+class AircraftModel <<Entity>> {
+    + getModelName(): ModelName
+}
+
+class TurnaroundTimeDTO <<Record>> {
+    + aircraftModel: String
+    + averageTurnaroundHours: Double
+}
+
+' Relações de uso e arquitetura
+MaintenanceController --> MaintenanceService : uses
+MaintenanceService --> MaintenanceRecordRepository : uses
+MaintenanceService ..> TurnaroundTimeDTO : creates
+
+' Relações de Domínio usadas nesta US
+MaintenanceRecordRepository ..> MaintenanceRecord : returns
+MaintenanceRecord "1" --> "1" Aircraft : refers to >
+Aircraft "1" --> "1" AircraftModel : is of type >
+
+@enduml

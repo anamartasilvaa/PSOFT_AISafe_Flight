@@ -1,0 +1,24 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+
+title US221
+
+class MaintenanceRecord {
+    - startDate
+    - completionDate
+    - status
+}
+
+class Aircraft {
+    - registrationNumber
+}
+
+class AircraftModel {
+    - modelName
+}
+
+AircraftModel "1" <-- "*" Aircraft : is of type <
+Aircraft "1" <-- "*" MaintenanceRecord : performed on <
+
+@enduml

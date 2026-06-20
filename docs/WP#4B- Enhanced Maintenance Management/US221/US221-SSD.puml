@@ -1,0 +1,13 @@
+@startuml
+title US221-SSD
+autonumber
+actor "Maintenance Supervisor" as Sup
+participant "System" as Sys
+
+activate Sup
+Sup -> Sys : GET /api/maintenance/statistics/turnaround
+activate Sys
+Sys --> Sup : Returns average turnaround time per aircraft model (200 OK / 204 No Content)
+deactivate Sys
+deactivate Sup
+@enduml
