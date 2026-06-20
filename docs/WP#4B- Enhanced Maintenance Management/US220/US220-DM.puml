@@ -1,0 +1,29 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+title US220-DM
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<Entity>> <<Root>> {
+        - cost: Double
+    }
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<Entity>> <<Root>> {
+    }
+    class RegistrationNumber <<Value Object>> {
+        - number: String
+    }
+    Aircraft "1" *-- "1" RegistrationNumber : identified by >
+}
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<Entity>> <<Root>> {
+        - modelName: String
+    }
+}
+
+MaintenanceRecord "*" --> "1" Aircraft : performed on >
+Aircraft "*" --> "1" AircraftModel : is of type >
+@enduml

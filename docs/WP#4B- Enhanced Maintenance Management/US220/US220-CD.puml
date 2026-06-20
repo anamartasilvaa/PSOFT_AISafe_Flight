@@ -1,0 +1,30 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US220-CD
+
+class MaintenanceController {
+    + getMaintenanceCosts(groupBy: String): ResponseEntity<CollectionModel<EntityModel<MaintenanceCostDTO>>>
+}
+
+class MaintenanceService {
+    + getMaintenanceCosts(groupBy: String): List<MaintenanceCostDTO>
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + getMaintenanceCostsByAircraftModel(): List<Object[]>
+    + getMaintenanceCostsByAircraft(): List<Object[]>
+}
+
+class MaintenanceCostDTO <<Record>> {
+    + registrationNumber: String
+    + totalCost: Double
+}
+
+' Relações atualizadas
+MaintenanceController ..> MaintenanceCostDTO : uses
+MaintenanceController --> MaintenanceService : uses
+MaintenanceService --> MaintenanceRecordRepository : uses
+MaintenanceService ..> MaintenanceCostDTO : creates/maps
+MaintenanceRecordRepository ..> MaintenanceCostDTO : (returns data used for)
+
+@enduml

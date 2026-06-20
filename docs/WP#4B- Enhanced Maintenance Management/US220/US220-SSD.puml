@@ -1,0 +1,14 @@
+@startuml
+title US220-SSD
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : GET /api/maintenance/statistics/costs?groupBy={criteria}
+activate Sys
+note right of Sys : Criteria can be "aircraft" or "model"
+Sys --> Operator : Returns maintenance costs report (200 OK)
+deactivate Sys
+deactivate Operator
+@enduml

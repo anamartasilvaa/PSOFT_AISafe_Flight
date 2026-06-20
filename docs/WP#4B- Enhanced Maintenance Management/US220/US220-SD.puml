@@ -1,0 +1,42 @@
+@startuml
+title US220-SD (Corrigido e Completo)
+autonumber
+actor "ATCC" as Operator
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant ":MaintenanceRecordRepository" as Repo
+participant "list:List<MaintenanceCostDTO>" as DTOList
+
+activate Operator
+Operator -> Ctrl : GET /api/maintenance/statistics/costs?groupBy={criteria}
+activate Ctrl
+
+Ctrl -> Service : getMaintenanceCosts(groupBy)
+activate Service
+
+alt groupBy equals "model"
+    Service -> Repo : getMaintenanceCostsByAircraftModel()
+    activate Repo
+    Repo --> Service : results: List<Object[]>
+    deactivate Repo
+else
+    Service -> Repo : getMaintenanceCostsByAircraft()
+    activate Repo
+    Repo --> Service : results: List<Object[]>
+    deactivate Repo
+end
+
+Service -> Service : map results to MaintenanceCostDTO
+activate DTOList
+Service -> DTOList : create (map Object[] to DTO)
+DTOList --> Service : List<MaintenanceCostDTO>
+deactivate DTOList
+
+Service --> Ctrl : List<MaintenanceCostDTO>
+deactivate Service
+
+Ctrl -> Ctrl : wrap in EntityModel/CollectionModel
+Ctrl --> Operator : 200 OK (CollectionModel<EntityModel<MaintenanceCostDTO>>)
+deactivate Ctrl
+deactivate Operator
+@enduml
