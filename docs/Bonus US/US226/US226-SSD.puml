@@ -1,0 +1,18 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SSD-US226
+actor "Maintenance Supervisor" as Supervisor
+participant "System" as Sys
+
+Supervisor -> Sys : requests low-stock alerts
+activate Sys
+
+alt if low-stock parts exist
+    Sys --> Supervisor : returns list of critical parts (part number, name, current stock, minimum threshold, alert message)
+else if inventory is healthy
+    Sys --> Supervisor : informs that there are no alerts (empty/no content)
+end
+
+deactivate Sys
+@enduml

@@ -1,0 +1,41 @@
+@startuml
+skinparam style strictuml
+hide empty members
+title DM-US228
+
+package "Route Aggregate" {
+    class Route <<Entity>> <<Root>> {
+        - version: Long
+    }
+    class RouteId <<Value Object>> {
+        - id: String
+    }
+    enum RouteStatus <<Enumeration>> {
+        ACTIVE
+        INACTIVE
+    }
+
+    Route *-- "1" RouteId : identified by >
+    Route --> "1" RouteStatus : has >
+}
+
+package "Airport Aggregate" {
+    class Airport <<Entity>> <<Root>> {
+        - version: Long
+    }
+    class IATACode <<Value Object>> {
+        - code: String
+    }
+    class Coordinates <<Value Object>> {
+        - latitude: Double
+        - longitude: Double
+    }
+
+    Airport *-- "1" IATACode : identified by >
+    Airport *-- "1" Coordinates : located at >
+}
+
+Route "*" --> "1" Airport : departs from (Origin) >
+Route "*" --> "1" Airport : arrives at (Destination) >
+
+@enduml

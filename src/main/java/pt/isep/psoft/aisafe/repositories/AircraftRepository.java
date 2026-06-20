@@ -25,7 +25,7 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
             "FROM Aircraft a GROUP BY a.model.modelName.name ORDER BY SUM(a.totalFlightHours) DESC")
     List<TopAircraftModelDTO> findTop5ModelsByFlightHours(org.springframework.data.domain.Pageable pageable);
 
-    @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.model.modelName.name, CAST(COUNT(sf) AS double)) " +
+    @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.model.modelName.name, COUNT(sf)) " +
             "FROM ScheduledFlight sf JOIN sf.aircraft a GROUP BY a.model.modelName.name ORDER BY COUNT(sf) DESC")
     List<TopAircraftModelDTO> findTop5ModelsByAssignments(org.springframework.data.domain.Pageable pageable);
 }

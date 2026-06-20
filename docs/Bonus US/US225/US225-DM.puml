@@ -1,0 +1,36 @@
+@startuml
+skinparam style strictuml
+hide empty members
+title DM-US225
+
+package "Airport Aggregate" {
+
+    class Airport <<Entity>> <<Root>> {
+        - version: Long
+        - name: String
+        - city: String
+        - country: String
+        - timezone: String
+        + Airport(iataCode, name, city, country, timezone, type, coords)
+    }
+
+    class IATACode <<Value Object>> {
+        - code : String
+    }
+
+    class Coordinates <<Value Object>> {
+        - latitude: Double
+        - longitude: Double
+    }
+
+    enum AirportType <<Enum>> {
+        INTERNATIONAL
+        REGIONAL
+        DOMESTIC
+    }
+
+    Airport *-- "1" IATACode : identified by >
+    Airport *-- "1" Coordinates : located at >
+    Airport --> "1" AirportType : is of type >
+}
+@enduml

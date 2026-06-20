@@ -1,0 +1,62 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SD-US225
+
+actor "Backoffice Operator" as Admin
+participant ":AirportController" as Controller
+participant ":AirportService" as Service
+participant "csvParser:CSVParser" as Parser
+participant "dto:RegisterAirportDTO" as DTO
+participant "iata:IATACode" as IATA
+participant "coords:Coordinates" as Coords
+participant ":AirportRepository" as Repo
+participant "airport:Airport" as Airport
+participant "viewDto:AirportViewDTO" as ViewDTO
+
+Admin -> Controller : POST /api/airports/import (MultipartFile)
+activate Controller
+
+Controller -> Service : importAirportsFromCsv(file)
+activate Service
+
+' 1. Inicializar o leitor de CSV
+Service -> Parser ** : create(file.getInputStream(), CSVFormat)
+activate Parser
+Parser --> Service : csvRecords
+deactivate Parser
+
+' 2. Iterar sobre as linhas do CSV
+loop for each csvRecord
+    Service -> DTO ** : create(iataCode, name, city, country, timezone, type, latitude, longitude)
+
+    ' 3. Reaproveitar a lógica de registo existente
+    Service -> Service : registerAirport(dto)
+    activate Service
+
+    Service -> IATA ** : create(dto.iataCode)
+    Service -> Coords ** : create(dto.latitude, dto.longitude)
+
+    Service -> Airport ** : create(iata, name, city, country, timezone, AirportType, coords)
+
+    Service -> Repo : save(airport)
+    activate Repo
+    Repo --> Service : savedAirport
+    deactivate Repo
+
+    Service -> ViewDTO ** : mapToDTO(savedAirport)
+
+    Service --> Service : viewDto
+    deactivate Service
+end
+
+Service --> Controller : importedAirports (List<AirportViewDTO>)
+deactivate Service
+
+' 4. Mapear para HATEOAS
+Controller -> Controller : resources = CollectionModel.of(airportResources)
+Controller -> Controller : resources.add(linkTo(methodOn(importAirportsFromCsv(file))).withSelfRel())
+
+Controller --> Admin : 201 Created (CollectionModel<EntityModel<AirportViewDTO>>)
+deactivate Controller
+@enduml

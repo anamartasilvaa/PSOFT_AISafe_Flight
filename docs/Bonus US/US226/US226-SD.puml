@@ -1,0 +1,61 @@
+@startuml
+skinparam style strictuml
+autonumber
+title SD-US226
+
+actor "Maintenance Supervisor" as User
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant ":MaintenancePartRepository" as Repo
+
+User -> Ctrl : GET /api/maintenance/parts/low-stock-alerts
+activate Ctrl
+
+Ctrl -> Service : generateLowStockAlerts()
+activate Service
+
+Service -> Repo : findPartsWithLowStock()
+activate Repo
+Repo --> Service : lowStockParts (List<MaintenancePart>)
+deactivate Repo
+
+alt if lowStockParts is not empty
+    loop for each part in lowStockParts
+        participant "part:MaintenancePart" as Part
+        participant "dto:LowStockAlertDTO" as DTO
+
+        Service -> Part : getPartNumber().getNumber()
+        activate Part
+        Part --> Service : number
+        deactivate Part
+
+        Service -> Part : getName()
+        activate Part
+        Part --> Service : name
+        deactivate Part
+
+        Service -> Part : getStockQuantity()
+        activate Part
+        Part --> Service : stock
+        deactivate Part
+
+        Service -> Part : getMinimumThreshold()
+        activate Part
+        Part --> Service : threshold
+        deactivate Part
+
+        Service -> DTO ** : create(number, name, stock, threshold, message)
+    end
+end
+
+Service --> Ctrl : alerts (List<LowStockAlertDTO>)
+deactivate Service
+
+alt if alerts is empty
+    Ctrl --> User : 204 No Content
+else alerts is not empty
+    Ctrl --> User : 200 OK (CollectionModel)
+end
+
+deactivate Ctrl
+@enduml

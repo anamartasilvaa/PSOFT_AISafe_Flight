@@ -31,6 +31,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import pt.isep.psoft.aisafe.application.DTO.LowStockAlertDTO;
+import java.util.Collections;
+
 @ExtendWith(MockitoExtension.class)
 class MaintenanceControllerTest {
 
@@ -125,5 +128,29 @@ class MaintenanceControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertTrue(response.getBody().hasLinks());
+    }
+
+    // --- TESTE 6: US226 - Get Low-Stock Alerts (Com alertas)
+    @Test
+    void shouldReturn200WhenLowStockAlertsExist() {
+        LowStockAlertDTO mockAlert = new LowStockAlertDTO("PN-999", "Filtro XYZ", 2, 5, "Stock Crítico!");
+        when(maintenanceService.generateLowStockAlerts()).thenReturn(List.of(mockAlert));
+
+        ResponseEntity<CollectionModel<EntityModel<LowStockAlertDTO>>> response = maintenanceController.getLowStockAlerts();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().getContent().isEmpty());
+    }
+
+    // --- TESTE 7: US226 - Get Low-Stock Alerts
+    @Test
+    void shouldReturn204WhenInventoryIsHealthy() {
+        when(maintenanceService.generateLowStockAlerts()).thenReturn(Collections.emptyList());
+
+        ResponseEntity<CollectionModel<EntityModel<LowStockAlertDTO>>> response = maintenanceController.getLowStockAlerts();
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertNull(response.getBody());
     }
 }
