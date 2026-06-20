@@ -1,0 +1,14 @@
+@startuml
+title US222
+autonumber
+actor "ATCC" as Operator
+participant "System" as Sys
+
+activate Operator
+Operator -> Sys : GET /api/maintenance/alerts?type={type}
+activate Sys
+note right of Sys : type is optional ("FLIGHT_HOURS" or "CALENDAR_DAYS")
+Sys --> Operator : Returns list of pending maintenance alerts (200 OK / 204 No Content)
+deactivate Sys
+deactivate Operator
+@enduml

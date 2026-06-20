@@ -1,0 +1,62 @@
+@startuml
+title US222-SD
+autonumber
+actor "ATCC" as Operator
+participant ":MaintenanceController" as Ctrl
+participant ":MaintenanceService" as Service
+participant ":AircraftRepository" as AircraftRepo
+participant ":MaintenanceTemplateRepository" as TemplateRepo
+participant ":MaintenanceRecordRepository" as RecordRepo
+participant "dto:MaintenanceAlertDTO" as DTO
+
+activate Operator
+Operator -> Ctrl : GET /api/maintenance/alerts?type={type}
+activate Ctrl
+
+Ctrl -> Service : generateMaintenanceAlerts()
+activate Service
+
+Service -> AircraftRepo : findAll()
+activate AircraftRepo
+AircraftRepo --> Service : List<Aircraft>
+deactivate AircraftRepo
+
+loop for each aircraft
+    alt aircraft.status == ACTIVE
+        Service -> TemplateRepo : findByAppliesToContaining(aircraft.model)
+        activate TemplateRepo
+        TemplateRepo --> Service : List<MaintenanceTemplate>
+        deactivate TemplateRepo
+
+        loop for each template
+            alt flightHours limit reached
+                Service -> DTO ** : create(regNum, "FLIGHT_HOURS", message)
+            end
+
+            alt calendarDays limit approaching
+                Service -> RecordRepo : findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft, COMPLETED)
+                activate RecordRepo
+                RecordRepo --> Service : Optional<MaintenanceRecord>
+                deactivate RecordRepo
+
+                note right of Service : Calculates days passed since last completion\nor manufacturing date
+                alt daysPassed >= (interval - 15)
+                    Service -> DTO ** : create(regNum, "CALENDAR_DAYS", message)
+                end
+            end
+        end
+    end
+end
+
+Service --> Ctrl : List<MaintenanceAlertDTO>
+deactivate Service
+
+alt type != null && !type.isEmpty()
+    Ctrl -> Ctrl : filter alerts by type
+end
+
+Ctrl -> Ctrl : wrap in CollectionModel/EntityModel
+Ctrl --> Operator : 200 OK / 204 No Content
+deactivate Ctrl
+deactivate Operator
+@enduml

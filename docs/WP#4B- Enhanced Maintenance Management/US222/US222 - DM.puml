@@ -1,0 +1,44 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+
+title US222 - Domain Model (DM) Sub-domain
+
+class Aircraft {
+    - registrationNumber
+    - totalFlightHours
+    - status
+    - manufacturingDate
+}
+
+class AircraftModel {
+    - modelName
+}
+
+class MaintenanceTemplate {
+    - templateName
+    - flightHoursInterval
+    - calendarDaysInterval
+}
+
+class MaintenanceRecord {
+    - completionDate
+    - status
+}
+
+Aircraft "*" --> "1" AircraftModel : is of type >
+MaintenanceTemplate "*" --> "*" AircraftModel : applies to >
+Aircraft "1" <-- "*" MaintenanceRecord : performed on <
+
+note right of MaintenanceTemplate
+  Contains the intervals used to
+  evaluate if an Aircraft is due
+  for scheduled maintenance.
+end note
+
+note right of MaintenanceRecord
+  Used to determine the days passed
+  since the last completed maintenance.
+end note
+
+@enduml

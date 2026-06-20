@@ -1,0 +1,62 @@
+@startuml
+skinparam classAttributeIconSize 0
+title US222-CD
+
+class MaintenanceController <<RestController>> {
+    + getMaintenanceAlerts(type: String): ResponseEntity<CollectionModel<EntityModel<MaintenanceAlertDTO>>>
+}
+
+class MaintenanceService <<Service>> {
+    + generateMaintenanceAlerts(): List<MaintenanceAlertDTO>
+}
+
+interface AircraftRepository <<Repository>> {
+    + findAll(): List<Aircraft>
+}
+
+interface MaintenanceTemplateRepository <<Repository>> {
+    + findByAppliesToContaining(model: AircraftModel): List<MaintenanceTemplate>
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft: Aircraft, status: MaintenanceRecordStatus): Optional<MaintenanceRecord>
+}
+
+class Aircraft <<Entity>> {
+    - status: AircraftStatus
+    - totalFlightHours: Double
+    - manufacturingDate: LocalDate
+    + getStatus(): AircraftStatus
+    + getTotalFlightHours(): Double
+}
+
+class MaintenanceTemplate <<Entity>> {
+    - flightHoursInterval: Double
+    - calendarDaysInterval: Integer
+}
+
+class MaintenanceRecord <<Entity>> {
+    - completionDate: LocalDateTime
+    - status: MaintenanceRecordStatus
+}
+
+class MaintenanceAlertDTO <<Record>> {
+    + registrationNumber: String
+    + alertType: String
+    + message: String
+}
+
+' Relações de Camadas
+MaintenanceController ..> MaintenanceAlertDTO : uses
+MaintenanceController --> MaintenanceService : uses
+MaintenanceService --> AircraftRepository : uses
+MaintenanceService --> MaintenanceTemplateRepository : uses
+MaintenanceService --> MaintenanceRecordRepository : uses
+MaintenanceService ..> MaintenanceAlertDTO : creates
+
+' Relações de Domínio usadas na pesquisa
+MaintenanceTemplateRepository ..> MaintenanceTemplate : returns
+AircraftRepository ..> Aircraft : returns
+MaintenanceRecordRepository ..> MaintenanceRecord : returns
+
+@enduml
