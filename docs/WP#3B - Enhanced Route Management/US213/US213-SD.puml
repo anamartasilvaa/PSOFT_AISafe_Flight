@@ -6,6 +6,7 @@ participant ":ScheduledFlightController" as Ctrl
 participant ":ScheduledFlightService" as Service
 participant "regNum\n:RegistrationNumber" as RegNum
 participant ":ScheduledFlightRepository" as Repo
+participant "dto\n:ScheduledFlightViewDTO" as DTO
 
 activate Operator
 Operator -> Ctrl : GET /api/scheduled-flights/aircraft/{registrationNumber}
@@ -20,6 +21,10 @@ Service -> Repo : findByAircraft_RegistrationNumber(regNum)
 activate Repo
 Repo --> Service : List<ScheduledFlight>
 deactivate Repo
+
+loop for each ScheduledFlight f in list
+    Service -> DTO ** : create(\n f.getPk(),\n f.getRoute().getRouteId().id(),\n f.getAircraft().getRegistrationNumber().number(),\n f.getScheduledDateTime().toString(),\n f.getStatus().name()\n)
+end
 
 Service --> Ctrl : List<ScheduledFlightViewDTO>
 deactivate Service

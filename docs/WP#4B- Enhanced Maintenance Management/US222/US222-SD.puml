@@ -33,17 +33,19 @@ loop for each aircraft
                 Service -> DTO ** : create(regNum, "FLIGHT_HOURS", message)
             end
 
-            alt calendarDays limit approaching
-                Service -> RecordRepo : findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft, COMPLETED)
-                activate RecordRepo
-                RecordRepo --> Service : Optional<MaintenanceRecord>
-                deactivate RecordRepo
+         alt template.calendarDaysInterval != null
+             Service -> RecordRepo : findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft, COMPLETED)
+             activate RecordRepo
+             RecordRepo --> Service : Optional<MaintenanceRecord>
+             deactivate RecordRepo
 
-                note right of Service : Calculates days passed since last completion\nor manufacturing date
-                alt daysPassed >= (interval - 15)
-                    Service -> DTO ** : create(regNum, "CALENDAR_DAYS", message)
-                end
-            end
+             note right of Service : Calculates days passed since last completion\nor manufacturing date
+             alt daysPassed >= (interval - 15)
+                 Service -> DTO ** : create(regNum, "CALENDAR_DAYS", message)
+             end
+         end
+
+
         end
     end
 end

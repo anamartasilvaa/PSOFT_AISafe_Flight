@@ -148,10 +148,12 @@ public class MaintenanceController {
         return ResponseEntity.ok(collection);
     }
 
-    // US220 - Get maintenance costs per aircraft
+    // US220 - Get maintenance costs per aircraft or per model
     @GetMapping("/statistics/costs")
-    public ResponseEntity<CollectionModel<EntityModel<MaintenanceCostDTO>>> getMaintenanceCosts() {
-        List<MaintenanceCostDTO> costs = maintenanceService.getMaintenanceCostsPerAircraft();
+    public ResponseEntity<CollectionModel<EntityModel<MaintenanceCostDTO>>> getMaintenanceCosts(
+            @RequestParam(required = false) String groupBy) {
+
+        List<MaintenanceCostDTO> costs = maintenanceService.getMaintenanceCosts(groupBy);
 
         if (costs.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -162,7 +164,7 @@ public class MaintenanceController {
                 .collect(Collectors.toList());
 
         CollectionModel<EntityModel<MaintenanceCostDTO>> collectionModel = CollectionModel.of(resources,
-                linkTo(methodOn(MaintenanceController.class).getMaintenanceCosts()).withSelfRel());
+                linkTo(methodOn(MaintenanceController.class).getMaintenanceCosts(groupBy)).withSelfRel());
 
         return ResponseEntity.ok(collectionModel);
     }

@@ -1,7 +1,5 @@
 package pt.isep.psoft.aisafe.application;
 
-package pt.isep.psoft.aisafe.application;
-
 import org.springframework.stereotype.Service;
 import pt.isep.psoft.aisafe.application.DTO.*;
 import pt.isep.psoft.aisafe.domain.*;

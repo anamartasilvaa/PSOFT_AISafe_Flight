@@ -1,11 +1,11 @@
 @startuml
-title US220-SD (Corrigido e Completo)
+title US220-SD
 autonumber
 actor "ATCC" as Operator
 participant ":MaintenanceController" as Ctrl
 participant ":MaintenanceService" as Service
 participant ":MaintenanceRecordRepository" as Repo
-participant "list:List<MaintenanceCostDTO>" as DTOList
+participant "list\n:List<MaintenanceCostDTO>" as DTOList
 
 activate Operator
 Operator -> Ctrl : GET /api/maintenance/statistics/costs?groupBy={criteria}
@@ -28,15 +28,19 @@ end
 
 Service -> Service : map results to MaintenanceCostDTO
 activate DTOList
-Service -> DTOList : create (map Object[] to DTO)
-DTOList --> Service : List<MaintenanceCostDTO>
+Service -> DTOList ** : create
 deactivate DTOList
 
-Service --> Ctrl : List<MaintenanceCostDTO>
+Service --> Ctrl : costs (List<MaintenanceCostDTO>)
 deactivate Service
 
-Ctrl -> Ctrl : wrap in EntityModel/CollectionModel
-Ctrl --> Operator : 200 OK (CollectionModel<EntityModel<MaintenanceCostDTO>>)
+alt costs.isEmpty()
+    Ctrl --> Operator : 204 No Content
+else
+    Ctrl -> Ctrl : wrap in EntityModel/CollectionModel
+    Ctrl --> Operator : 200 OK\n(CollectionModel<EntityModel<MaintenanceCostDTO>>)
+end
+
 deactivate Ctrl
 deactivate Operator
 @enduml

@@ -1,14 +1,14 @@
 @startuml
 title US221-SD
 autonumber
-actor "Maintenance Technician" as Tech
+actor "Maintenance Supervisor" as Sup
 participant ":MaintenanceController" as Ctrl
 participant ":MaintenanceService" as Service
 participant ":MaintenanceRecordRepository" as Repo
 participant "dto:TurnaroundTimeDTO" as DTO
 
-activate Tech
-Tech -> Ctrl : GET /api/maintenance/statistics/turnaround
+activate Sup
+Sup -> Ctrl : GET /api/maintenance/statistics/turnaround
 activate Ctrl
 
 Ctrl -> Service : getTurnaroundTimePerAircraftModel()
@@ -24,7 +24,13 @@ Service -> DTO ** : create (map modelName + avgHours)
 Service --> Ctrl : List<TurnaroundTimeDTO>
 deactivate Service
 
-Ctrl --> Tech : 200 OK\n(CollectionModel<EntityModel<TurnaroundTimeDTO>>)
+alt turnaroundStats.isEmpty()
+    Ctrl --> Sup : 204 No Content
+else
+    Ctrl -> Ctrl : wrap in CollectionModel/EntityModel
+    Ctrl --> Sup : 200 OK
+end
+
 deactivate Ctrl
-deactivate Tech
+deactivate Sup
 @enduml

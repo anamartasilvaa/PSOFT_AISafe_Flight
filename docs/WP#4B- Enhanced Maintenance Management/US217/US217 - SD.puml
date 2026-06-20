@@ -8,11 +8,13 @@ participant "ComponentCategory" as Enum
 participant ":MaintenanceRecordRepository" as Repo
 
 activate Tech
-Tech -> Ctrl : GET /api/maintenance/records/search\n?category={category}&page={page}&size={size}
+Tech -> Ctrl : GET /api/maintenance/records/search\n?(registrationNumber, fromDate, toDate, category, pageable)
 activate Ctrl
 
-Ctrl -> Service : searchMaintenanceRecords(..., category, pageable)
+Ctrl -> Service : searchMaintenanceRecords(regNum, fromDate, toDate, category, pageable)
 activate Service
+
+note right of Service : Parses fromDate to atStartOfDay()\nParses toDate to atTime(23:59:59)
 
 alt category != null && !category.isBlank()
     Service -> Enum : valueOf(category.toUpperCase())
@@ -21,13 +23,20 @@ alt category != null && !category.isBlank()
     deactivate Enum
 end
 
-Service -> Repo : searchRecords(..., cat, pageable)
+Service -> Repo : searchRecords(regNum, start, end, cat, pageable)
 activate Repo
 Repo --> Service : Page<MaintenanceRecord>
 deactivate Repo
 
 Service --> Ctrl : Page<MaintenanceRecord>
 deactivate Service
+
+loop for each MaintenanceRecord
+    Ctrl -> Ctrl : create EntityModel(record)
+    alt record.status == SCHEDULED
+        Ctrl -> Ctrl : add link ("complete-this-record")
+    end
+end
 
 Ctrl --> Tech : 200 OK\n(PagedModel<EntityModel<MaintenanceRecord>>)
 deactivate Ctrl

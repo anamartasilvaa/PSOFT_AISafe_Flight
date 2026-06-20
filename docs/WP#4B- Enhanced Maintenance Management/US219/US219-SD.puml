@@ -13,7 +13,7 @@ activate Ctrl
 Ctrl -> Service : getOngoingMaintenances()
 activate Service
 
-Service -> Repo : findByStatus(MaintenanceRecordStatus.IN_PROGRESS)
+Service -> Repo : findByStatus(MaintenanceRecordStatus.SCHEDULED)
 activate Repo
 Repo --> Service : List<MaintenanceRecord>
 deactivate Repo
@@ -21,7 +21,12 @@ deactivate Repo
 Service --> Ctrl : List<MaintenanceRecord>
 deactivate Service
 
-Ctrl --> Supervisor : 200 OK (CollectionModel)
+loop for each MaintenanceRecord
+    Ctrl -> Ctrl : create EntityModel(record)
+    Ctrl -> Ctrl : add link ("complete-this-record")
+end
+
+Ctrl --> Supervisor : 200 OK\n(CollectionModel<EntityModel<MaintenanceRecord>>)
 deactivate Ctrl
 deactivate Supervisor
 @enduml

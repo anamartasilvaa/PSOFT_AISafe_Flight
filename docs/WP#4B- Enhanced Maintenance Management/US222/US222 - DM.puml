@@ -2,8 +2,7 @@
 hide empty members
 skinparam classAttributeIconSize 0
 
-title US222 - Domain Model (DM) Sub-domain
-
+title US222
 class Aircraft {
     - registrationNumber
     - totalFlightHours

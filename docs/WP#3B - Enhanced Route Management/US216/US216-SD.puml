@@ -17,25 +17,30 @@ activate Service
 Service -> Strategy : findAlternatives(originIata, destinationIata)
 activate Strategy
 
-
 Strategy -> Repo : findByOrigin_IataCode_Code(originIata, unpaged)
 activate Repo
+note right of Repo : Filters to ensure Route is ACTIVE
 Repo --> Strategy : Page<Route> (initial routes)
 deactivate Repo
 
-loop while queue is not empty and path size < MAX_FLIGHTS
+loop while queue is not empty
     Strategy -> Strategy : currentPath = queue.poll()
 
     alt destination reached
         Strategy -> Strategy : convertToAlternativeDTO(currentPath)
         note right of Strategy : Calculates total time (+ MCT penalties) and distance
         Strategy -> Strategy : foundAlternatives.add(dto)
-    else
-        Strategy -> Repo : findByOrigin_IataCode_Code(currentAirport, unpaged)
-        activate Repo
-        Repo --> Strategy : Page<Route> (next routes)
-        deactivate Repo
 
+    else path size < MAX_FLIGHTS
+        Strategy -> Strategy : check cycle (avoid visited airports)
+
+        alt no cycle detected
+            Strategy -> Repo : findByOrigin_IataCode_Code(currentAirport, unpaged)
+            activate Repo
+            note right of Repo : Filters to ensure Route is ACTIVE
+            Repo --> Strategy : Page<Route> (next routes)
+            deactivate Repo
+        end
     end
 end
 

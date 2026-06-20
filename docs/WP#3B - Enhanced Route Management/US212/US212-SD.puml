@@ -37,6 +37,7 @@ activate AircraftRepo
 AircraftRepo --> Service : Optional<Aircraft>
 deactivate AircraftRepo
 
+note right of Service : Validates Business Rules:\n1. Aircraft is ACTIVE\n2. Airports are OPERATIONAL\n3. Aircraft capacity >= Route min capacity\n4. Aircraft range >= Route distance
 
 Service -> DTO : scheduledDateTime()
 activate DTO
