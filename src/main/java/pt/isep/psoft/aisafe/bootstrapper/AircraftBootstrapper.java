@@ -80,6 +80,7 @@ public class AircraftBootstrapper implements CommandLineRunner {
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-XPA", "A350-900", LocalDate.of(2018, 11, 2), 350));
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-XPB", "A350-900", LocalDate.of(2019, 4, 18), 350));
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-TTA", "B777-300ER", LocalDate.of(2015, 9, 30), 396));
+            aircraftService.registerAircraft(new RegisterAircraftDTO("CS-TTB", "B777-300ER", LocalDate.of(2018, 5, 10), 396));
 
             // Regional Fleet (Embraer & ATR)
             aircraftService.registerAircraft(new RegisterAircraftDTO("CS-EMA", "E190-E2", LocalDate.of(2021, 10, 20), 114));

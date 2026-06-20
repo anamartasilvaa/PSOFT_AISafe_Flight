@@ -3,7 +3,7 @@ package pt.isep.psoft.aisafe.bootstrapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import pt.isep.psoft.aisafe.application.ScheduledFlightService; // Import corrigido
+import pt.isep.psoft.aisafe.application.ScheduledFlightService;
 import pt.isep.psoft.aisafe.application.DTO.CreateScheduledFlightDTO;
 import pt.isep.psoft.aisafe.domain.FlightStatus;
 import pt.isep.psoft.aisafe.domain.ScheduledFlight;
@@ -36,43 +36,29 @@ public class FlightBootstrapper implements CommandLineRunner {
 
             LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
-            // 1. Voos originais para Histórico (Passado/Presente)
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-LISJFK", "CS-XPA", now.plusMinutes(5).toString()
-            ));
+            // 1. Original flights for History (Past/Present)
+            safeSchedule("RT-LISJFK", "CS-XPA", now.plusMinutes(5).toString());
+            safeSchedule("RT-OPOLHR", "CS-BOA", now.plusMinutes(10).toString());
+            safeSchedule("RT-OPOLIS", "CS-EMA", now.plusDays(2).withHour(8).toString());
+            safeSchedule("RT-CDGJFK", "CS-XPB", now.plusDays(1).toString());
 
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-OPOLHR", "CS-BOA", now.plusMinutes(10).toString()
-            ));
-
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-OPOLIS", "CS-EMA", now.plusDays(2).withHour(8).toString()
-            ));
-
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-CDGJFK", "CS-XPB", now.plusDays(1).toString()
-            ));
-
-            // Voos Futuros para testar o Algoritmo de Swap (US222)
+            // Future flights to test the Swap Algorithm (US222)
             System.out.println("BOOTSTRAP WP2B: Injecting future flights for Aircraft Swap testing...");
 
-            // Avião CS-TPA com a agenda cheia nos próximos dias
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-OPOLHR", "CS-TPA", now.plusDays(3).withHour(10).withMinute(0).toString()
-            ));
+            // Aircraft CS-TPA with a full schedule in the upcoming days
+            safeSchedule("RT-OPOLHR", "CS-TPA", now.plusDays(3).withHour(10).withMinute(0).toString());
+            safeSchedule("RT-LISJFK", "CS-TPA", now.plusDays(4).withHour(14).withMinute(30).toString());
 
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-LISJFK", "CS-TPA", now.plusDays(4).withHour(14).withMinute(30).toString()
-            ));
+            // Aircraft CS-BOA with a scheduled flight for next week
+            safeSchedule("RT-OPOLIS", "CS-BOA", now.plusDays(7).withHour(9).withMinute(0).toString());
 
-            // Avião CS-BOA com um voo marcado para a próxima semana
-            flightService.scheduleFlight(new CreateScheduledFlightDTO(
-                    "RT-OPOLIS", "CS-BOA", now.plusDays(7).withHour(9).withMinute(0).toString()
-            ));
+            System.out.println("BOOTSTRAP WP2B: Attempting to schedule extra flights for the Top 5...");
 
-            // -------------------------------------------------------------------------
+            // Extra flights (Isolated to avoid breaking the Bootstrapper if validation fails)
+            safeSchedule("RT-LHRJFK", "CS-TTB", now.plusDays(5).withHour(10).toString());
+            safeSchedule("RT-LISCDG", "CS-TVC", now.plusDays(6).withHour(11).toString()); //
 
-            // Atualização de Estados
+            // Status Update Logic
             Iterable<ScheduledFlight> flights = flightRepository.findAll();
             for (ScheduledFlight f : flights) {
                 String routeId = f.getRoute().getRouteId().id();
@@ -94,6 +80,16 @@ public class FlightBootstrapper implements CommandLineRunner {
 
         } catch (Exception e) {
             System.out.println("Note: Error creating flights in bootstrap: " + e.getMessage());
+        }
+    }
+
+    // --- HELPER METHOD TO ISOLATE ERRORS ---
+    private void safeSchedule(String route, String aircraft, String date) {
+        try {
+            flightService.scheduleFlight(new CreateScheduledFlightDTO(route, aircraft, date));
+            System.out.println(" -> Successfully scheduled flight: " + aircraft + " on route " + route);
+        } catch (Exception e) {
+            System.out.println(" -> WARNING (Ignored): Failed to schedule " + aircraft + " on route " + route + " | Reason: " + e.getMessage());
         }
     }
 }
