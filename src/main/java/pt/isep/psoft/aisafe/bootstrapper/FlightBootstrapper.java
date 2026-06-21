@@ -55,6 +55,8 @@ public class FlightBootstrapper implements CommandLineRunner {
             System.out.println("BOOTSTRAP WP2B: Attempting to schedule extra flights for the Top 5...");
 
             // Extra flights (Isolated to avoid breaking the Bootstrapper if validation fails)
+            safeSchedule("RT-OPOLIS", "CS-ATA", LocalDateTime.now().plusDays(8).withHour(10).toString());
+            safeSchedule("RT-LISJFK", "CS-TVB", now.plusDays(8).withHour(10).toString());
             safeSchedule("RT-LHRJFK", "CS-TTB", now.plusDays(5).withHour(10).toString());
             safeSchedule("RT-LISCDG", "CS-TVC", now.plusDays(6).withHour(11).toString());
 

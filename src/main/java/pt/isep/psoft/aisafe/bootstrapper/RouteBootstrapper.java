@@ -26,11 +26,11 @@ public class RouteBootstrapper implements CommandLineRunner {
         saveRouteSafe("RT-LISLHR", "LIS", "LHR", 140, 1500.0, 150);
 
         // Alternativa 2: Voo com Escala no Porto (45m + 60m MCT + 130m = 235 min)
-        saveRouteSafe("RT-LISOPO", "LIS", "OPO", 45, 250.0, 100);
+        saveRouteSafe("RT-LISOPO", "LIS", "OPO", 45, 250.0, 70);
         saveRouteSafe("RT-OPOLHR", "OPO", "LHR", 130, 1330.0, 120);
 
         // --- Restantes rotas originais da tua Base de Dados ---
-        saveRouteSafe("RT-OPOLIS", "OPO", "LIS", 45, 250.0, 100);
+        saveRouteSafe("RT-OPOLIS", "OPO", "LIS", 45, 250.0, 70);
         saveRouteSafe("RT-LISJFK", "LIS", "JFK", 480, 5000.0, 150);
         saveRouteSafe("RT-JFKLIS", "JFK", "LIS", 480, 5000.0, 150);
         saveRouteSafe("RT-LISCDG", "LIS", "CDG", 150, 1530.0, 150);
