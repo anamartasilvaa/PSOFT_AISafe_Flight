@@ -42,7 +42,10 @@ public class SecurityConfig {
 
                     // WP1 & WP1B
                     auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
+
+                    // --- AQUI ESTÁ A CORREÇÃO DEFINITIVA PARA A US223 E US204 ---
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
+
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/compatible-routes").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/real-time-status").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/operational-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
@@ -84,18 +87,9 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers("/api/maintenance/**").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
 
-                    // --- CORREÇÕES E NOVAS ROTAS (US223, US224, US227, US229) ---
-                    // US224 - Path real: /api/aircraft-models/instances/search-features
+                    // --- NOVAS ROTAS (US224, US227, US229) ---
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/search-features").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
-
-                    // US229 - Relatório de utilização de rotas (Ajustar se o path for diferente)
                     auth.requestMatchers(HttpMethod.GET, "/api/scheduled-flights/route-utilization").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
-
-                    // US223 - Top Utilized (Já tens /api/aircraft-models/models/top5 acima)
-                    // Se houver uma nova rota para top-utilized, ajusta aqui:
-                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/top-utilized").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
-
-                    // US227 - Eficiência de combustível
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/fuel-efficiency").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
                     auth.anyRequest().authenticated();

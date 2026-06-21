@@ -55,4 +55,17 @@ public class ScheduledFlightController {
         return ResponseEntity.ok(CollectionModel.of(resources,
                 linkTo(methodOn(ScheduledFlightController.class).getFlightsByAircraft(registrationNumber)).withSelfRel()));
     }
+
+    /* US229 - As a Backoffice Operator, I want to generate flight utilization reports showing which routes are most frequently flown. */
+    @GetMapping("/route-utilization")
+    public ResponseEntity<?> getRouteUtilizationReport() {
+
+        var report = service.getRouteUtilizationReport();
+
+        if (report == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(report);
+    }
 }
