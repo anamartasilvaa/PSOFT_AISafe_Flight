@@ -43,8 +43,10 @@ public class SecurityConfig {
                     // WP1 & WP1B
                     auth.requestMatchers(HttpMethod.PATCH, "/api/aircraft-models/models/**").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ADMIN");
 
-                    // --- AQUI ESTÁ A CORREÇÃO DEFINITIVA PARA A US223 E US204 ---
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/models/top5").hasAnyAuthority("ROLE_BACKOFFICE", "ROLE_ATCC", "ROLE_ADMIN");
+
+                    // --- NOVA ROTA DE SEGURANÇA PARA AS INSTÂNCIAS (US223) ---
+                    auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/top5").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
 
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/compatible-routes").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/aircraft-models/instances/*/real-time-status").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");

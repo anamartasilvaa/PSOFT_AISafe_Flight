@@ -29,6 +29,18 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
             "FROM ScheduledFlight sf JOIN sf.aircraft a GROUP BY a.model.modelName.name ORDER BY COUNT(sf) DESC")
     List<TopAircraftModelDTO> findTop5ModelsByAssignments(org.springframework.data.domain.Pageable pageable);
 
+    // --- US223: Agrupa por Avião (Matrícula) por número de voos (Assignments) ---
+    @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.registrationNumber.number, COUNT(sf)) " +
+            "FROM ScheduledFlight sf JOIN sf.aircraft a " +
+            "WHERE sf.status = pt.isep.psoft.aisafe.domain.FlightStatus.COMPLETED " +
+            "GROUP BY a.registrationNumber.number ORDER BY COUNT(sf) DESC")
+    List<TopAircraftModelDTO> findTop5AircraftByAssignments(org.springframework.data.domain.Pageable pageable);
+
+    // --- US223: Agrupa por Avião (Matrícula) por Horas de Voo ---
+    @Query("SELECT new pt.isep.psoft.aisafe.application.DTO.TopAircraftModelDTO(a.registrationNumber.number, a.totalFlightHours) " +
+            "FROM Aircraft a ORDER BY a.totalFlightHours DESC")
+    List<TopAircraftModelDTO> findTop5AircraftByFlightHours(org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT a FROM Aircraft a WHERE " +
             "(:engineType IS NULL OR a.model.engineType = :engineType) AND " +
             "(:feature IS NULL OR a.features LIKE %:feature%)")
