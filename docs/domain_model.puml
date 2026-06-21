@@ -230,7 +230,7 @@ package "Maintenance Record Aggregate" {
     MaintenanceRecord "*" --> "1" Aircraft : performed on >
     MaintenanceRecord "*" --> "1" MaintenanceTemplate : follows >
     ' Adicionado consumo de peças
-    MaintenanceRecord "*" --> "*" MaintenancePart : consumes >
+
 }
 
 package "Inventory Aggregate" {
