@@ -1,11 +1,17 @@
 package pt.isep.psoft.aisafe.application;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pt.isep.psoft.aisafe.application.DTO.*;
 import pt.isep.psoft.aisafe.domain.*;
 import pt.isep.psoft.aisafe.repositories.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,7 +55,8 @@ public class MaintenanceService {
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found with registration: " + dto.registrationNumber()));
         MaintenanceTemplate template = templateRepository.findById(dto.templateId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance template not found with ID: " + dto.templateId()));
-        java.time.LocalDateTime startDate = java.time.LocalDateTime.parse(dto.startDate());
+
+        LocalDateTime startDate = LocalDateTime.parse(dto.startDate());
         MaintenanceRecord record = new MaintenanceRecord(
                 aircraft, template, dto.description(), dto.expectedDuration(), dto.componentCategory(), startDate, dto.cost()
         );
@@ -82,23 +89,20 @@ public class MaintenanceService {
         return recordRepository.save(record);
     }
 
-    public org.springframework.data.domain.Page<MaintenanceRecord> searchMaintenanceRecords(
-            String registrationNumber, String fromDate, String toDate, String category, org.springframework.data.domain.Pageable pageable) {
-        java.time.LocalDateTime start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate).atStartOfDay() : null;
-        java.time.LocalDateTime end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59) : null;
-        ComponentCategory cat = null;
-        if (category != null && !category.isBlank()) {
-            cat = ComponentCategory.valueOf(category.toUpperCase());
-        }
-        return recordRepository.searchRecords(registrationNumber, start, end, cat, pageable);
+    // CORRIGIDO: Aceita agora o Enum ComponentCategory diretamente, garantindo type-safety
+    public Page<MaintenanceRecord> searchMaintenanceRecords(
+            String registrationNumber, String fromDate, String toDate, ComponentCategory category, Pageable pageable) {
+
+        LocalDateTime start = (fromDate != null && !fromDate.isBlank()) ? java.time.LocalDate.parse(fromDate).atStartOfDay() : null;
+        LocalDateTime end = (toDate != null && !toDate.isBlank()) ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59) : null;
+
+        return recordRepository.searchRecords(registrationNumber, start, end, category, pageable);
     }
 
-    // US219 - Corrigido para IN_PROGRESS
     public List<MaintenanceRecord> getOngoingMaintenances() {
         return recordRepository.findByStatus(MaintenanceRecordStatus.IN_PROGRESS);
     }
 
-    // US220: Generate maintenance costs report (by aircraft or model)
     public List<MaintenanceCostDTO> getMaintenanceCosts(String groupBy) {
         List<Object[]> results;
         if ("model".equalsIgnoreCase(groupBy)) {
@@ -113,9 +117,10 @@ public class MaintenanceService {
 
     public List<TurnaroundTimeDTO> getTurnaroundTimePerAircraftModel() {
         List<MaintenanceRecord> completedRecords = recordRepository.findByStatus(MaintenanceRecordStatus.COMPLETED);
-        java.util.Map<String, List<MaintenanceRecord>> recordsByModel = completedRecords.stream()
+        Map<String, List<MaintenanceRecord>> recordsByModel = completedRecords.stream()
                 .filter(r -> r.getCompletionDate() != null)
                 .collect(Collectors.groupingBy(r -> r.getAircraft().getAircraftModel().getModelName().toString()));
+
         return recordsByModel.entrySet().stream()
                 .map(entry -> {
                     String modelName = entry.getKey();
@@ -130,7 +135,7 @@ public class MaintenanceService {
     }
 
     public List<MaintenanceAlertDTO> generateMaintenanceAlerts() {
-        List<MaintenanceAlertDTO> alerts = new java.util.ArrayList<>();
+        List<MaintenanceAlertDTO> alerts = new ArrayList<>();
         List<Aircraft> allAircraft = aircraftRepository.findAll();
         for (Aircraft aircraft : allAircraft) {
             if (aircraft.getStatus() != AircraftStatus.ACTIVE) continue;
@@ -142,7 +147,7 @@ public class MaintenanceService {
                     }
                 }
                 if (template.getCalendarDaysInterval() != null) {
-                    java.util.Optional<MaintenanceRecord> lastRecord = recordRepository.findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft, MaintenanceRecordStatus.COMPLETED);
+                    Optional<MaintenanceRecord> lastRecord = recordRepository.findTopByAircraftAndStatusOrderByCompletionDateDesc(aircraft, MaintenanceRecordStatus.COMPLETED);
                     java.time.LocalDate referenceDate = lastRecord.isPresent() && lastRecord.get().getCompletionDate() != null ? lastRecord.get().getCompletionDate().toLocalDate() : aircraft.getManufacturingDate();
                     long daysPassed = java.time.temporal.ChronoUnit.DAYS.between(referenceDate, java.time.LocalDate.now());
                     if (daysPassed >= (template.getCalendarDaysInterval() - 15)) {
