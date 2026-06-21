@@ -1,0 +1,39 @@
+@startuml
+title US229-SD
+autonumber
+
+actor "Backoffice Operator" as Operator
+participant ":StatisticsController" as Ctrl
+participant ":StatisticsService" as Service
+participant ":ScheduledFlightRepository" as Repo
+participant "dto:RouteUtilizationDTO" as DTO
+
+activate Operator
+Operator -> Ctrl : GET /api/statistics/routes/most-flown
+activate Ctrl
+
+Ctrl -> Service : getMostFrequentRoutes()
+activate Service
+
+Service -> Repo : countFlightsGroupedByRoute()
+activate Repo
+note right of Repo : Query com ORDER BY COUNT(f) DESC
+Repo --> Service : List<Object[]>
+deactivate Repo
+
+loop para cada Object[] row
+    Service -> DTO ** : create(row[0], row[1])
+end
+
+Service --> Ctrl : List<RouteUtilizationDTO> (Ordenada)
+deactivate Service
+
+alt lista vazia
+    Ctrl --> Operator : 204 No Content
+else
+    Ctrl -> Ctrl : wrap em CollectionModel
+    Ctrl --> Operator : 200 OK
+end
+deactivate Ctrl
+deactivate Operator
+@enduml

@@ -19,6 +19,7 @@ public class StatisticsService {
 
     @Transactional(readOnly = true)
     public List<RouteUtilizationDTO> getMostFrequentRoutes() {
+        // Agora que a query já vem ordenada pelo banco, o stream apenas converte
         return flightRepository.countFlightsGroupedByRoute().stream()
                 .map(obj -> new RouteUtilizationDTO((String) obj[0], (Long) obj[1]))
                 .collect(Collectors.toList());
@@ -26,8 +27,13 @@ public class StatisticsService {
 
     @Transactional(readOnly = true)
     public List<AircraftUtilizationRateDTO> getUtilizationRateOverTime(LocalDateTime start, LocalDateTime end) {
-        return flightRepository.countFlightsByMonth(start, end).stream()
-                .map(obj -> new AircraftUtilizationRateDTO((String) obj[0], (Long) obj[1]))
+        // Agora mapeamos os 3 elementos que a query devolve: matrícula, mês e contagem
+        return flightRepository.countFlightsByAircraftAndMonth(start, end).stream()
+                .map(obj -> new AircraftUtilizationRateDTO(
+                        (String) obj[0], // registrationNumber
+                        (String) obj[1], // period (mês)
+                        (Long) obj[2]    // flightCount
+                ))
                 .collect(Collectors.toList());
     }
 

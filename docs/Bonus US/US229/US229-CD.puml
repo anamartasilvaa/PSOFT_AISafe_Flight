@@ -1,0 +1,25 @@
+@startuml
+title US229-CD
+skinparam classAttributeIconSize 0
+
+class ScheduledFlight <<Entity>> {
+  scheduledDateTime : LocalDateTime
+}
+
+class Aircraft <<Entity>> {
+  registrationNumber : RegistrationNumber
+}
+
+class StatisticsService {
+  + getMostFrequentRoutes() : List<RouteUtilizationDTO>
+  + getUtilizationRateOverTime(start, end) : List<AircraftUtilizationRateDTO>
+}
+
+interface ScheduledFlightRepository {
+  + countFlightsGroupedByRoute() : List<Object[]>
+  + countFlightsByAircraftAndMonth(start, end) : List<Object[]>
+}
+
+ScheduledFlight "*" --> "1" Aircraft : aircraft
+StatisticsService --> ScheduledFlightRepository
+@enduml

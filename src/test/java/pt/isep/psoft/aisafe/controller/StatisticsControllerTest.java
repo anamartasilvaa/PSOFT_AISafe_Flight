@@ -1,4 +1,4 @@
-package pt.isep.psoft.aisafe.controller; // Mantém este se o teu teste está aqui
+package pt.isep.psoft.aisafe.controller;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,8 +30,7 @@ class StatisticsControllerTest {
     private StatisticsService statisticsService;
 
     @InjectMocks
-    private StatisticsController statisticsController; // Agora ele vai reconhecer
-
+    private StatisticsController statisticsController;
     @Test
     void shouldReturn200OkWhenGettingMostFrequentRoutes() {
         RouteUtilizationDTO dto = new RouteUtilizationDTO("RT-OPOLIS", 5L);
@@ -49,7 +48,8 @@ class StatisticsControllerTest {
     void shouldReturn200OkWhenGettingUtilizationOverTime() {
         LocalDateTime start = LocalDateTime.of(2026, 1, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2026, 12, 31, 23, 59);
-        AircraftUtilizationRateDTO dto = new AircraftUtilizationRateDTO("2026-06", 10L);
+
+        AircraftUtilizationRateDTO dto = new AircraftUtilizationRateDTO("CS-TPA", "2026-06", 10L);
 
         when(statisticsService.getUtilizationRateOverTime(start, end)).thenReturn(List.of(dto));
 
@@ -59,5 +59,7 @@ class StatisticsControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().getContent().size());
+
+        assertEquals("CS-TPA", response.getBody().getContent().iterator().next().getContent().registrationNumber());
     }
 }

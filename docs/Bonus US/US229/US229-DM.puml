@@ -1,0 +1,30 @@
+@startuml
+title US229-DM
+hide circle
+skinparam classAttributeIconSize 0
+
+class ScheduledFlight <<Entity>> {
+  scheduledDateTime : LocalDateTime
+  status : FlightStatus
+}
+
+class Aircraft <<Entity>> {
+  registrationNumber : RegistrationNumber
+}
+
+class Route <<Entity>> {
+  routeId : RouteId
+  estimatedFlightTime : Integer
+}
+
+class AircraftModel <<Entity>> {
+  modelId : ModelId
+  fuelConsumptionPerHour : Double
+}
+
+ScheduledFlight "*" --> "1" Aircraft : aircraft
+ScheduledFlight "*" --> "1" Route : route
+Aircraft "1" --> "1" AircraftModel : model
+
+
+@enduml
