@@ -44,10 +44,16 @@ public class ScheduledFlightService {
             throw new IllegalStateException("One of the airports is not operational.");
         }
 
-        if (aircraft.getActualSeatingCapacity() < route.getMinimumCapacity() ||
-                aircraft.getAircraftModel().getMaximumRange() < route.getMinimumRange()) {
-            throw new IllegalArgumentException("Aircraft does not meet route requirements.");
+
+        if (aircraft.getActualSeatingCapacity() < route.getMinimumCapacity()) {
+            throw new IllegalArgumentException("Aircraft does not meet route requirements: insufficient seating capacity.");
         }
+
+        if (aircraft.getAircraftModel().getMaximumRange() < route.getMinimumRange()) {
+            throw new IllegalArgumentException("Aircraft does not meet route requirements: insufficient range.");
+        }
+
+        // ------------------------------------------------------------------
 
         LocalDateTime dateTime = LocalDateTime.parse(dto.scheduledDateTime());
         ScheduledFlight flight = new ScheduledFlight(route, aircraft, dateTime);
