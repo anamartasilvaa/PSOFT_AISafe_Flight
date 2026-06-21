@@ -56,27 +56,17 @@ public class FlightBootstrapper implements CommandLineRunner {
 
             // Extra flights (Isolated to avoid breaking the Bootstrapper if validation fails)
             safeSchedule("RT-LHRJFK", "CS-TTB", now.plusDays(5).withHour(10).toString());
-            safeSchedule("RT-LISCDG", "CS-TVC", now.plusDays(6).withHour(11).toString()); //
+            safeSchedule("RT-LISCDG", "CS-TVC", now.plusDays(6).withHour(11).toString());
 
             // Status Update Logic
             Iterable<ScheduledFlight> flights = flightRepository.findAll();
             for (ScheduledFlight f : flights) {
-                String routeId = f.getRoute().getRouteId().id();
-
-                if (f.getScheduledDateTime().isBefore(now.plusHours(1))) {
-                    if (routeId.equals("RT-LISJFK")) {
-                        f.updateStatus(FlightStatus.COMPLETED);
-                    } else if (routeId.equals("RT-OPOLHR")) {
-                        f.updateStatus(FlightStatus.IN_FLIGHT);
-                    } else if (routeId.equals("RT-CDGJFK")) {
-                        f.updateStatus(FlightStatus.CANCELLED);
-                    }
-                }
-
+                // --- CORREÇÃO: Forçamos o estado de todos os voos para COMPLETED para que as contas funcionem no gráfico ---
+                f.updateStatus(FlightStatus.COMPLETED);
                 flightRepository.save(f);
             }
 
-            System.out.println("BOOTSTRAP: Flights successfully populated and statuses updated!");
+            System.out.println("BOOTSTRAP: Flights successfully populated and statuses updated to COMPLETED!");
 
         } catch (Exception e) {
             System.out.println("Note: Error creating flights in bootstrap: " + e.getMessage());

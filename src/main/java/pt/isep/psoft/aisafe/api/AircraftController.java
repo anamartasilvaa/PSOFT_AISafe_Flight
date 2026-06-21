@@ -74,7 +74,6 @@ public class AircraftController {
             @PathVariable String registrationNumber,
             @Valid @RequestBody UpdateAircraftStatusDTO dto) {
 
-        // Chamamos o novo método que devolve o Relatório do Algoritmo junto com o Avião
         java.util.Map<String, Object> responseMap = service.updateAircraftStatusWithReport(registrationNumber, dto);
 
         EntityModel<java.util.Map<String, Object>> resource = EntityModel.of(responseMap);
@@ -111,7 +110,7 @@ public class AircraftController {
         return ResponseEntity.ok(resource);
     }
 
-    /* US204 */
+    /* US204 - Top 5 por MODELO (O original) */
     @io.swagger.v3.oas.annotations.Operation(summary = "Get Top 5 Aircraft Models", description = "Get the top 5 most utilized aircraft models based on total flight hours or number of assignments.")
     @GetMapping("/models/top5")
     public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5Models(
@@ -127,6 +126,22 @@ public class AircraftController {
                 linkTo(methodOn(AircraftController.class).getTop5Models(sortBy)).withSelfRel());
 
         return ResponseEntity.ok(collection);
+    }
+
+    /* US223 - Top 5 por AVIÃO INDIVIDUAL (Instância) */
+    @io.swagger.v3.oas.annotations.Operation(summary = "Get Top 5 Aircraft Instances", description = "Get the top 5 most utilized aircraft instances based on assignments or hours.")
+    @GetMapping("/instances/top5")
+    public ResponseEntity<CollectionModel<EntityModel<TopAircraftModelDTO>>> getTop5AircraftInstances(
+            @RequestParam(defaultValue = "assignments") String sortBy) {
+
+        List<TopAircraftModelDTO> top5 = service.getTop5UtilizedAircrafts(sortBy);
+
+        List<EntityModel<TopAircraftModelDTO>> resources = top5.stream()
+                .map(EntityModel::of)
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(resources,
+                linkTo(methodOn(AircraftController.class).getTop5AircraftInstances(sortBy)).withSelfRel()));
     }
 
     /* US206  */
@@ -180,7 +195,6 @@ public class AircraftController {
 
         RealTimeStatusDTO responseDto = new RealTimeStatusDTO(registrationNumber, status);
 
-        // HATEOAS
         EntityModel<RealTimeStatusDTO> resource = EntityModel.of(responseDto);
         resource.add(linkTo(methodOn(AircraftController.class).getRealTimeStatus(registrationNumber)).withSelfRel());
 
@@ -211,7 +225,6 @@ public class AircraftController {
     /* US227 - As an ATCC, I want to calculate fuel efficiency metrics per aircraft */
     @GetMapping("/fuel-efficiency")
     public ResponseEntity<?> getFuelEfficiency(@RequestParam String regNum) {
-
 
         var metrics = java.util.Map.of("efficiencyMetric", 85.5, "registrationNumber", regNum);
 

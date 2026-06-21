@@ -187,6 +187,17 @@ public class AircraftService {
         return "assignments".equalsIgnoreCase(sortBy) ? aircraftRepository.findTop5ModelsByAssignments(pageRequest) : aircraftRepository.findTop5ModelsByFlightHours(pageRequest);
     }
 
+    // --- US223: Devolve o Top 5 agrupado por Avião Individual (Horas ou Voos) ---
+    public List<TopAircraftModelDTO> getTop5UtilizedAircrafts(String sortBy) {
+        org.springframework.data.domain.PageRequest pageRequest = org.springframework.data.domain.PageRequest.of(0, 5);
+
+        if ("hours".equalsIgnoreCase(sortBy)) {
+            return aircraftRepository.findTop5AircraftByFlightHours(pageRequest);
+        } else {
+            return aircraftRepository.findTop5AircraftByAssignments(pageRequest);
+        }
+    }
+
     public org.springframework.data.domain.Page<RouteViewDTO> getCompatibleRoutesForAircraft(String regNum, org.springframework.data.domain.Pageable pageable) {
         Aircraft aircraft = aircraftRepository.findByRegistrationNumber(new RegistrationNumber(regNum.trim().toUpperCase()))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found: " + regNum));
