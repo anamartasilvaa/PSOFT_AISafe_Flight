@@ -41,7 +41,6 @@ package "Aircraft Aggregate" {
         - totalFlightHours: Double
         - operatingHoursRange: String
         - seatingConfiguration: String
-       //- AircraftImage: String
     }
     class RegistrationNumber <<Value Object>> {
         - number: String
@@ -73,13 +72,11 @@ package "Airport Aggregate" {
         - operationalHours: String
         -imageUrl: String
     }
-
     enum AirportType <<Enumeration>> {
         INTERNATIONAL
         REGIONAL
         DOMESTIC
     }
-
     class IATACode <<Value Object>> {
         - code: String
     }
@@ -106,7 +103,6 @@ package "Airport Aggregate" {
         - type: String
         - description: String
     }
-
     class AirplaneCertification <<Entity>> {
         - issueDate: LocalDate
         - expiryDate: LocalDate
@@ -133,13 +129,11 @@ package "Route Aggregate" {
         - minimumCapacity: Integer
         - distance: Double
     }
-
     class RouteHistory <<Entity>> {
         - action: String
         - startDate: LocalDateTime
         - endDate: LocalDateTime
     }
-
     class RouteId <<Value Object>> {
         - id: String
     }
@@ -160,9 +154,6 @@ package "Flight Operations Aggregate" {
         - pk: Long
         - version: Long
         - scheduledDateTime: LocalDateTime
-        - scheduledArrivalDateTime: LocalDateTime
-        - actualDepartureDateTime: LocalDateTime
-        - actualArrivalDateTime: LocalDateTime
     }
     enum FlightStatus <<Enumeration>> {
        SCHEDULED
@@ -185,19 +176,16 @@ package "Maintenance Template Aggregate" {
         - flightHoursInterval: Double
         - calendarDaysInterval: Integer
     }
-
     enum TemplateType <<Enumeration>> {
         INSPECTION
         SCHEDULED_MAINTENANCE
         OVERHAUL
         MODIFICATION
     }
-
     class Checklist <<Entity>> {
         - title: String
         - version: String
     }
-
     class ChecklistItem <<Value Object>> {
         - taskDescription: String
         - isMandatory: Boolean
@@ -218,18 +206,16 @@ package "Maintenance Record Aggregate" {
         - expectedDuration: Integer
         - completionNotes: String
         - completionDate: LocalDateTime
+        - cost: Double
     }
-
     class MaintenanceRecordId <<Value Object>> {
         - id: String
     }
-
     enum MaintenanceStatus <<Enumeration>> {
         SCHEDULED
         IN_PROGRESS
         COMPLETED
     }
-
     enum ComponentCategory <<Enumeration>> {
         ENGINE
         AIRFRAME
@@ -243,6 +229,8 @@ package "Maintenance Record Aggregate" {
     MaintenanceRecord "1" --> "1" ComponentCategory : categorized by >
     MaintenanceRecord "*" --> "1" Aircraft : performed on >
     MaintenanceRecord "*" --> "1" MaintenanceTemplate : follows >
+    ' Adicionado consumo de peças
+    MaintenanceRecord "*" --> "*" MaintenancePart : consumes >
 }
 
 package "Inventory Aggregate" {
