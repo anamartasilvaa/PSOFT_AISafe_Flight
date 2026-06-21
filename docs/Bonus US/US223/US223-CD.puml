@@ -1,0 +1,28 @@
+@startuml
+title US223-CD
+skinparam classAttributeIconSize 0
+
+class ScheduledFlight <<Entity>> {
+  scheduledDateTime : LocalDateTime
+}
+
+class Aircraft <<Entity>> {
+  registrationNumber : RegistrationNumber
+}
+
+class StatisticsController {
+  + getUtilizationOverTime(start, end) : ResponseEntity
+}
+
+class StatisticsService {
+  + getUtilizationRateOverTime(start, end) : List
+}
+
+interface ScheduledFlightRepository {
+  + countFlightsByAircraftAndMonth(start, end) : List<Object[]>
+}
+
+ScheduledFlight "*" --> "1" Aircraft : aircraft
+StatisticsController --> StatisticsService
+StatisticsService --> ScheduledFlightRepository
+@enduml

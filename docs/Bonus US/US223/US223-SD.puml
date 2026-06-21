@@ -1,0 +1,39 @@
+@startuml
+title US223-SD
+autonumber
+
+actor "ATCC" as Operator
+participant ":StatisticsController" as Ctrl
+participant ":StatisticsService" as Service
+participant ":ScheduledFlightRepository" as Repo
+participant "dto:AircraftUtilizationRateDTO" as DTO
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/instances/top5?sortBy=assignments
+activate Ctrl
+
+Ctrl -> Service : getUtilizationRateOverTime(start, end)
+activate Service
+
+Service -> Repo : countFlightsByAircraftAndMonth(start, end)
+activate Repo
+note right of Repo : Query com GROUP BY matrícula, mês
+Repo --> Service : List<Object[]>
+deactivate Repo
+
+loop para cada Object[] row
+    Service -> DTO ** : create(row[0], row[1], row[2])
+end
+
+Service --> Ctrl : List<AircraftUtilizationRateDTO>
+deactivate Service
+
+alt dados vazios
+    Ctrl --> Operator : 204 No Content
+else
+    Ctrl -> Ctrl : wrap em CollectionModel
+    Ctrl --> Operator : 200 OK
+end
+deactivate Ctrl
+deactivate Operator
+@enduml

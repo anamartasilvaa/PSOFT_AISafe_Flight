@@ -1,0 +1,35 @@
+@startuml
+title US223-DM
+hide circle
+skinparam classAttributeIconSize 0
+
+class ScheduledFlight <<Entity>> {
+  scheduledDateTime : LocalDateTime
+  status : FlightStatus
+}
+
+class Aircraft <<Entity>> {
+  registrationNumber : RegistrationNumber
+}
+
+class Route <<Entity>> {
+  routeId : RouteId
+  estimatedFlightTime : Integer
+}
+
+class AircraftModel <<Entity>> {
+  modelId : ModelId
+  fuelConsumptionPerHour : Double
+}
+
+ScheduledFlight "*" --> "1" Aircraft : aircraft
+ScheduledFlight "*" --> "1" Route : route
+Aircraft "1" --> "1" AircraftModel : model
+
+note bottom of ScheduledFlight
+  A entidade central para estatísticas:
+  contém a data para agregação por período (US223)
+  e ligações para Rota e Aeronave.
+end note
+
+@enduml

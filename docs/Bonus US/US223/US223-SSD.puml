@@ -1,0 +1,14 @@
+@startuml
+title US223-SSD
+autonumber
+
+actor "ATCC" as Operator
+participant "AISafe System" as System
+
+activate Operator
+Operator -> System : GET /api/aircraft-models/instances/top5?sortBy=assignments
+activate System
+System --> Operator : 200 OK (List<AircraftUtilizationRateDTO>)
+deactivate System
+deactivate Operator
+@enduml
