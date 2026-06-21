@@ -87,6 +87,8 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/search").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/parts/low-stock-alerts").hasAnyAuthority("ROLE_MAINTENANCE_SUPERVISOR", "ROLE_ADMIN");
+
                     auth.requestMatchers("/api/maintenance/**").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
 
                     // --- NOVAS ROTAS (US224, US227, US229) ---
