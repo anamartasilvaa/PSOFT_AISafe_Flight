@@ -1,0 +1,16 @@
+@startuml
+title US227-DM
+hide circle
+skinparam classAttributeIconSize 0
+class ScheduledFlight <<Entity>>
+class Route <<Entity>> {
+  estimatedFlightTime : Integer
+}
+class Aircraft <<Entity>>
+class AircraftModel <<Entity>> {
+  fuelConsumptionPerHour : Double
+}
+ScheduledFlight "*" --> "1" Route : route
+ScheduledFlight "*" --> "1" Aircraft : aircraft
+Aircraft "*" --> "1" AircraftModel : model
+@enduml

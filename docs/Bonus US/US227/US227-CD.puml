@@ -1,0 +1,21 @@
+@startuml
+title US227-CD
+class StatisticsController {
+  + getFuelEfficiency(byAircraft : boolean) : ResponseEntity<CollectionModel<EntityModel<FuelEfficiencyDTO>>>
+}
+class StatisticsService {
+  - flightRepository : ScheduledFlightRepository
+  + getFuelEfficiencyReport(byAircraft : boolean) : List<FuelEfficiencyDTO>
+}
+interface ScheduledFlightRepository {
+  + getFuelEfficiencyPerAircraft() : List<Object[]>
+  + getFuelEfficiencyPerRoute() : List<Object[]>
+}
+class FuelEfficiencyDTO <<record>> {
+  identifier : String
+  averageFuelConsumption : Double
+}
+StatisticsController --> StatisticsService
+StatisticsService --> ScheduledFlightRepository
+StatisticsService ..> FuelEfficiencyDTO : creates
+@enduml

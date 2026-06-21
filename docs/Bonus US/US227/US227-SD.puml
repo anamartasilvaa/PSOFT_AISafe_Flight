@@ -1,0 +1,46 @@
+@startuml
+title US227-SD
+autonumber
+actor "ATCC" as Operator
+participant ":StatisticsController" as Ctrl
+participant ":StatisticsService" as Service
+participant ":ScheduledFlightRepository" as Repo
+participant "dto:FuelEfficiencyDTO" as DTO
+
+activate Operator
+Operator -> Ctrl : GET /api/statistics/fuel-efficiency?byAircraft={byAircraft}
+activate Ctrl
+
+Ctrl -> Service : getFuelEfficiencyReport(byAircraft)
+activate Service
+
+alt byAircraft == true
+    Service -> Repo : getFuelEfficiencyPerAircraft()
+    activate Repo
+    note right of Repo : SUM(estimatedFlightTime * fuelConsumptionPerHour)\nGROUP BY aircraft.registrationNumber
+    Repo --> Service : List<Object[]>
+    deactivate Repo
+else byAircraft == false
+    Service -> Repo : getFuelEfficiencyPerRoute()
+    activate Repo
+    note right of Repo : AVG(estimatedFlightTime * fuelConsumptionPerHour)\nGROUP BY route.routeId
+    Repo --> Service : List<Object[]>
+    deactivate Repo
+end
+
+loop for each Object[] row
+    Service -> DTO ** : create(row[0], row[1])
+end
+
+Service --> Ctrl : List<FuelEfficiencyDTO>
+deactivate Service
+
+alt report.isEmpty()
+    Ctrl --> Operator : 204 No Content
+else
+    Ctrl -> Ctrl : wrap in CollectionModel/EntityModel
+    Ctrl --> Operator : 200 OK\n(CollectionModel<EntityModel<FuelEfficiencyDTO>>)
+end
+deactivate Ctrl
+deactivate Operator
+@enduml
