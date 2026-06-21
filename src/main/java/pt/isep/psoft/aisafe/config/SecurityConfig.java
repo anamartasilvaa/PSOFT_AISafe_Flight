@@ -82,8 +82,8 @@ public class SecurityConfig {
                     // WP4 & WP4B
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/costs").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/alerts").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/ongoing").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
-                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/turnaround").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/ongoing").hasAnyAuthority("ROLE_MAINTENANCE_SUPERVISOR", "ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/maintenance/statistics/turnaround").hasAnyAuthority("ROLE_MAINTENANCE_SUPERVISOR","ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/search").hasAnyAuthority("ROLE_MAINTENANCE_TECH", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/maintenance/records/aircraft/*/total-hours").hasAnyAuthority("ROLE_ATCC", "ROLE_ADMIN");
