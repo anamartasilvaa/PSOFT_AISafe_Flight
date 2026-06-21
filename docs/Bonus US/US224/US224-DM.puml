@@ -1,0 +1,20 @@
+@startuml
+title US224-DM
+hide circle
+skinparam classAttributeIconSize 0
+
+class Aircraft <<Entity>> {
+  registrationNumber : RegistrationNumber
+  features : String
+}
+
+class AircraftModel <<Entity>> {
+  engineType : String
+}
+
+Aircraft "n" --> "1" AircraftModel : model
+
+
+
+
+@enduml

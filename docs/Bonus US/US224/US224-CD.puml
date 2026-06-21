@@ -1,0 +1,30 @@
+@startuml
+title US224-CD
+skinparam classAttributeIconSize 0
+
+class AircraftController {
+  + searchAircraftByFeatures(feature: String, engineType: String) : ResponseEntity
+}
+
+class AircraftService {
+  + searchAircraftByFeatures(feature: String, engineType: String) : List<AircraftViewDTO>
+}
+
+interface AircraftRepository {
+  + findByFeaturesAndEngine(feature: String, engineType: String) : List<Aircraft>
+}
+
+class Aircraft <<Entity>> {
+  - registrationNumber : RegistrationNumber
+  - features : String
+}
+
+class AircraftModel <<Entity>> {
+  - engineType : String
+}
+
+AircraftController ..> AircraftService : usa
+AircraftService ..> AircraftRepository : usa
+AircraftRepository ..> Aircraft : devolve
+Aircraft "n" --> "1" AircraftModel : model
+@enduml

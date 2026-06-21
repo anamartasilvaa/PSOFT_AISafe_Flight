@@ -1,0 +1,30 @@
+@startuml
+title US224-SD
+autonumber
+
+actor "ATCC" as Operator
+participant ":AircraftController" as Ctrl
+participant ":AircraftService" as Service
+participant ":AircraftRepository" as Repo
+participant "dto:AircraftViewDTO" as DTO
+
+activate Operator
+Operator -> Ctrl : GET /api/aircraft-models/instances/search-features?feature=WIFI&engineType=JET
+activate Ctrl
+
+Ctrl -> Service : searchAircraftByFeatures("WIFI", "JET")
+activate Service
+
+Service -> Repo : findByFeaturesAndEngine("WIFI", "JET")
+activate Repo
+Repo --> Service : List<Aircraft>
+deactivate Repo
+
+Service -> Service : Converte para DTO
+Service --> Ctrl : List<AircraftViewDTO>
+deactivate Service
+
+Ctrl --> Operator : 200 OK (CollectionModel)
+deactivate Ctrl
+deactivate Operator
+@enduml

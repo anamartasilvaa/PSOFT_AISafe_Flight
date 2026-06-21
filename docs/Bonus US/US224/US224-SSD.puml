@@ -1,0 +1,14 @@
+@startuml
+title US224-SSD
+autonumber
+
+actor "ATCC" as Operator
+participant "AISafe System" as System
+
+activate Operator
+Operator -> System : GET /api/aircraft-models/instances/search-features?feature={f}&engineType={et}
+activate System
+System --> Operator : 200 OK (List<AircraftViewDTO>)
+deactivate System
+deactivate Operator
+@enduml
