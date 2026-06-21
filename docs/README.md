@@ -9,7 +9,7 @@ The database automatically initializes with the following users to facilitate te
 | **Administrator** | `admin@aisafe.pt`    | `AdminPass123!`    |
 | **Backoffice**    | `operator@aisafe.pt` | `OperatorPass123!` |
 | **ATCC**          | `atcc@aisafe.pt`     | `AtccPass123!`     |
-| **Maintenance**   | `tech@aisafe.pt`     | `TechPass123!`     
+| **Maintenance**   | `tech@aisafe.pt`     | `TechPass123!`|     
 
 ---
 

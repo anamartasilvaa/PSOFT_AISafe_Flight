@@ -71,7 +71,7 @@ package "Airport Aggregate" {
         - region: String
         - timezone: String
         - operationalHours: String
-        imageUrl: String
+        -imageUrl: String
     }
 
     enum AirportType <<Enumeration>> {
